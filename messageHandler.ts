@@ -42,6 +42,7 @@ const helpText = [
   "!help - Übersicht",
   "!daddy - Bildniss der Daddygames",
   "!natalieneu - neuster Tweet",
+  "!twitter hashtag - hört für 5 tweets die neusten tweets des Hashtags ab.",
   "!inspire - Zufällige KI generierter Quote",
   "!inspireMode - Zufällige KI generierter Quote; alle 2 Minuten",
   "!mindful - Zufällige KI generierte Mindful Session",
