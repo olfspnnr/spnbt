@@ -1,0 +1,6 @@
+auth.json
+node_modules
+bot.js
+messageHandler.js
+bot.js.map
+test.json

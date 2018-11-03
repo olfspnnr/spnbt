@@ -1,0 +1,23 @@
+{
+  "name": "spinbot",
+  "version": "1.0.0",
+  "description": "Bottet herum.",
+  "main": "bot.js",
+  "author": "Olf",
+  "scripts": {
+    "build": "tsc bot.ts --lib 'es6, dom'",
+    "watch": "tsc bot.ts --lib 'es6, dom' --watch"
+  },
+  "dependencies": {
+    "@types/node": "^10.12.1",
+    "@types/twitter": "0.0.28",
+    "@types/ws": "^6.0.1",
+    "discord.js": "^11.4.2",
+    "es6-promise": "^4.2.5",
+    "isomorphic-fetch": "^2.2.1",
+    "opusscript": "0.0.6",
+    "twitter": "^1.7.1",
+    "ws": "^6.1.0",
+    "ytdl-core": "^0.27.1"
+  }
+}
