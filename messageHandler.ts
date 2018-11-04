@@ -207,10 +207,12 @@ export const messageHandleObject = {
   "!inspireMode": (message: Message, client?: Client) => {
     if (!currentState.isInspiring) {
       let messageCopy = { ...message } as Message;
-      return sendInspiringMessage(message).then(() => {
-        currentState.isInspiring = true;
-        return repeatInspire(messageCopy);
-      });
+      return sendInspiringMessage(message)
+        .then(() => {
+          currentState.isInspiring = true;
+          return repeatInspire(messageCopy);
+        })
+        .catch(error => console.error(error));
     } else {
       message.channel
         .send(`Is already Inspiring~`)
