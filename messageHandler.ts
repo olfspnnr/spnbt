@@ -108,7 +108,7 @@ export const messageHandleObject = {
               seek: 0
             });
             dispatcher.on("end", end => {
-              voiceChannel.leave();
+              // voiceChannel.leave();
               currentState.isPlayingAudio = false;
             });
           })
@@ -258,7 +258,7 @@ export const messageHandleObject = {
                     );
                   });
                   dispatcher.on("end", end => {
-                    voiceChannel.leave();
+                    // voiceChannel.leave();
                     currentState.isPlayingAudio = false;
                   });
                 })
@@ -286,7 +286,7 @@ export const messageHandleObject = {
             seek: 0
           });
           dispatcher.on("end", end => {
-            voiceChannel.leave();
+            // voiceChannel.leave();
             currentState.isPlayingAudio = false;
           });
         })
@@ -296,32 +296,42 @@ export const messageHandleObject = {
   "!play": (message: Message, client?: Client) => {
     if (!currentState.isPlayingAudio) {
       try {
-        console.log("Play music");
         currentState.isPlayingAudio = true;
         let url = message.content.slice("!play ".length);
-
         if (!!~url.indexOf('"')) {
           url = url.replace('"', "");
         }
+        const stream = ytdl(url, {
+          filter: "audioonly"
+        });
+        if (stream === undefined) return;
         const voiceChannel = message.member.voiceChannel;
-        if (voiceChannel !== undefined) return;
-        voiceChannel
-          .join()
-          .then(connection => {
-            const stream = ytdl(url, {
-              filter: "audioonly"
-            });
-            const dispatcher = connection.playStream(stream, {
-              volume: 0.25,
-              seek: 0
-            });
-            dispatcher.on("end", end => {
-              message.delete();
-              voiceChannel.leave();
-              currentState.isPlayingAudio = false;
-            });
-          })
-          .catch(error => console.log(error));
+        if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
+          const dispatcher = voiceChannel.connection.playStream(stream, {
+            volume: 0.25,
+            seek: 0
+          });
+          dispatcher.on("end", end => {
+            message.delete();
+            // voiceChannel.leave();
+            currentState.isPlayingAudio = false;
+          });
+        } else {
+          voiceChannel
+            .join()
+            .then(connection => {
+              const dispatcher = connection.playStream(stream, {
+                volume: 0.25,
+                seek: 0
+              });
+              dispatcher.on("end", end => {
+                message.delete();
+                // voiceChannel.leave();
+                currentState.isPlayingAudio = false;
+              });
+            })
+            .catch(error => console.log(error));
+        }
       } catch (error) {
         console.log(error);
         currentState.isPlayingAudio = false;
