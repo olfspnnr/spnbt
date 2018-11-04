@@ -4,6 +4,7 @@ import { playAudio } from "./messageHandlerTrusted";
 const helpText = [
   "Funktionen für Spinner: ",
   "------------------------",
+  "!help - Übersicht",
   "!leavevoice - lässt den Bot den VoiceChannel verlassen",
   "!joinvoice - lässt den Bot den VoiceChannel beitreten",
   "!knock - spielt Klopfgeräusch ab",

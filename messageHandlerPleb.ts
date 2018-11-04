@@ -3,6 +3,7 @@ import { Message, Client } from "discord.js";
 const helpText = [
   "Funktionen für Plebs: ",
   "------------------------",
+  "!help - Übersicht",
   "!hallo - lass dich begrüßen"
 ].join("\r");
 
