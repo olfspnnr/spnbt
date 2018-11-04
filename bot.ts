@@ -120,28 +120,31 @@ client.on("message", message => {
           !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
         )}`
       ](message, client) === "function"
-    )
+    ) {
       return (messageHandleObjectPleb as any)[
         `${message.content.slice(
           0,
           !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
         )}`
       ](message, client);
+    }
   } catch (error) {
     console.log(error);
     if (message.member.user.id === userIds.marcel) {
       message.react(client.emojis.get("508737241443729408"));
-    } else if (message.member.user.id === userIds.justus) {
+    }
+    if (message.member.user.id === userIds.justus) {
       message.react(client.emojis.get("508737241930006561"));
-    } else if (message.member.user.id === userIds.olaf) {
+    }
+    if (message.member.user.id === userIds.olaf) {
       message.react("💕");
-    } else
-      return console.log(
-        `Konnte nicht verarbeiten: ${message.content.slice(
-          0,
-          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-        )}`
-      );
+    }
+    return console.log(
+      `Konnte nicht verarbeiten: ${message.content.slice(
+        0,
+        !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+      )}`
+    );
   }
 });
 
