@@ -42,7 +42,7 @@ const helpText = [
   "!help - Übersicht",
   "!daddy - Bildniss der Daddygames",
   "!natalieneu - neuster Tweet",
-  "!twitter hashtag - holt sich die 5 neusten Tweets zum Hashtag",
+  '!twitter "hashtag" - holt sich die 5 neusten Tweets zum Hashtag',
   "!inspire - Zufällige KI generierter Quote",
   "!inspireMode - Zufällige KI generierter Quote; alle 2 Minuten",
   "!mindful - Zufällige KI generierte Mindful Session",
@@ -190,7 +190,7 @@ export const messageHandleObject = {
   "!natalieneu": (message: Message, client?: Client) => {
     twitterClient.get(
       "statuses/user_timeline",
-      { user_id: "1053658318743441408", count: 1 },
+      { user_id: "1053658318743441408", count: 3 },
       (error: any, tweets: any, response: any) => {
         tweets.forEach(async (element: any) => {
           try {
