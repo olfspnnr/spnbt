@@ -57,73 +57,10 @@ let currentState = {
   isInspiring: false
 };
 
-const repeatInspire: (message: Message) => void = (message: Message) => {
-  return setTimeout(() => sendInspiringMessage(message).then(() => repeatInspire(message)), 120000);
-};
-
-const sendInspiringMessage = (message: Message) =>
-  new Promise((resolve, reject) => {
-    fetch("http://inspirobot.me/api?generate=true")
-      .then(response => response.text())
-      .then(data => {
-        console.log(data);
-        const attachment = new Attachment(data);
-        message.channel
-          .send(attachment as MessageOptions)
-          .then(msg => {
-            if (message.delete) message.delete();
-            (msg as Message).delete(120000);
-            return resolve();
-          })
-          .catch(error => reject(error));
-      });
-  });
-
 export const messageHandleObject = {
-  "!help": async (message: Message, client?: Client) => {
-    try {
-      const msg = await message.reply(helpText);
-      message.delete();
-      (msg as Message).delete(30000);
-    } catch (error) {
-      return console.log(error);
-    }
-  },
+  "!help": (message: Message, client?: Client) => writeHelpMessage(message),
   "!test": () => console.log("Hallo welt!"),
-  "!knock": (message: Message, client?: Client) => {
-    if (!currentState.isPlayingAudio) {
-      message.delete();
-      currentState.isPlayingAudio = true;
-      try {
-        const stream = ytdl("https://www.youtube.com/watch?v=ZqNpXJwgO8o", {
-          filter: "audioonly"
-        });
-        const voiceChannel = message.member.voiceChannel;
-        if (!voiceChannel) return;
-        voiceChannel
-          .join()
-          .then(connection => {
-            const dispatcher = connection.playStream(stream, {
-              volume: 1,
-              seek: 0
-            });
-            dispatcher.on("end", end => {
-              // voiceChannel.leave();
-              currentState.isPlayingAudio = false;
-            });
-          })
-          .catch(error => console.log(error));
-      } catch (error) {
-        message.channel
-          .send(`Could not play link; Invalid Link?`)
-          .then(msg => {
-            message.delete();
-            (msg as Message).delete(8000);
-          })
-          .catch(error => console.log(error));
-      }
-    } else return;
-  },
+  "!knock": (message: Message, client?: Client) => playKnockSound(message),
   "!hallo": async (message: Message, client?: Client) => {
     try {
       const msg = await message.reply(`hallo.`);
@@ -433,3 +370,72 @@ export const messageHandleObject = {
     }
   }
 } as messageHandleObject;
+
+const playKnockSound = (message: Message) => {
+  if (!currentState.isPlayingAudio) {
+    message.delete();
+    currentState.isPlayingAudio = true;
+    try {
+      const stream = ytdl("https://www.youtube.com/watch?v=ZqNpXJwgO8o", {
+        filter: "audioonly"
+      });
+      const voiceChannel = message.member.voiceChannel;
+      if (!voiceChannel) return;
+      voiceChannel
+        .join()
+        .then(connection => {
+          const dispatcher = connection.playStream(stream, {
+            volume: 1,
+            seek: 0
+          });
+          dispatcher.on("end", end => {
+            // voiceChannel.leave();
+            currentState.isPlayingAudio = false;
+          });
+        })
+        .catch(error => console.log(error));
+    } catch (error) {
+      message.channel
+        .send(`Could not play link; Invalid Link?`)
+        .then(msg => {
+          message.delete();
+          (msg as Message).delete(8000);
+        })
+        .catch(error => console.log(error));
+    }
+  } else return;
+};
+
+const playSound = (url: string, isPlayingAudio: boolean) => {};
+
+const writeHelpMessage = async (message: Message) => {
+  try {
+    const msg = await message.reply(helpText);
+    message.delete();
+    (msg as Message).delete(30000);
+  } catch (error) {
+    return console.log(error);
+  }
+};
+
+const repeatInspire: (message: Message) => void = (message: Message) => {
+  return setTimeout(() => sendInspiringMessage(message).then(() => repeatInspire(message)), 120000);
+};
+
+const sendInspiringMessage = (message: Message) =>
+  new Promise((resolve, reject) => {
+    fetch("http://inspirobot.me/api?generate=true")
+      .then(response => response.text())
+      .then(data => {
+        console.log(data);
+        const attachment = new Attachment(data);
+        message.channel
+          .send(attachment as MessageOptions)
+          .then(msg => {
+            if (message.delete) message.delete();
+            (msg as Message).delete(120000);
+            return resolve();
+          })
+          .catch(error => reject(error));
+      });
+  });
