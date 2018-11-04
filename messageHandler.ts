@@ -42,7 +42,7 @@ const helpText = [
   "!help - Übersicht",
   "!daddy - Bildniss der Daddygames",
   "!natalieneu - neuster Tweet",
-  "!twitter hashtag - hört für 5 tweets die neusten tweets des Hashtags ab.",
+  "!twitter hashtag - holt sich die 5 neusten Tweets zum Hashtag",
   "!inspire - Zufällige KI generierter Quote",
   "!inspireMode - Zufällige KI generierter Quote; alle 2 Minuten",
   "!mindful - Zufällige KI generierte Mindful Session",
@@ -90,6 +90,40 @@ export const messageHandleObject = {
     }
   },
   "!test": () => console.log("Hallo welt!"),
+  "!knock": (message: Message, client?: Client) => {
+    if (!currentState.isPlayingAudio) {
+      message.delete();
+      currentState.isPlayingAudio = true;
+      try {
+        const stream = ytdl("https://www.youtube.com/watch?v=ZqNpXJwgO8o", {
+          filter: "audioonly"
+        });
+        const voiceChannel = message.member.voiceChannel;
+        if (!voiceChannel) return;
+        voiceChannel
+          .join()
+          .then(connection => {
+            const dispatcher = connection.playStream(stream, {
+              volume: 1,
+              seek: 0
+            });
+            dispatcher.on("end", end => {
+              // voiceChannel.leave();
+              currentState.isPlayingAudio = false;
+            });
+          })
+          .catch(error => console.log(error));
+      } catch (error) {
+        message.channel
+          .send(`Could not play link; Invalid Link?`)
+          .then(msg => {
+            message.delete();
+            (msg as Message).delete(8000);
+          })
+          .catch(error => console.log(error));
+      }
+    } else return;
+  },
   "!hallo": async (message: Message, client?: Client) => {
     try {
       const msg = await message.reply(`hallo.`);
@@ -206,7 +240,7 @@ export const messageHandleObject = {
                 .then(response => response.body)
                 .then(stream => {
                   const dispatcher = connection.playStream(stream as any, {
-                    volume: 0.35,
+                    volume: 0.45,
                     seek: 0
                   });
                   console.log(textAndImages);
@@ -224,7 +258,7 @@ export const messageHandleObject = {
                     );
                   });
                   dispatcher.on("end", end => {
-                    voiceChannel.leave();
+                    // voiceChannel.leave();
                     currentState.isPlayingAudio = false;
                   });
                 })
@@ -237,6 +271,7 @@ export const messageHandleObject = {
   },
   "!flachbader": (message: Message, client?: Client) => {
     if (!currentState.isPlayingAudio) {
+      currentState.isPlayingAudio = true;
       message.delete();
       const voiceChannel = message.member.voiceChannel;
       voiceChannel
@@ -247,11 +282,11 @@ export const messageHandleObject = {
             begin: "1m17s"
           });
           const dispatcher = connection.playStream(stream, {
-            volume: 0.1,
+            volume: 0.25,
             seek: 0
           });
           dispatcher.on("end", end => {
-            voiceChannel.leave();
+            // voiceChannel.leave();
             currentState.isPlayingAudio = false;
           });
         })
@@ -261,30 +296,45 @@ export const messageHandleObject = {
   "!play": (message: Message, client?: Client) => {
     if (!currentState.isPlayingAudio) {
       try {
+        currentState.isPlayingAudio = true;
         let url = message.content.slice("!play ".length);
-        const stream = ytdl(url, {
-          filter: "audioonly"
-        });
         if (!!~url.indexOf('"')) {
           url = url.replace('"', "");
         }
+        const stream = ytdl(url, {
+          filter: "audioonly"
+        });
+        if (stream === undefined) return;
         const voiceChannel = message.member.voiceChannel;
-        if (!voiceChannel) return;
-        voiceChannel
-          .join()
-          .then(connection => {
-            const dispatcher = connection.playStream(stream, {
-              volume: 0.15,
-              seek: 0
-            });
-            dispatcher.on("end", end => {
-              message.delete();
-              voiceChannel.leave();
-              currentState.isPlayingAudio = false;
-            });
-          })
-          .catch(error => console.log(error));
+        if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
+          const dispatcher = voiceChannel.connection.playStream(stream, {
+            volume: 0.25,
+            seek: 0
+          });
+          dispatcher.on("end", end => {
+            message.delete();
+            // voiceChannel.leave();
+            currentState.isPlayingAudio = false;
+          });
+        } else {
+          voiceChannel
+            .join()
+            .then(connection => {
+              const dispatcher = connection.playStream(stream, {
+                volume: 0.25,
+                seek: 0
+              });
+              dispatcher.on("end", end => {
+                message.delete();
+                // voiceChannel.leave();
+                currentState.isPlayingAudio = false;
+              });
+            })
+            .catch(error => console.log(error));
+        }
       } catch (error) {
+        console.log(error);
+        currentState.isPlayingAudio = false;
         message.channel
           .send(`Could not play link; Invalid Link?`)
           .then(msg => {
@@ -293,7 +343,10 @@ export const messageHandleObject = {
           })
           .catch(error => console.log(error));
       }
-    } else return;
+    } else {
+      console.log(currentState);
+      return console.log("Something went wrong;");
+    }
   },
   rigged: (message: Message, client?: Client) => {
     const attachment = new Attachment(
