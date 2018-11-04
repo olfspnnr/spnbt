@@ -6,4 +6,6 @@ bot.js.map
 test.json
 package-lock.json
 package.json
-.gitignore
+messageHandlerAdmin.js
+messageHandlerTrusted.js
+messageHandlerPleb.js

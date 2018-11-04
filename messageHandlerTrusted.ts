@@ -27,12 +27,11 @@ const twitterClient = new Twitter({
 });
 
 const helpText = [
-  "Funktionen: ",
+  "Funktionen für Spinner und Trusted: ",
   "------------------------",
   "!help - Übersicht",
-  "!hallo - lass dich begrüßen",
   "!daddy - Bildniss der Daddygames",
-  "!knock - spielt Klopfgeräusch ab",
+
   "!natalieneu - neuster Tweet",
   '!twitter "hashtag" - holt sich die 5 neusten Tweets zum Hashtag',
   "!inspire - Zufällige KI generierter Quote",
@@ -41,16 +40,16 @@ const helpText = [
   "!flachbader - Flachbader Song => !stop um zu beenden",
   "!play url - Spielt Youtube URL ab => !stop um zu beenden",
   '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
-  '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht'
+  '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht',
+  "!leavevoice - lässt den Bot den VoiceChannel verlassen",
+  "!joinvoice - lässt den Bot den VoiceChannel beitreten"
 ].join("\r");
 
-export interface messageHandleObject {
+export interface messageHandleObjectTrusted {
   "!test": () => void;
-  "!hallo": (message: Message, client?: Client) => void;
   "!daddy": (message: Message, client?: Client) => void;
   "!twitter": (message: Message, client?: Client) => void;
   "!help": (message: Message, client?: Client) => void;
-  "!knock": (message: Message, client?: Client) => void;
   "!natalieneu": (message: Message, client?: Client) => void;
   "!inspire": (message: Message, client?: Client) => void;
   "!inspireMode": (message: Message, client?: Client) => void;
@@ -60,15 +59,11 @@ export interface messageHandleObject {
   rigged: (message: Message, client?: Client) => void;
   "!pin": (message: Message, client?: Client) => void;
   "!wiki": (message: Message, client?: Client) => void;
-  "!leavevoice": (message: Message, client?: Client) => void;
-  "!joinvoice": (message: Message, client?: Client) => void;
 }
 
-export const messageHandleObject = {
+export const messageHandleObjectTrusted = {
   "!help": (message: Message, client?: Client) => writeHelpMessage(message),
   "!test": () => console.log("Hallo welt!"),
-  "!knock": (message: Message, client?: Client) => playKnockSound(message),
-  "!hallo": async (message: Message, client?: Client) => sayHallo(message),
   "!daddy": async (message: Message, client?: Client) => sendDaddyImage(message),
   "!twitter": (message: Message, client?: Client) => listenToHashtag(message, client),
   "!natalieneu": (message: Message, client?: Client) => listenToNatalieRosenke(message),
@@ -85,24 +80,8 @@ export const messageHandleObject = {
   },
   rigged: (message: Message, client?: Client) => sendAluHut(message),
   "!pin": (message: Message, client?: Client) => pinMessage(message),
-  "!wiki": (message: Message, client?: Client) => searchInWiki(message),
-  "!leavevoice": (message: Message, client?: Client) => leaveVoiceChannel(message),
-  "!joinvoice": (message: Message, client?: Client) => enterVoiceChannel(message, client)
-} as messageHandleObject;
-
-const enterVoiceChannel = (message: Message, client: Client) => {
-  const voiceChannel = message.member.voiceChannel;
-  message.delete();
-  return voiceChannel.joinable ? voiceChannel.join().then(connection => connection) : false;
-};
-
-const leaveVoiceChannel = (message: Message) => {
-  const voiceChannel = message.member.voiceChannel;
-  message.delete();
-  if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
-    voiceChannel.connection.disconnect();
-  }
-};
+  "!wiki": (message: Message, client?: Client) => searchInWiki(message)
+} as messageHandleObjectTrusted;
 
 const sendAluHut = (message: Message) => {
   const attachment = new Attachment(
@@ -374,7 +353,7 @@ const createDispatcher = (
   return createCollector(message, length * 1000, dispatcher, ...blocks);
 };
 
-const playAudio = (
+export const playAudio = (
   message: Message,
   youtube: boolean,
   url?: string,

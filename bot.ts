@@ -1,8 +1,10 @@
 // Import the discord.js module
-import { Attachment, Client, MessageOptions, Message, TextChannel } from "discord.js";
+import { Client } from "discord.js";
 import "isomorphic-fetch";
 import "opusscript";
-import { messageHandleObject } from "./messageHandler";
+import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
+import { messageHandleObjectAdmin } from "./messageHandlerAdmin";
+import { messageHandleObjectPleb } from "./messageHandlerPleb";
 
 const auth: auth = require("./auth.json");
 
@@ -42,13 +44,52 @@ client.on("message", message => {
   try {
     console.log(`${message.member.displayName}/${message.member.user.username}: ${message.content}
       `);
-    (messageHandleObject as any)[
+    console.log(
       `${message.content.slice(
         0,
         !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
       )}`
-    ](message, client);
-  } catch {
+    );
+
+    if (message.member.roles.has("223937179552841728")) {
+      try {
+        (messageHandleObjectAdmin as any)[
+          `${message.content.slice(
+            0,
+            !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+          )}`
+        ](message, client);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    if (
+      message.member.roles.has("223937179552841728") ||
+      message.member.roles.has("404673483696766978")
+    ) {
+      try {
+        (messageHandleObjectTrusted as any)[
+          `${message.content.slice(
+            0,
+            !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+          )}`
+        ](message, client);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    try {
+      (messageHandleObjectPleb as any)[
+        `${message.content.slice(
+          0,
+          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+        )}`
+      ](message, client);
+    } catch (error) {
+      console.log(error);
+    }
+  } catch (error) {
+    console.log(error);
     if (message.member.user.id === "308998952718565377") {
       message.react(client.emojis.get("464175049822306304"));
     } else if (message.member.user.id === "314815200366690304") {
