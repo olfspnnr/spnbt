@@ -63,6 +63,9 @@ export let currentState = {
 
 // Create an event listener for messages
 client.on("message", message => {
+  if (message.guild === null) {
+    return console.log(`directMessage => ${message.author.username}: ${message.content}`);
+  }
   if (
     (!message.member.roles.has(roleIds.trusted) && !message.member.roles.has(roleIds.spinner)) ||
     message.member.user.id === userIds.spinbot
@@ -79,57 +82,38 @@ client.on("message", message => {
       )}`
     );
 
+    let possibleFunction: any = undefined;
     if (message.member.roles.has(roleIds.spinner)) {
-      if (
-        typeof (messageHandleObjectAdmin as any)[
-          `${message.content.slice(
-            0,
-            !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-          )}`
-        ] === "function"
-      ) {
-        return (messageHandleObjectAdmin as any)[
-          `${message.content.slice(
-            0,
-            !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-          )}`
-        ](message, client);
-      }
+      possibleFunction = (messageHandleObjectAdmin as any)[
+        `${message.content.slice(
+          0,
+          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+        )}`
+      ];
     }
-    if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
-      if (
-        typeof (messageHandleObjectTrusted as any)[
-          `${message.content.slice(
-            0,
-            !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-          )}`
-        ](message, client) === "function"
-      )
-        return (messageHandleObjectTrusted as any)[
-          `${message.content.slice(
-            0,
-            !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-          )}`
-        ](message, client);
-    }
-
     if (
-      typeof (messageHandleObjectPleb as any)[
-        `${message.content.slice(
-          0,
-          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-        )}`
-      ](message, client) === "function"
+      (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) &&
+      possibleFunction === undefined
     ) {
-      return (messageHandleObjectPleb as any)[
+      possibleFunction = (messageHandleObjectTrusted as any)[
         `${message.content.slice(
           0,
           !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
         )}`
-      ](message, client);
+      ];
+    }
+    if (possibleFunction === undefined) {
+      possibleFunction = (messageHandleObjectPleb as any)[
+        `${message.content.slice(
+          0,
+          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+        )}`
+      ];
+    }
+    if (typeof possibleFunction === "function") {
+      return possibleFunction(message, client);
     }
   } catch (error) {
-    console.log(error);
     if (message.member.user.id === userIds.marcel) {
       message.react(client.emojis.get("508737241443729408"));
     }
@@ -139,6 +123,7 @@ client.on("message", message => {
     if (message.member.user.id === userIds.olaf) {
       message.react("💕");
     }
+    // console.log(error);
     return console.log(
       `Konnte nicht verarbeiten: ${message.content.slice(
         0,

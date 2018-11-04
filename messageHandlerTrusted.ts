@@ -343,7 +343,7 @@ const createDispatcher = (
 ) => {
   let dispatcher = voiceChannel.connection
     .playStream(stream, {
-      volume: volume | 0.2
+      volume: volume || 0.2
     })
     .on("end", end => {
       message.delete();
