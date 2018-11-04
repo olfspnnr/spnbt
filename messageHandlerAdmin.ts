@@ -6,7 +6,9 @@ const helpText = [
   "------------------------",
   "!leavevoice - lässt den Bot den VoiceChannel verlassen",
   "!joinvoice - lässt den Bot den VoiceChannel beitreten",
-  "!knock - spielt Klopfgeräusch ab"
+  "!knock - spielt Klopfgeräusch ab",
+  "!cheer - spielt weiblichen Jubel ab",
+  "!playLoud - gleich wie !play, nur laut"
 ].join("\r");
 
 export interface messageHandleObjectAdmin {
@@ -14,14 +16,27 @@ export interface messageHandleObjectAdmin {
   "!leavevoice": (message: Message, client?: Client) => void;
   "!joinvoice": (message: Message, client?: Client) => void;
   "!knock": (message: Message, client?: Client) => void;
+  "!cheer": (message: Message, client?: Client) => void;
+  "!playLoud": (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObjectAdmin = {
-  "!help": (message: Message, client?: Client) => writeHelpMessage(message),
-  "!leavevoice": (message: Message, client?: Client) => leaveVoiceChannel(message),
+  "!help": (message: Message) => writeHelpMessage(message),
+  "!leavevoice": (message: Message) => leaveVoiceChannel(message),
   "!joinvoice": (message: Message, client?: Client) => enterVoiceChannel(message, client),
-  "!knock": (message: Message, client?: Client) => playKnockSound(message)
+  "!knock": (message: Message) => playKnockSound(message),
+  "!cheer": (message: Message) => playCheer(message),
+  "!playLoud": (message: Message) => {
+    let url = message.content.slice("!play ".length);
+    if (!!~url.indexOf('"')) {
+      url = url.replace('"', "");
+    }
+    playAudio(message, true, url, undefined, 1);
+  }
 } as messageHandleObjectAdmin;
+
+const playCheer = (message: Message) =>
+  playAudio(message, true, "https://www.youtube.com/watch?v=Bel7uDcrIho");
 
 const playKnockSound = (message: Message) =>
   playAudio(message, true, "https://www.youtube.com/watch?v=ZqNpXJwgO8o");
