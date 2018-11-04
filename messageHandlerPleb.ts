@@ -1,11 +1,25 @@
 import { Message, Client } from "discord.js";
 
 export const helpTextPleb = [
+  "===============",
   "Funktionen für Plebs: ",
   "------------------------",
   "!help - Übersicht",
   "!hallo - lass dich begrüßen"
 ].join("\r");
+
+const writeHelpMessage = async (message: Message) => {
+  try {
+    message.author.createDM().then(channel => {
+      channel.send(helpTextPleb);
+      channel.send("------------------------");
+      channel.send("Habe einen schönen Tag!");
+    });
+    message.delete();
+  } catch (error) {
+    return console.log(error);
+  }
+};
 
 export interface messageHandleObjectPleb {
   "!help": (message: Message, client?: Client) => void;
@@ -22,16 +36,6 @@ const sayHallo = async (message: Message) => {
     const msg = await message.reply(`hallo.`);
     message.delete();
     (msg as Message).delete(120000);
-  } catch (error) {
-    return console.log(error);
-  }
-};
-
-const writeHelpMessage = async (message: Message) => {
-  try {
-    const msg = await message.reply(helpTextPleb);
-    message.delete();
-    (msg as Message).delete(30000);
   } catch (error) {
     return console.log(error);
   }

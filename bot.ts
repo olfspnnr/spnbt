@@ -80,39 +80,53 @@ client.on("message", message => {
     );
 
     if (message.member.roles.has(roleIds.spinner)) {
-      try {
+      if (
+        typeof (messageHandleObjectAdmin as any)[
+          `${message.content.slice(
+            0,
+            !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+          )}`
+        ] === "function"
+      ) {
         return (messageHandleObjectAdmin as any)[
           `${message.content.slice(
             0,
             !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
           )}`
         ](message, client);
-      } catch (error) {
-        console.log(error);
       }
     }
     if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
-      try {
+      if (
+        typeof (messageHandleObjectTrusted as any)[
+          `${message.content.slice(
+            0,
+            !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+          )}`
+        ](message, client) === "function"
+      )
         return (messageHandleObjectTrusted as any)[
           `${message.content.slice(
             0,
             !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
           )}`
         ](message, client);
-      } catch (error) {
-        console.log(error);
-      }
     }
-    try {
+
+    if (
+      typeof (messageHandleObjectPleb as any)[
+        `${message.content.slice(
+          0,
+          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+        )}`
+      ](message, client) === "function"
+    )
       return (messageHandleObjectPleb as any)[
         `${message.content.slice(
           0,
           !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
         )}`
       ](message, client);
-    } catch (error) {
-      console.log(error);
-    }
   } catch (error) {
     console.log(error);
     if (message.member.user.id === userIds.marcel) {

@@ -28,6 +28,7 @@ const twitterClient = new Twitter({
 });
 
 export const helpTextTrusted = [
+  "===============",
   "Funktionen für Spinner und Trusted: ",
   "------------------------",
   "!help - Übersicht",
@@ -40,9 +41,22 @@ export const helpTextTrusted = [
   "!flachbader - Flachbader Song => !stop um zu beenden",
   "!play url - Spielt Youtube URL ab => !stop um zu beenden",
   '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
-  '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht',
-  ...helpTextPleb
+  '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht'
 ].join("\r");
+
+const writeHelpMessage = async (message: Message) => {
+  try {
+    message.author.createDM().then(channel => {
+      channel.send(helpTextTrusted);
+      channel.send(helpTextPleb);
+      channel.send("------------------------");
+      channel.send("Habe einen schönen Tag!");
+    });
+    message.delete();
+  } catch (error) {
+    return console.log(error);
+  }
+};
 
 export interface messageHandleObjectTrusted {
   "!test": () => void;
@@ -240,16 +254,6 @@ const sendDaddyImage = async (message: Message) => {
   }
 };
 
-const sayHallo = async (message: Message) => {
-  try {
-    const msg = await message.reply(`hallo.`);
-    message.delete();
-    (msg as Message).delete(120000);
-  } catch (error) {
-    return console.log(error);
-  }
-};
-
 const playMindfulAudio = (message: Message) => {
   if (!currentState.isPlayingAudio) {
     message.delete();
@@ -431,16 +435,6 @@ export const playAudio = (
     }
   } else {
     return console.log("Already playing Audio");
-  }
-};
-
-const writeHelpMessage = async (message: Message) => {
-  try {
-    const msg = await message.reply(helpTextTrusted);
-    message.delete();
-    (msg as Message).delete(30000);
-  } catch (error) {
-    return console.log(error);
   }
 };
 

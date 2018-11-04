@@ -3,6 +3,7 @@ import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 
 export const helpTextSpinner = [
+  "===============",
   "Funktionen für Spinner: ",
   "------------------------",
   "!help - Übersicht",
@@ -10,10 +11,23 @@ export const helpTextSpinner = [
   "!joinvoice - lässt den Bot den VoiceChannel beitreten",
   "!knock - spielt Klopfgeräusch ab",
   "!cheer - spielt weiblichen Jubel ab",
-  "!playLoud - gleich wie !play, nur laut",
-  ...helpTextTrusted,
-  ...helpTextPleb
+  "!playLoud - gleich wie !play, nur laut"
 ].join("\r");
+
+const writeHelpMessage = async (message: Message) => {
+  try {
+    message.author.createDM().then(channel => {
+      channel.send(helpTextSpinner);
+      channel.send(helpTextTrusted);
+      channel.send(helpTextPleb);
+      channel.send("------------------------");
+      channel.send("Habe einen schönen Tag!");
+    });
+    message.delete();
+  } catch (error) {
+    return console.log(error);
+  }
+};
 
 export interface messageHandleObjectAdmin {
   "!help": (message: Message, client?: Client) => void;
@@ -56,15 +70,5 @@ const leaveVoiceChannel = (message: Message) => {
   message.delete();
   if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
     voiceChannel.connection.disconnect();
-  }
-};
-
-const writeHelpMessage = async (message: Message) => {
-  try {
-    const msg = await message.reply(helpTextSpinner);
-    message.delete();
-    (msg as Message).delete(30000);
-  } catch (error) {
-    return console.log(error);
   }
 };
