@@ -4,13 +4,20 @@ import {
   MessageOptions,
   Message,
   TextChannel,
-  MessageCollector
+  MessageCollector,
+  VoiceChannel,
+  StreamDispatcher
 } from "discord.js";
 import { auth } from "./bot";
 const auth: auth = require("./auth.json");
 const Twitter = require("twitter");
 import * as ytdl from "ytdl-core";
 import { ReadStream } from "tty";
+
+export interface commandBlock {
+  command: string;
+  function: (...any: any[]) => any;
+}
 
 const twitterClient = new Twitter({
   consumer_key: auth.consumer_key,
@@ -77,7 +84,7 @@ export const messageHandleObject = {
     if (!!~url.indexOf('"')) {
       url = url.replace('"', "");
     }
-    playAudio(message, url);
+    if (!currentState.isPlayingAudio) playAudio(message, url);
   },
   rigged: (message: Message, client?: Client) => sendAluHut(message),
   "!pin": (message: Message, client?: Client) => pinMessage(message),
@@ -304,56 +311,91 @@ const playFlachbader = (message: Message) =>
 const playKnockSound = (message: Message) =>
   playAudio(message, "https://www.youtube.com/watch?v=ZqNpXJwgO8o");
 
-const playAudio = (message: Message, url: string) =>
-  new Promise((resolve, reject) => {
-    if (!currentState.isPlayingAudio) {
-      try {
-        const stream = ytdl(url, {
-          filter: "audioonly"
+const createCollector = (
+  message: Message,
+  timeToDeletion: number,
+  dispatcher: StreamDispatcher,
+  ...triggerMessages: commandBlock[]
+) => {
+  let collector = new MessageCollector(message.channel, m => m.author.id === message.author.id, {
+    time: timeToDeletion
+  });
+  collector.on("collect", (followUpMessage: Message) => {
+    if (
+      followUpMessage.content ===
+      triggerMessages.filter(msg => msg.command === followUpMessage.content)[0].command
+    ) {
+      triggerMessages
+        .filter(msg => msg.command === followUpMessage.content)[0]
+        .function(dispatcher, collector);
+      followUpMessage.delete();
+    }
+  });
+  return collector;
+};
+
+const createDispatcher = (
+  message: Message,
+  voiceChannel: VoiceChannel,
+  stream: any,
+  ...blocks: commandBlock[]
+) => {
+  let dispatcher = voiceChannel.connection
+    .playStream(stream, {
+      volume: 0.25,
+      seek: 0
+    })
+    .on("end", end => {
+      message.delete();
+      // voiceChannel.leave();
+      currentState.isPlayingAudio = false;
+    });
+  return createCollector(message, 15000, dispatcher, ...blocks);
+};
+
+const playAudio = (message: Message, url: string) => {
+  if (currentState.isPlayingAudio === false) {
+    try {
+      const stream = ytdl(url, {
+        filter: "audioonly"
+      });
+      if (stream === undefined) return;
+      const voiceChannel = message.member.voiceChannel;
+      if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
+        createDispatcher(message, voiceChannel, stream, {
+          command: "!stop",
+          function: (dispatcher, collector) => {
+            dispatcher.end(), collector.stop();
+          }
         });
-        if (stream === undefined) return;
-        const voiceChannel = message.member.voiceChannel;
-        if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
-          const dispatcher = voiceChannel.connection.playStream(stream, {
-            volume: 0.25,
-            seek: 0
-          });
-          dispatcher.on("end", end => {
-            message.delete();
-            // voiceChannel.leave();
-            currentState.isPlayingAudio = false;
-          });
-        } else {
-          voiceChannel
-            .join()
-            .then(connection => {
-              const dispatcher = connection.playStream(stream, {
-                volume: 0.25,
-                seek: 0
-              });
-              dispatcher.on("end", end => {
-                message.delete();
-                // voiceChannel.leave();
-                currentState.isPlayingAudio = false;
-              });
-            })
-            .catch(error => console.log(error));
-        }
-      } catch (error) {
-        console.log(error);
-        currentState.isPlayingAudio = false;
-        message.channel
-          .send(`Could not play link; Invalid Link?`)
-          .then(msg => {
-            message.delete();
-            (msg as Message).delete(8000);
+      } else {
+        voiceChannel
+          .join()
+          .then(connection => {
+            createDispatcher(message, voiceChannel, stream, {
+              command: "!stop",
+              function: (dispatcher, collector) => {
+                dispatcher.end(), collector.stop();
+              }
+            });
           })
           .catch(error => console.log(error));
       }
-    } else {
-      return console.log("Something went wrong;");
+    } catch (error) {
+      console.log(error);
+      currentState.isPlayingAudio = false;
+      message.channel
+        .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
+        .then(msg => {
+          message.delete();
+          (msg as Message).delete(8000);
+        })
+        .catch(error => console.log(error));
     }
-  });
+  } else {
+    return console.log("Already playing Audio");
+  }
+};
 
 const writeHelpMessage = async (message: Message) => {
   try {
