@@ -1,7 +1,8 @@
 import { Message, Client } from "discord.js";
-import { playAudio } from "./messageHandlerTrusted";
+import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
+import { helpTextPleb } from "./messageHandlerPleb";
 
-const helpText = [
+export const helpTextSpinner = [
   "Funktionen für Spinner: ",
   "------------------------",
   "!help - Übersicht",
@@ -9,7 +10,9 @@ const helpText = [
   "!joinvoice - lässt den Bot den VoiceChannel beitreten",
   "!knock - spielt Klopfgeräusch ab",
   "!cheer - spielt weiblichen Jubel ab",
-  "!playLoud - gleich wie !play, nur laut"
+  "!playLoud - gleich wie !play, nur laut",
+  ...helpTextTrusted,
+  ...helpTextPleb
 ].join("\r");
 
 export interface messageHandleObjectAdmin {
@@ -58,7 +61,7 @@ const leaveVoiceChannel = (message: Message) => {
 
 const writeHelpMessage = async (message: Message) => {
   try {
-    const msg = await message.reply(helpText);
+    const msg = await message.reply(helpTextSpinner);
     message.delete();
     (msg as Message).delete(30000);
   } catch (error) {

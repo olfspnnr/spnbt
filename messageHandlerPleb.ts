@@ -1,6 +1,6 @@
 import { Message, Client } from "discord.js";
 
-const helpText = [
+export const helpTextPleb = [
   "Funktionen für Plebs: ",
   "------------------------",
   "!help - Übersicht",
@@ -29,7 +29,7 @@ const sayHallo = async (message: Message) => {
 
 const writeHelpMessage = async (message: Message) => {
   try {
-    const msg = await message.reply(helpText);
+    const msg = await message.reply(helpTextPleb);
     message.delete();
     (msg as Message).delete(30000);
   } catch (error) {

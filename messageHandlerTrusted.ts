@@ -8,11 +8,12 @@ import {
   VoiceChannel,
   StreamDispatcher
 } from "discord.js";
-import { auth, currentState } from "./bot";
+import { auth, currentState, roleIds, channelIds } from "./bot";
 const auth: auth = require("./auth.json");
 const Twitter = require("twitter");
 import * as ytdl from "ytdl-core";
 import { ReadStream } from "tty";
+import { helpTextPleb } from "./messageHandlerPleb";
 
 export interface commandBlock {
   command: string;
@@ -26,7 +27,7 @@ const twitterClient = new Twitter({
   access_token_secret: auth.access_token_secret
 });
 
-const helpText = [
+export const helpTextTrusted = [
   "Funktionen für Spinner und Trusted: ",
   "------------------------",
   "!help - Übersicht",
@@ -39,7 +40,8 @@ const helpText = [
   "!flachbader - Flachbader Song => !stop um zu beenden",
   "!play url - Spielt Youtube URL ab => !stop um zu beenden",
   '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
-  '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht'
+  '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht',
+  ...helpTextPleb
 ].join("\r");
 
 export interface messageHandleObjectTrusted {
@@ -189,7 +191,7 @@ const listenToHashtag = (message: Message, client: Client) => {
   console.log(`Hört auf: ${hashtag}`);
   message.delete();
   twitterClient.stream("statuses/filter", { track: hashtag }, function(stream: ReadStream) {
-    (client.channels.get("403672009353199620") as TextChannel)
+    (client.channels.get(channelIds.kikaloungeText) as TextChannel)
       .send(`Hört auf: ${hashtag}`)
       .then(msg => {
         (msg as Message).delete(120000);
@@ -197,7 +199,7 @@ const listenToHashtag = (message: Message, client: Client) => {
       .catch(error => console.log(error));
     stream.on("data", function(event: any) {
       if (currentCount >= maxCount) {
-        (client.channels.get("403672009353199620") as TextChannel)
+        (client.channels.get(channelIds.kikaloungeText) as TextChannel)
           .send(`Hört nichtmehr zu`)
           .then(msg => {
             (msg as Message).delete(120000);
@@ -207,7 +209,7 @@ const listenToHashtag = (message: Message, client: Client) => {
       }
       currentCount++;
       console.log(event);
-      (client.channels.get("403672009353199620") as TextChannel)
+      (client.channels.get(channelIds.kikaloungeText) as TextChannel)
         .send(
           `
             ${event.user.name}: ${
@@ -303,8 +305,8 @@ const createCollector = (
     message.channel,
     (m: Message) =>
       m.author.id === message.author.id ||
-      m.member.roles.has("404673483696766978") ||
-      m.member.roles.has("223937179552841728"),
+      m.member.roles.has(roleIds.spinner) ||
+      m.member.roles.has(roleIds.trusted),
     {
       time: timeToDeletion
     }
@@ -434,7 +436,7 @@ export const playAudio = (
 
 const writeHelpMessage = async (message: Message) => {
   try {
-    const msg = await message.reply(helpText);
+    const msg = await message.reply(helpTextTrusted);
     message.delete();
     (msg as Message).delete(30000);
   } catch (error) {

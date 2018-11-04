@@ -7,6 +7,7 @@ import { messageHandleObjectAdmin } from "./messageHandlerAdmin";
 import { messageHandleObjectPleb } from "./messageHandlerPleb";
 
 const auth: auth = require("./auth.json");
+export const { roleIds, userIds, channelIds }: idObject = require("./rolesanduser.json");
 
 export interface auth {
   token: string;
@@ -14,6 +15,34 @@ export interface auth {
   consumer_secret: string;
   access_token_key: string;
   access_token_secret: string;
+}
+
+export interface ChannelIds {
+  halloweltkanalText: string;
+  kikaloungeText: string;
+  kikaloungeVoice: string;
+  donaulimesVoice: string;
+  wanderdorfVoice: string;
+  stilletreppeVoice: string;
+}
+
+export interface Roles {
+  spinner: string;
+  trusted: string;
+}
+
+export interface UserIds {
+  spinbot: string;
+  marcel: string;
+  justus: string;
+  adrian: string;
+  olaf: string;
+}
+
+export interface idObject {
+  roleIds: Roles;
+  userIds: UserIds;
+  channelIds: ChannelIds;
 }
 
 // Create an instance of a Discord client
@@ -35,9 +64,8 @@ export let currentState = {
 // Create an event listener for messages
 client.on("message", message => {
   if (
-    (!message.member.roles.has("404673483696766978") &&
-      !message.member.roles.has("223937179552841728")) ||
-    message.member.user.id === "507244084209909770"
+    (!message.member.roles.has(roleIds.trusted) && !message.member.roles.has(roleIds.spinner)) ||
+    message.member.user.id === userIds.spinbot
   ) {
     return;
   }
@@ -51,9 +79,9 @@ client.on("message", message => {
       )}`
     );
 
-    if (message.member.roles.has("223937179552841728")) {
+    if (message.member.roles.has(roleIds.spinner)) {
       try {
-        (messageHandleObjectAdmin as any)[
+        return (messageHandleObjectAdmin as any)[
           `${message.content.slice(
             0,
             !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
@@ -63,12 +91,9 @@ client.on("message", message => {
         console.log(error);
       }
     }
-    if (
-      message.member.roles.has("223937179552841728") ||
-      message.member.roles.has("404673483696766978")
-    ) {
+    if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
       try {
-        (messageHandleObjectTrusted as any)[
+        return (messageHandleObjectTrusted as any)[
           `${message.content.slice(
             0,
             !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
@@ -79,7 +104,7 @@ client.on("message", message => {
       }
     }
     try {
-      (messageHandleObjectPleb as any)[
+      return (messageHandleObjectPleb as any)[
         `${message.content.slice(
           0,
           !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
@@ -90,11 +115,11 @@ client.on("message", message => {
     }
   } catch (error) {
     console.log(error);
-    if (message.member.user.id === "308998952718565377") {
-      message.react(client.emojis.get("464175049822306304"));
-    } else if (message.member.user.id === "314815200366690304") {
-      message.react(client.emojis.get("498233411102834718"));
-    } else if (message.member.user.id === "220943939845357569") {
+    if (message.member.user.id === userIds.marcel) {
+      message.react(client.emojis.get("508737241443729408"));
+    } else if (message.member.user.id === userIds.justus) {
+      message.react(client.emojis.get("508737241930006561"));
+    } else if (message.member.user.id === userIds.olaf) {
       message.react("💕");
     } else
       return console.log(
