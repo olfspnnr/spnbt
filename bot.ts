@@ -25,6 +25,11 @@ client.on("ready", () => {
   console.log("I am ready!");
 });
 
+export let currentState = {
+  isPlayingAudio: false,
+  isInspiring: false
+};
+
 // Create an event listener for messages
 client.on("message", message => {
   if (

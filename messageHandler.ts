@@ -8,7 +8,7 @@ import {
   VoiceChannel,
   StreamDispatcher
 } from "discord.js";
-import { auth } from "./bot";
+import { auth, currentState } from "./bot";
 const auth: auth = require("./auth.json");
 const Twitter = require("twitter");
 import * as ytdl from "ytdl-core";
@@ -38,16 +38,11 @@ const helpText = [
   "!inspire - Zufällige KI generierter Quote",
   "!inspireMode - Zufällige KI generierter Quote; alle 2 Minuten",
   "!mindful - Zufällige KI generierte Mindful Session",
-  "!flachbader - Flachbader Song",
-  "!play url - Spielt Youtube URL ab",
+  "!flachbader - Flachbader Song => !stop um zu beenden",
+  "!play url - Spielt Youtube URL ab => !stop um zu beenden",
   '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
   '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht'
 ].join("\r");
-
-let currentState = {
-  isPlayingAudio: false,
-  isInspiring: false
-};
 
 export interface messageHandleObject {
   "!test": () => void;
@@ -65,6 +60,8 @@ export interface messageHandleObject {
   rigged: (message: Message, client?: Client) => void;
   "!pin": (message: Message, client?: Client) => void;
   "!wiki": (message: Message, client?: Client) => void;
+  "!leavevoice": (message: Message, client?: Client) => void;
+  "!joinvoice": (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObject = {
@@ -84,12 +81,28 @@ export const messageHandleObject = {
     if (!!~url.indexOf('"')) {
       url = url.replace('"', "");
     }
-    if (!currentState.isPlayingAudio) playAudio(message, url);
+    playAudio(message, true, url);
   },
   rigged: (message: Message, client?: Client) => sendAluHut(message),
   "!pin": (message: Message, client?: Client) => pinMessage(message),
-  "!wiki": (message: Message, client?: Client) => searchInWiki(message)
+  "!wiki": (message: Message, client?: Client) => searchInWiki(message),
+  "!leavevoice": (message: Message, client?: Client) => leaveVoiceChannel(message),
+  "!joinvoice": (message: Message, client?: Client) => enterVoiceChannel(message, client)
 } as messageHandleObject;
+
+const enterVoiceChannel = (message: Message, client: Client) => {
+  const voiceChannel = message.member.voiceChannel;
+  message.delete();
+  return voiceChannel.joinable ? voiceChannel.join().then(connection => connection) : false;
+};
+
+const leaveVoiceChannel = (message: Message) => {
+  const voiceChannel = message.member.voiceChannel;
+  message.delete();
+  if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
+    voiceChannel.connection.disconnect();
+  }
+};
 
 const sendAluHut = (message: Message) => {
   const attachment = new Attachment(
@@ -262,7 +275,6 @@ const sayHallo = async (message: Message) => {
 const playMindfulAudio = (message: Message) => {
   if (!currentState.isPlayingAudio) {
     message.delete();
-    currentState.isPlayingAudio = true;
     fetch("http://inspirobot.me/api?generateFlow=1&sessionID=a473f800-395a-4e38-9766-1227cf8b2299")
       .then(response => response.json())
       .then(data => {
@@ -274,11 +286,11 @@ const playMindfulAudio = (message: Message) => {
             fetch(data.mp3 as any)
               .then(response => response.body)
               .then(stream => {
-                const dispatcher = connection.playStream(stream as any, {
-                  volume: 0.45,
-                  seek: 0
+                playAudio(message, false, "", {
+                  stream: stream,
+                  length:
+                    textAndImages.filter((element: any) => element.type === "stop")[0].time * 1000
                 });
-                console.log(textAndImages);
                 let qoutes = textAndImages.filter((element: any) => element.type === "quote");
                 qoutes.forEach((quote: any) => {
                   setTimeout(
@@ -292,10 +304,6 @@ const playMindfulAudio = (message: Message) => {
                     quote.time * 1000 - 250
                   );
                 });
-                dispatcher.on("end", end => {
-                  // voiceChannel.leave();
-                  currentState.isPlayingAudio = false;
-                });
               })
               .catch(error3 => console.log(error3));
           })
@@ -306,10 +314,10 @@ const playMindfulAudio = (message: Message) => {
 };
 
 const playFlachbader = (message: Message) =>
-  playAudio(message, "https://www.youtube.com/F62LEVZYMog");
+  playAudio(message, true, "https://www.youtube.com/F62LEVZYMog");
 
 const playKnockSound = (message: Message) =>
-  playAudio(message, "https://www.youtube.com/watch?v=ZqNpXJwgO8o");
+  playAudio(message, true, "https://www.youtube.com/watch?v=ZqNpXJwgO8o");
 
 const createCollector = (
   message: Message,
@@ -317,18 +325,30 @@ const createCollector = (
   dispatcher: StreamDispatcher,
   ...triggerMessages: commandBlock[]
 ) => {
-  let collector = new MessageCollector(message.channel, m => m.author.id === message.author.id, {
-    time: timeToDeletion
-  });
+  let triggerMessagesRef = [...triggerMessages];
+  let collector = new MessageCollector(
+    message.channel,
+    (m: Message) =>
+      m.author.id === message.author.id ||
+      m.member.roles.has("404673483696766978") ||
+      m.member.roles.has("223937179552841728"),
+    {
+      time: timeToDeletion
+    }
+  );
   collector.on("collect", (followUpMessage: Message) => {
-    if (
-      followUpMessage.content ===
-      triggerMessages.filter(msg => msg.command === followUpMessage.content)[0].command
-    ) {
-      triggerMessages
-        .filter(msg => msg.command === followUpMessage.content)[0]
-        .function(dispatcher, collector);
-      followUpMessage.delete();
+    try {
+      if (
+        followUpMessage.content ===
+        triggerMessagesRef.filter(msg => msg.command === followUpMessage.content)[0].command
+      ) {
+        triggerMessagesRef
+          .filter(msg => msg.command === followUpMessage.content)[0]
+          .function(dispatcher, collector);
+        followUpMessage.delete();
+      }
+    } catch (error) {
+      console.log(error);
     }
   });
   return collector;
@@ -338,6 +358,7 @@ const createDispatcher = (
   message: Message,
   voiceChannel: VoiceChannel,
   stream: any,
+  length: number,
   ...blocks: commandBlock[]
 ) => {
   let dispatcher = voiceChannel.connection
@@ -350,36 +371,69 @@ const createDispatcher = (
       // voiceChannel.leave();
       currentState.isPlayingAudio = false;
     });
-  return createCollector(message, 15000, dispatcher, ...blocks);
+  return createCollector(message, length * 1000, dispatcher, ...blocks);
 };
 
-const playAudio = (message: Message, url: string) => {
+const playAudio = (
+  message: Message,
+  youtube: boolean,
+  url?: string,
+  audioObject?: { stream: ReadableStream; length: number }
+) => {
+  console.log(currentState);
   if (currentState.isPlayingAudio === false) {
     try {
-      const stream = ytdl(url, {
-        filter: "audioonly"
-      });
-      if (stream === undefined) return;
-      const voiceChannel = message.member.voiceChannel;
-      if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
-        createDispatcher(message, voiceChannel, stream, {
-          command: "!stop",
-          function: (dispatcher, collector) => {
-            dispatcher.end(), collector.stop();
+      if (youtube) {
+        const youtubeStream = ytdl(url, {
+          filter: "audioonly"
+        }).on("info", info => {
+          const voiceChannel = message.member.voiceChannel;
+          if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
+            currentState.isPlayingAudio = true;
+            try {
+              createDispatcher(message, voiceChannel, youtubeStream, info.length_seconds, {
+                command: "!stop",
+                function: (dispatcher, collector) => {
+                  dispatcher.end(), collector.stop();
+                }
+              });
+            } catch (error) {
+              console.log(error);
+            }
+          } else {
+            voiceChannel
+              .join()
+              .then(connection => {
+                currentState.isPlayingAudio = true;
+                try {
+                  createDispatcher(message, voiceChannel, youtubeStream, info.length_seconds, {
+                    command: "!stop",
+                    function: (dispatcher, collector) => {
+                      dispatcher.end(), collector.stop();
+                    }
+                  });
+                } catch (error) {
+                  console.log(error);
+                }
+              })
+              .catch(error => console.log(error));
           }
         });
+        if (youtubeStream === undefined) {
+          console.log("test");
+          return;
+        }
       } else {
-        voiceChannel
-          .join()
-          .then(connection => {
-            createDispatcher(message, voiceChannel, stream, {
-              command: "!stop",
-              function: (dispatcher, collector) => {
-                dispatcher.end(), collector.stop();
-              }
-            });
-          })
-          .catch(error => console.log(error));
+        try {
+          const voiceChannel = message.member.voiceChannel;
+
+          createDispatcher(message, voiceChannel, audioObject.stream, audioObject.length, {
+            command: "!stop",
+            function: (dispatcher, collector) => {
+              dispatcher.end(), collector.stop();
+            }
+          });
+        } catch (error) {}
       }
     } catch (error) {
       console.log(error);
