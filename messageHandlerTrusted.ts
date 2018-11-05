@@ -385,7 +385,7 @@ export const playAudio = (
             try {
               createDispatcher(message, voiceChannel, youtubeStream, volume, info.length_seconds, {
                 command: "!stop",
-                function: (dispatcher, collector) => {
+                function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
                   dispatcher.end(), collector.stop();
                 }
               });
