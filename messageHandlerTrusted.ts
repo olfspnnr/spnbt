@@ -27,37 +27,6 @@ const twitterClient = new Twitter({
   access_token_secret: auth.access_token_secret
 });
 
-export const helpTextTrusted = [
-  "===============",
-  "Funktionen für Spinner und Trusted: ",
-  "------------------------",
-  "!help - Übersicht",
-  "!daddy - Bildniss der Daddygames",
-  "!natalieneu - neuster Tweet",
-  '!twitter "hashtag" - holt sich die 5 neusten Tweets zum Hashtag',
-  "!inspire - Zufällige KI generierter Quote",
-  "!inspireMode - Zufällige KI generierter Quote; alle 2 Minuten",
-  "!mindful - Zufällige KI generierte Mindful Session",
-  "!flachbader - Flachbader Song => !stop um zu beenden",
-  "!play url - Spielt Youtube URL ab => !stop um zu beenden",
-  '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
-  '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht'
-].join("\r");
-
-const writeHelpMessage = async (message: Message) => {
-  try {
-    message.author.createDM().then(channel => {
-      channel.send(helpTextTrusted);
-      channel.send(helpTextPleb);
-      channel.send("------------------------");
-      channel.send("Habe einen schönen Tag!");
-    });
-    message.delete();
-  } catch (error) {
-    return console.log(error);
-  }
-};
-
 export interface messageHandleObjectTrusted {
   "!test": () => void;
   "!daddy": (message: Message, client?: Client) => void;
@@ -72,6 +41,7 @@ export interface messageHandleObjectTrusted {
   rigged: (message: Message, client?: Client) => void;
   "!pin": (message: Message, client?: Client) => void;
   "!wiki": (message: Message, client?: Client) => void;
+  "!wilhelm": (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObjectTrusted = {
@@ -93,8 +63,44 @@ export const messageHandleObjectTrusted = {
   },
   rigged: (message: Message, client?: Client) => sendAluHut(message),
   "!pin": (message: Message, client?: Client) => pinMessage(message),
-  "!wiki": (message: Message, client?: Client) => searchInWiki(message)
+  "!wiki": (message: Message, client?: Client) => searchInWiki(message),
+  "!wilhelm": (message: Message, client?: Client) => playWilhelmScream(message)
 } as messageHandleObjectTrusted;
+
+export const helpTextTrusted = [
+  "===============",
+  "Funktionen für Spinner und Trusted: ",
+  "------------------------",
+  "!help - Übersicht",
+  "!daddy - Bildniss der Daddygames",
+  "!natalieneu - neuster Tweet",
+  '!twitter "hashtag" - holt sich die 5 neusten Tweets zum Hashtag',
+  "!inspire - Zufällige KI generierter Quote",
+  "!inspireMode - Zufällige KI generierter Quote; alle 2 Minuten",
+  "!mindful - Zufällige KI generierte Mindful Session",
+  "!flachbader - Flachbader Song => !stop um zu beenden",
+  "!play url - Spielt Youtube URL ab => !stop um zu beenden",
+  '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
+  '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht',
+  "!wilhelm - spielt einen Willhelm Schrei ab"
+].join("\r");
+
+const writeHelpMessage = async (message: Message) => {
+  try {
+    message.author.createDM().then(channel => {
+      channel.send(helpTextTrusted);
+      channel.send(helpTextPleb);
+      channel.send("------------------------");
+      channel.send("Habe einen schönen Tag!");
+    });
+    message.delete();
+  } catch (error) {
+    return console.log(error);
+  }
+};
+
+const playWilhelmScream = (message: Message) =>
+  playAudio(message, true, "https://www.youtube.com/watch?v=9FHw2aItRlw");
 
 const sendAluHut = (message: Message) => {
   const attachment = new Attachment(
