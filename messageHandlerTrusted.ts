@@ -42,6 +42,7 @@ export interface messageHandleObjectTrusted {
   "!pin": (message: Message, client?: Client) => void;
   "!wiki": (message: Message, client?: Client) => void;
   "!wilhelm": (message: Message, client?: Client) => void;
+  "<:mist:509083062051799050>": (message: Message) => void;
 }
 
 export const messageHandleObjectTrusted = {
@@ -64,7 +65,8 @@ export const messageHandleObjectTrusted = {
   rigged: (message: Message, client?: Client) => sendAluHut(message),
   "!pin": (message: Message, client?: Client) => pinMessage(message),
   "!wiki": (message: Message, client?: Client) => searchInWiki(message),
-  "!wilhelm": (message: Message, client?: Client) => playWilhelmScream(message)
+  "!wilhelm": (message: Message, client?: Client) => playWilhelmScream(message),
+  "<:mist:509083062051799050>": (message: Message) => playMistSound(message)
 } as messageHandleObjectTrusted;
 
 export const helpTextTrusted = [
@@ -82,7 +84,8 @@ export const helpTextTrusted = [
   "!play url - Spielt Youtube URL ab => !stop um zu beenden",
   '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
   '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht',
-  "!wilhelm - spielt einen Willhelm Schrei ab"
+  "!wilhelm - spielt einen Willhelm Schrei ab",
+  ":mist: - spielt Mist Sound ab"
 ].join("\r");
 
 const writeHelpMessage = async (message: Message) => {
@@ -98,6 +101,9 @@ const writeHelpMessage = async (message: Message) => {
     return console.log(error);
   }
 };
+
+const playMistSound = (message: Message) =>
+  playAudio(message, true, "https://www.youtube.com/watch?v=6OVS77TN3yE");
 
 const playWilhelmScream = (message: Message) =>
   playAudio(message, true, "https://www.youtube.com/watch?v=9FHw2aItRlw");

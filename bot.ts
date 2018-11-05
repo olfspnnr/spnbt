@@ -1,5 +1,5 @@
 // Import the discord.js module
-import { Client } from "discord.js";
+import { Client, DMChannel } from "discord.js";
 import "isomorphic-fetch";
 import "opusscript";
 import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
@@ -63,14 +63,8 @@ export let currentState = {
 
 // Create an event listener for messages
 client.on("message", message => {
-  if (message.guild === null) {
+  if (message.guild === null && message.channel instanceof DMChannel) {
     return console.log(`directMessage => ${message.author.username}: ${message.content}`);
-  }
-  if (
-    (!message.member.roles.has(roleIds.trusted) && !message.member.roles.has(roleIds.spinner)) ||
-    message.member.user.id === userIds.spinbot
-  ) {
-    return;
   }
   try {
     console.log(`${message.member.displayName}/${message.member.user.username}: ${message.content}
@@ -112,17 +106,18 @@ client.on("message", message => {
     }
     if (typeof possibleFunction === "function") {
       return possibleFunction(message, client);
+    } else {
+      if (message.member.user.id === userIds.marcel) {
+        message.react(client.emojis.get("508737241930006561"));
+      }
+      if (message.member.user.id === userIds.justus) {
+        message.react(client.emojis.get("508737241443729408"));
+      }
+      if (message.member.user.id === userIds.olaf) {
+        message.react("💕");
+      }
     }
   } catch (error) {
-    if (message.member.user.id === userIds.marcel) {
-      message.react(client.emojis.get("508737241443729408"));
-    }
-    if (message.member.user.id === userIds.justus) {
-      message.react(client.emojis.get("508737241930006561"));
-    }
-    if (message.member.user.id === userIds.olaf) {
-      message.react("💕");
-    }
     // console.log(error);
     return console.log(
       `Konnte nicht verarbeiten: ${message.content.slice(
