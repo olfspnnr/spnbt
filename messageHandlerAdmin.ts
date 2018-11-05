@@ -1,4 +1,4 @@
-import { Message, Client, ChannelLogsQueryOptions } from "discord.js";
+import { Message, Client, ChannelLogsQueryOptions, StreamDispatcher } from "discord.js";
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 
@@ -10,6 +10,7 @@ export interface messageHandleObjectAdmin {
   "!cheer": (message: Message, client?: Client) => void;
   "!playLoud": (message: Message, client?: Client) => void;
   "!clearFails": (message: Message, client?: Client) => void;
+  "!testfunction": (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObjectAdmin = {
@@ -25,7 +26,8 @@ export const messageHandleObjectAdmin = {
     }
     playAudio(message, true, url, undefined, 1);
   },
-  "!clearFails": (message: Message, client?: Client) => clearFailedCommands(message, client)
+  "!clearFails": (message: Message, client?: Client) => clearFailedCommands(message, client),
+  "!testfunction": (message: Message, client?: Client) => executeTestFunction(message, client)
 } as messageHandleObjectAdmin;
 
 export const helpTextSpinner = [
@@ -38,7 +40,8 @@ export const helpTextSpinner = [
   "!knock - spielt Klopfgeräusch ab",
   "!cheer - spielt weiblichen Jubel ab",
   "!playLoud - gleich wie !play, nur laut",
-  "!clearFails - löscht alle gefailten commands"
+  "!clearFails - löscht alle gefailten commands",
+  "!testfunction - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen"
 ].join("\r");
 
 const writeHelpMessage = async (message: Message) => {
@@ -54,6 +57,14 @@ const writeHelpMessage = async (message: Message) => {
   } catch (error) {
     return console.log(error);
   }
+};
+
+const executeTestFunction = (message: Message, client: Client) => {
+  message.delete();
+  const broadcast = client.createVoiceBroadcast();
+  broadcast.on("subscribe", (dispatcher: StreamDispatcher) => {
+    console.log("subscribed");
+  });
 };
 
 const playCheer = (message: Message) =>

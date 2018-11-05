@@ -118,7 +118,7 @@ client.on("message", message => {
       }
     }
   } catch (error) {
-    // console.log(error);
+    console.log(error);
     return console.log(
       `Konnte nicht verarbeiten: ${message.content.slice(
         0,
