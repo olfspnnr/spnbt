@@ -380,6 +380,7 @@ export const playAudio = (
           filter: "audioonly"
         }).on("info", info => {
           const voiceChannel = message.member.voiceChannel;
+          if(voiceChannel === undefined || voiceChannel === null) return console.log("Voicechannel ist undefined");
           if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
             currentState.isPlayingAudio = true;
             try {
