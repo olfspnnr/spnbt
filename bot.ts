@@ -24,6 +24,7 @@ export interface ChannelIds {
   donaulimesVoice: string;
   wanderdorfVoice: string;
   stilletreppeVoice: string;
+  inspirationText: string;
 }
 
 export interface Roles {

@@ -50,9 +50,9 @@ export const messageHandleObjectTrusted = {
   "!test": () => console.log("Hallo welt!"),
   "!daddy": async (message: Message, client?: Client) => sendDaddyImage(message),
   "!twitter": (message: Message, client?: Client) => listenToHashtag(message, client),
-  "!natalieneu": (message: Message, client?: Client) => listenToNatalieRosenke(message),
-  "!inspireMode": (message: Message, client?: Client) => inspireMode(message),
-  "!inspire": (message: Message, client?: Client) => sendInspiringMessage(message),
+  "!natalieneu": (message: Message, client?: Client) => getNatalieRosenke(message),
+  "!inspireMode": (message: Message, client?: Client) => inspireMode(message, client),
+  "!inspire": (message: Message, client?: Client) => sendInspiringMessage(message, client),
   "!mindful": (message: Message, client?: Client) => playMindfulAudio(message),
   "!flachbader": (message: Message, client?: Client) => playFlachbader(message),
   "!play": (message: Message, client?: Client) => {
@@ -155,9 +155,8 @@ const searchInWiki = (message: Message) => {
         message
           .reply(
             `will wissen, 'was ist ${searchTerm} tho?' => \r ${headLines
-              .map(
-                (headline: string, idx: number) =>
-                  !~descriptions[idx].indexOf(`steht für:`) ? idx + ": " + headline + "\r " : ""
+              .map((headline: string, idx: number) =>
+                !~descriptions[idx].indexOf(`steht für:`) ? idx + ": " + headline + "\r " : ""
               )
               .join("")}`
           )
@@ -193,7 +192,7 @@ const searchInWiki = (message: Message) => {
   }
 };
 
-const listenToNatalieRosenke = (message: Message) =>
+const getNatalieRosenke = (message: Message) =>
   twitterClient.get(
     "statuses/user_timeline",
     { user_id: "1053658318743441408", count: 3 },
@@ -310,10 +309,10 @@ const playMindfulAudio = (message: Message) => {
 const playFlachbader = (message: Message) =>
   playAudio(message, true, "https://www.youtube.com/F62LEVZYMog");
 
-const createCollector = (
+export const createCollector = (
   message: Message,
   timeToDeletion: number,
-  dispatcher: StreamDispatcher,
+  externalProptertyForFunction?: any,
   ...triggerMessages: commandBlock[]
 ) => {
   let triggerMessagesRef = [...triggerMessages];
@@ -335,7 +334,7 @@ const createCollector = (
       ) {
         triggerMessagesRef
           .filter(msg => msg.command === followUpMessage.content)[0]
-          .function(dispatcher, collector);
+          .function(externalProptertyForFunction, collector);
         followUpMessage.delete();
       }
     } catch (error) {
@@ -380,7 +379,8 @@ export const playAudio = (
           filter: "audioonly"
         }).on("info", info => {
           const voiceChannel = message.member.voiceChannel;
-          if(voiceChannel === undefined || voiceChannel === null) return console.log("Voicechannel ist undefined");
+          if (voiceChannel === undefined || voiceChannel === null)
+            return console.log("Voicechannel ist undefined");
           if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
             currentState.isPlayingAudio = true;
             try {
@@ -451,13 +451,13 @@ export const playAudio = (
   }
 };
 
-const inspireMode = (message: Message) => {
+const inspireMode = (message: Message, client: Client) => {
   if (!currentState.isInspiring) {
     let messageCopy = { ...message } as Message;
-    return sendInspiringMessage(message)
+    return sendInspiringMessage(message, client)
       .then(() => {
         currentState.isInspiring = true;
-        return repeatInspire(messageCopy);
+        return repeatInspire(messageCopy, client);
       })
       .catch(error => console.error(error));
   } else {
@@ -471,11 +471,19 @@ const inspireMode = (message: Message) => {
   }
 };
 
-const repeatInspire: (message: Message) => void = (message: Message) => {
-  return setTimeout(() => sendInspiringMessage(message).then(() => repeatInspire(message)), 120000);
-};
+const repeatInspire: (message: Message, client: Client) => void = (
+  message: Message,
+  client: Client
+) =>
+  setTimeout(
+    () =>
+      sendInspiringMessage(message, client).then((attachment: MessageOptions) =>
+        repeatInspire(message, client)
+      ),
+    120000
+  );
 
-const sendInspiringMessage = (message: Message) =>
+const sendInspiringMessage = (message: Message, client: Client) =>
   new Promise((resolve, reject) => {
     fetch("http://inspirobot.me/api?generate=true")
       .then(response => response.text())
@@ -485,9 +493,28 @@ const sendInspiringMessage = (message: Message) =>
         message.channel
           .send(attachment as MessageOptions)
           .then(msg => {
+            createCollector(
+              message,
+              120 * 1000,
+              undefined,
+              {
+                command: "!save",
+                function: () => {
+                  (client.channels.get(channelIds.inspirationText) as TextChannel).send(attachment);
+                  message.channel.send(`Bild gespeichert im dedizierten Inspirationskanal`);
+                }
+              },
+              {
+                command: "!inspire",
+                function: (extProp: any, collector: MessageCollector) => {
+                  collector.stop();
+                }
+              }
+            );
             if (message.delete) message.delete();
+            console.log(data);
             (msg as Message).delete(120000);
-            return resolve();
+            return resolve(attachment as MessageOptions);
           })
           .catch(error => reject(error));
       });

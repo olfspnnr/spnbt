@@ -1,5 +1,5 @@
 import { Message, Client, ChannelLogsQueryOptions, StreamDispatcher } from "discord.js";
-import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
+import { playAudio, helpTextTrusted, createCollector, commandBlock } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 
 export interface messageHandleObjectAdmin {
