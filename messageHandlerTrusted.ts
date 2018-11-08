@@ -502,11 +502,14 @@ const sendInspiringMessage = (message: Message, client: Client) =>
               undefined,
               {
                 command: "!save",
-                function: () => {
+                function: (extProp: any, collector: MessageCollector) => {
                   (client.channels.get(channelIds.inspirationText) as TextChannel).send(attachment);
                   message.channel
                     .send(`Bild gespeichert im dedizierten Inspirationskanal`)
-                    .then((saveMsg: Message) => saveMsg.delete(8000));
+                    .then((saveMsg: Message) => {
+                      collector.stop();
+                      saveMsg.delete(8000);
+                    });
                 }
               },
               {
