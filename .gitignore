@@ -1,12 +1,9 @@
 auth.json
 node_modules
-bot.js
-messageHandler.js
-bot.js.map
 test.json
 package-lock.json
 package.json
-messageHandlerAdmin.js
-messageHandlerTrusted.js
-messageHandlerPleb.js
 rolesanduser.json
+# Ignores compiled TypeScript files
+/**/*.map
+**/*.js
