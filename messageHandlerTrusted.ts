@@ -155,8 +155,9 @@ const searchInWiki = (message: Message) => {
         message
           .reply(
             `will wissen, 'was ist ${searchTerm} tho?' => \r ${headLines
-              .map((headline: string, idx: number) =>
-                !~descriptions[idx].indexOf(`steht für:`) ? idx + ": " + headline + "\r " : ""
+              .map(
+                (headline: string, idx: number) =>
+                  !~descriptions[idx].indexOf(`steht für:`) ? idx + ": " + headline + "\r " : ""
               )
               .join("")}`
           )
@@ -328,15 +329,17 @@ export const createCollector = (
   );
   collector.on("collect", (followUpMessage: Message) => {
     try {
-      if (
-        followUpMessage.content ===
-        triggerMessagesRef.filter(msg => msg.command === followUpMessage.content)[0].command
-      ) {
-        triggerMessagesRef
-          .filter(msg => msg.command === followUpMessage.content)[0]
-          .function(externalProptertyForFunction, collector);
-        followUpMessage.delete();
-      }
+      if (triggerMessagesRef.filter(msg => msg.command === followUpMessage.content)[0]) {
+        if (
+          followUpMessage.content ===
+          triggerMessagesRef.filter(msg => msg.command === followUpMessage.content)[0].command
+        ) {
+          triggerMessagesRef
+            .filter(msg => msg.command === followUpMessage.content)[0]
+            .function(externalProptertyForFunction, collector);
+          followUpMessage.delete();
+        }
+      } else return console.log("Keine Funktion gefunden");
     } catch (error) {
       console.log(error);
     }
@@ -501,7 +504,9 @@ const sendInspiringMessage = (message: Message, client: Client) =>
                 command: "!save",
                 function: () => {
                   (client.channels.get(channelIds.inspirationText) as TextChannel).send(attachment);
-                  message.channel.send(`Bild gespeichert im dedizierten Inspirationskanal`);
+                  message.channel
+                    .send(`Bild gespeichert im dedizierten Inspirationskanal`)
+                    .then((saveMsg: Message) => saveMsg.delete(8000));
                 }
               },
               {
