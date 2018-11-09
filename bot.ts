@@ -37,6 +37,7 @@ export interface UserIds {
   marcel: string;
   justus: string;
   adrian: string;
+  nils: string;
   olaf: string;
 }
 
@@ -124,13 +125,18 @@ client.on("message", message => {
       return possibleFunction(message, client);
     } else {
       if (message.member.user.id === userIds.marcel) {
-        message.react(client.emojis.get("508737241930006561"));
+        message
+          .react(client.emojis.get("508737241930006561"))
+          .then(() => message.react(client.emojis.get("510584011781963786")));
       }
       if (message.member.user.id === userIds.justus) {
         message.react(client.emojis.get("508737241443729408"));
       }
       if (message.member.user.id === userIds.olaf) {
         message.react("💕");
+      }
+      if (message.member.user.id === userIds.nils) {
+        message.react(client.emojis.get("510584011781963786"));
       }
     }
   } catch (error) {
