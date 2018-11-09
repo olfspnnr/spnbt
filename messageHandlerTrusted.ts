@@ -43,6 +43,7 @@ export interface messageHandleObjectTrusted {
   "!wiki": (message: Message, client?: Client) => void;
   "!wilhelm": (message: Message, client?: Client) => void;
   "<:mist:509083062051799050>": (message: Message) => void;
+  "!fault": (message: Message) => void;
 }
 
 export const messageHandleObjectTrusted = {
@@ -66,7 +67,8 @@ export const messageHandleObjectTrusted = {
   "!pin": (message: Message, client?: Client) => pinMessage(message),
   "!wiki": (message: Message, client?: Client) => searchInWiki(message),
   "!wilhelm": (message: Message, client?: Client) => playWilhelmScream(message),
-  "<:mist:509083062051799050>": (message: Message) => playMistSound(message)
+  "<:mist:509083062051799050>": (message: Message) => playMistSound(message),
+  "!fault": (message: Message) => playItsNotYourFault(message)
 } as messageHandleObjectTrusted;
 
 export const helpTextTrusted = [
@@ -85,7 +87,8 @@ export const helpTextTrusted = [
   '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
   '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht',
   "!wilhelm - spielt einen Willhelm Schrei ab",
-  ":mist: - spielt Mist Sound ab"
+  ":mist: - spielt Mist Sound ab",
+  "!fault - spielt die weltberühmte Szene aus dem Klassiker 'Good Will Hunting' ab."
 ].join("\r");
 
 const writeHelpMessage = async (message: Message) => {
@@ -101,6 +104,9 @@ const writeHelpMessage = async (message: Message) => {
     return console.log(error);
   }
 };
+
+const playItsNotYourFault = (message: Message) =>
+  playAudio(message, true, "https://www.youtube.com/watch?v=wklDd8o8HFQ");
 
 const playMistSound = (message: Message) =>
   playAudio(message, true, "https://www.youtube.com/watch?v=6OVS77TN3yE");
@@ -155,9 +161,8 @@ const searchInWiki = (message: Message) => {
         message
           .reply(
             `will wissen, 'was ist ${searchTerm} tho?' => \r ${headLines
-              .map(
-                (headline: string, idx: number) =>
-                  !~descriptions[idx].indexOf(`steht für:`) ? idx + ": " + headline + "\r " : ""
+              .map((headline: string, idx: number) =>
+                !~descriptions[idx].indexOf(`steht für:`) ? idx + ": " + headline + "\r " : ""
               )
               .join("")}`
           )

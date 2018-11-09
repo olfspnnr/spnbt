@@ -1,6 +1,13 @@
-import { Message, Client, ChannelLogsQueryOptions, StreamDispatcher } from "discord.js";
+import {
+  Message,
+  Client,
+  ChannelLogsQueryOptions,
+  StreamDispatcher,
+  TextChannel
+} from "discord.js";
 import { playAudio, helpTextTrusted, createCollector, commandBlock } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
+import { channelIds } from "./bot";
 
 export interface messageHandleObjectAdmin {
   "!help": (message: Message, client?: Client) => void;
@@ -60,11 +67,7 @@ const writeHelpMessage = async (message: Message) => {
 };
 
 const executeTestFunction = (message: Message, client: Client) => {
-  message.delete();
-  const broadcast = client.createVoiceBroadcast();
-  broadcast.on("subscribe", (dispatcher: StreamDispatcher) => {
-    console.log("subscribed");
-  });
+  message.delete(250);
 };
 
 const playCheer = (message: Message) =>

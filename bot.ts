@@ -1,5 +1,5 @@
 // Import the discord.js module
-import { Client, DMChannel } from "discord.js";
+import { Client, DMChannel, TextChannel } from "discord.js";
 import "isomorphic-fetch";
 import "opusscript";
 import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
@@ -49,18 +49,33 @@ export interface idObject {
 // Create an instance of a Discord client
 const client = new Client();
 
-/**
- * The ready event is vital, it means that only _after_ this will your bot start reacting to information
- * received from Discord
- */
-client.on("ready", () => {
-  console.log("I am ready!");
-});
-
 export let currentState = {
   isPlayingAudio: false,
   isInspiring: false
 };
+
+/**
+ * The ready event is vital, it means that only _after_ this will your bot start reacting to information
+ * received from Discord
+ */
+
+client.on("ready", () => {
+  console.log("I am ready!");
+});
+
+client.on("voiceStateUpdate", (oldMember, newMember) => {
+  if (oldMember.voiceChannel === undefined && newMember !== undefined) {
+    (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
+      `${newMember.user.username}/${newMember.displayName} joined.`
+    );
+  } else if (newMember.voiceChannel === undefined) {
+    (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
+      `${oldMember.user.username}/${oldMember.displayName} left.`
+    );
+  } else {
+    return console.log("Konnte nicht entscheiden was passiert ist");
+  }
+});
 
 // Create an event listener for messages
 client.on("message", message => {
