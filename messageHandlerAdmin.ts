@@ -78,6 +78,7 @@ const executeTestFunction = (message: Message, client: Client) => {
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {
   message.delete(250);
   let userToMoveId = message.content.slice(0, "!keepAndMove ".length);
+  console.log(userToMoveId);
   message.guild.fetchMember(userToMoveId).then(member => {
     member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
       message.member.setDeaf(true);
