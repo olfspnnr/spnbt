@@ -114,6 +114,9 @@ const playMistSound = (message: Message) =>
 const playWilhelmScream = (message: Message) =>
   playAudio(message, true, "https://www.youtube.com/watch?v=9FHw2aItRlw");
 
+const playFlachbader = (message: Message) =>
+  playAudio(message, true, "https://www.youtube.com/F62LEVZYMog");
+
 const sendAluHut = (message: Message) => {
   const attachment = new Attachment(
     "https://images-na.ssl-images-amazon.com/images/I/71GV79NPpZL._UX425_.jpg"
@@ -312,9 +315,6 @@ const playMindfulAudio = (message: Message) => {
   }
 };
 
-const playFlachbader = (message: Message) =>
-  playAudio(message, true, "https://www.youtube.com/F62LEVZYMog");
-
 export const createCollector = (
   message: Message,
   timeToDeletion: number,
@@ -369,7 +369,10 @@ const createDispatcher = (
       // voiceChannel.leave();
       currentState.isPlayingAudio = false;
     });
-  return createCollector(message, length * 1000, dispatcher, ...blocks);
+  return {
+    collector: createCollector(message, length * 1000, dispatcher, ...blocks),
+    dispatcher: dispatcher
+  };
 };
 
 export const playAudio = (
@@ -378,103 +381,118 @@ export const playAudio = (
   url?: string,
   audioObject?: { stream: ReadableStream; length: number },
   volume?: number | undefined
-) => {
-  console.log(currentState);
-  if (currentState.isPlayingAudio === false) {
-    try {
-      if (youtube) {
-        const youtubeStream = ytdl(url, {
-          filter: "audioonly"
-        }).on("info", info => {
-          const voiceChannel = message.member.voiceChannel;
-          if (voiceChannel === undefined || voiceChannel === null) {
-            message.member
-              .createDM()
-              .then(dmChannel =>
-                dmChannel.send(
-                  "Du kannst keine Sounds abspielen, wenn du dich nicht in einem Voicechannel befindest."
-                )
-              );
-            return console.log("Voicechannel ist undefined");
-          }
-
-          if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
-            currentState.isPlayingAudio = true;
-            try {
-              createDispatcher(message, voiceChannel, youtubeStream, volume, info.length_seconds, {
-                command: "!stop",
-                function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
-                  dispatcher.end();
-                  collector.stop();
-                  youtubeStream.destroy();
-                }
-              });
-            } catch (error) {
-              console.log(error);
+) =>
+  new Promise((resolve, reject) => {
+    console.log(currentState);
+    if (currentState.isPlayingAudio === false) {
+      try {
+        let dispatcher: StreamDispatcher;
+        if (youtube) {
+          const youtubeStream = ytdl(url, {
+            filter: "audioonly"
+          }).on("info", info => {
+            const voiceChannel = message.member.voiceChannel;
+            if (voiceChannel === undefined || voiceChannel === null) {
+              message.member
+                .createDM()
+                .then(dmChannel =>
+                  dmChannel.send(
+                    "Du kannst keine Sounds abspielen, wenn du dich nicht in einem Voicechannel befindest."
+                  )
+                );
+              return console.log("Voicechannel ist undefined");
             }
-          } else {
-            voiceChannel
-              .join()
-              .then(connection => {
-                currentState.isPlayingAudio = true;
-                try {
-                  createDispatcher(
-                    message,
-                    voiceChannel,
-                    youtubeStream,
-                    volume,
-                    info.length_seconds,
-                    {
-                      command: "!stop",
-                      function: (dispatcher, collector) => {
-                        dispatcher.end();
-                        collector.stop();
-                        youtubeStream.destroy();
-                      }
-                    }
-                  );
-                } catch (error) {
-                  console.log(error);
-                }
-              })
-              .catch(error => console.log(error));
-          }
-        });
-        if (youtubeStream === undefined) {
-          console.log("test");
-          return;
-        }
-        youtubeStream.on("end", () => youtubeStream && youtubeStream.destroy());
-        youtubeStream.on("error", error => console.log(error));
-        youtubeStream.on("close", () => youtubeStream && youtubeStream.destroy());
-      } else {
-        try {
-          const voiceChannel = message.member.voiceChannel;
 
-          createDispatcher(message, voiceChannel, audioObject.stream, volume, audioObject.length, {
-            command: "!stop",
-            function: (dispatcher: StreamDispatcher, collector) => {
-              dispatcher.end();
-              collector.stop();
+            if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
+              currentState.isPlayingAudio = true;
+              try {
+                dispatcher = createDispatcher(
+                  message,
+                  voiceChannel,
+                  youtubeStream,
+                  volume,
+                  info.length_seconds,
+                  {
+                    command: "!stop",
+                    function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
+                      collector.stop();
+                      youtubeStream.destroy();
+                      return resolve(() => dispatcher.end());
+                    }
+                  }
+                ).dispatcher.on("end", () => resolve());
+              } catch (error) {
+                console.log(error);
+              }
+            } else {
+              voiceChannel
+                .join()
+                .then(connection => {
+                  currentState.isPlayingAudio = true;
+                  try {
+                    dispatcher = createDispatcher(
+                      message,
+                      voiceChannel,
+                      youtubeStream,
+                      volume,
+                      info.length_seconds,
+                      {
+                        command: "!stop",
+                        function: (dispatcher, collector) => {
+                          collector.stop();
+                          youtubeStream.destroy();
+                          return resolve(() => dispatcher.end());
+                        }
+                      }
+                    ).dispatcher.on("end", () => resolve());
+                  } catch (error) {
+                    console.log(error);
+                  }
+                })
+                .catch(error => console.log(error));
             }
           });
-        } catch (error) {}
+          if (youtubeStream === undefined) {
+            console.log("test");
+            return;
+          }
+          dispatcher && dispatcher.on("end", () => resolve(() => {}));
+          youtubeStream.on("error", error => reject(error));
+        } else {
+          try {
+            const voiceChannel = message.member.voiceChannel;
+
+            dispatcher = createDispatcher(
+              message,
+              voiceChannel,
+              audioObject.stream,
+              volume,
+              audioObject.length,
+              {
+                command: "!stop",
+                function: (dispatcher: StreamDispatcher, collector) => {
+                  collector.stop();
+                  return resolve(() => dispatcher.end());
+                }
+              }
+            ).dispatcher.on("end", () => resolve());
+          } catch (error) {}
+        }
+      } catch (error) {
+        console.log(error);
+        currentState.isPlayingAudio = false;
+        message.channel
+          .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
+          .then(msg => {
+            message.delete();
+            (msg as Message).delete(8000);
+          })
+          .catch(error => console.log(error));
       }
-    } catch (error) {
-      console.log(error);
-      currentState.isPlayingAudio = false;
-      message.channel
-        .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
-        .then(msg => {
-          message.delete();
-          (msg as Message).delete(8000);
-        })
-        .catch(error => console.log(error));
+    } else {
+      return console.log("Already playing Audio");
     }
-  } else {
-    return console.log("Already playing Audio");
-  }
-};
+  });
 
 const inspireMode = (message: Message, client: Client) => {
   if (!currentState.isInspiring) {
