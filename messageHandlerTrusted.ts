@@ -6,7 +6,8 @@ import {
   TextChannel,
   MessageCollector,
   VoiceChannel,
-  StreamDispatcher
+  StreamDispatcher,
+  GuildMember
 } from "discord.js";
 import { auth, currentState, roleIds, channelIds } from "./bot";
 const auth: auth = require("./auth.json");
@@ -387,15 +388,26 @@ export const playAudio = (
           filter: "audioonly"
         }).on("info", info => {
           const voiceChannel = message.member.voiceChannel;
-          if (voiceChannel === undefined || voiceChannel === null)
+          if (voiceChannel === undefined || voiceChannel === null) {
+            message.member
+              .createDM()
+              .then(dmChannel =>
+                dmChannel.send(
+                  "Du kannst keine Sounds abspielen, wenn du dich nicht in einem Voicechannel befindest."
+                )
+              );
             return console.log("Voicechannel ist undefined");
+          }
+
           if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
             currentState.isPlayingAudio = true;
             try {
               createDispatcher(message, voiceChannel, youtubeStream, volume, info.length_seconds, {
                 command: "!stop",
                 function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
-                  dispatcher.end(), collector.stop();
+                  dispatcher.end();
+                  collector.stop();
+                  youtubeStream.destroy();
                 }
               });
             } catch (error) {
@@ -416,7 +428,9 @@ export const playAudio = (
                     {
                       command: "!stop",
                       function: (dispatcher, collector) => {
-                        dispatcher.end(), collector.stop();
+                        dispatcher.end();
+                        collector.stop();
+                        youtubeStream.destroy();
                       }
                     }
                   );
@@ -431,14 +445,18 @@ export const playAudio = (
           console.log("test");
           return;
         }
+        youtubeStream.on("end", () => youtubeStream && youtubeStream.destroy());
+        youtubeStream.on("error", error => console.log(error));
+        youtubeStream.on("close", () => youtubeStream && youtubeStream.destroy());
       } else {
         try {
           const voiceChannel = message.member.voiceChannel;
 
           createDispatcher(message, voiceChannel, audioObject.stream, volume, audioObject.length, {
             command: "!stop",
-            function: (dispatcher, collector) => {
-              dispatcher.end(), collector.stop();
+            function: (dispatcher: StreamDispatcher, collector) => {
+              dispatcher.end();
+              collector.stop();
             }
           });
         } catch (error) {}
