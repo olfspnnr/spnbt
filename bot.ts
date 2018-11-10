@@ -1,10 +1,11 @@
 // Import the discord.js module
-import { Client, DMChannel, TextChannel } from "discord.js";
+import { Client, DMChannel, TextChannel, MessageCollector, Message } from "discord.js";
 import "isomorphic-fetch";
 import "opusscript";
-import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
+import { messageHandleObjectTrusted, createCollector } from "./messageHandlerTrusted";
 import { messageHandleObjectAdmin } from "./messageHandlerAdmin";
 import { messageHandleObjectPleb } from "./messageHandlerPleb";
+import { reactionDeletionHandler } from "./shared";
 
 const auth: auth = require("./auth.json");
 export const { roleIds, userIds, channelIds }: idObject = require("./rolesanduser.json");
@@ -125,18 +126,25 @@ client.on("message", message => {
       return possibleFunction(message, client);
     } else {
       if (message.member.user.id === userIds.marcel) {
-        message
-          .react(client.emojis.get("508737241930006561"))
-          .then(() => message.react(client.emojis.get("510584011781963786")));
+        message.react(client.emojis.get("508737241930006561")).then(firstReaction => {
+          reactionDeletionHandler(message, firstReaction);
+          message
+            .react(client.emojis.get("510584011781963786"))
+            .then(secondReaction => reactionDeletionHandler(message, secondReaction));
+        });
       }
       if (message.member.user.id === userIds.justus) {
-        message.react(client.emojis.get("508737241443729408"));
+        message
+          .react(client.emojis.get("508737241443729408"))
+          .then(reaction => reactionDeletionHandler(message, reaction));
       }
       if (message.member.user.id === userIds.olaf) {
-        message.react("💕");
+        message.react("💕").then(reaction => reactionDeletionHandler(message, reaction));
       }
       if (message.member.user.id === userIds.nils) {
-        message.react(client.emojis.get("510584011781963786"));
+        message
+          .react(client.emojis.get("510584011781963786"))
+          .then(reaction => reactionDeletionHandler(message, reaction));
       }
     }
   } catch (error) {
