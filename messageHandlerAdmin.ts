@@ -76,6 +76,7 @@ const executeTestFunction = (message: Message, client: Client) => {
 };
 
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {
+  message.delete(250);
   message.member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
     client.on("voiceStateUpdate", (oldMember, newMember) => {
       if (member.id === oldMember.id && member.id === newMember.id) {
