@@ -77,26 +77,29 @@ const executeTestFunction = (message: Message, client: Client) => {
 
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {
   message.delete(250);
-  message.member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
-    message.member.setDeaf(true);
-    client.on("voiceStateUpdate", (oldMember, newMember) => {
-      if (member.id === oldMember.id && member.id === newMember.id) {
-        if (
-          oldMember.voiceChannel &&
-          newMember.voiceChannel &&
-          oldMember.voiceChannel.id !== newMember.voiceChannel.id
-        ) {
-          message.member.setVoiceChannel(channelIds.stilletreppeVoice);
-        } else {
-          return console.log("User nicht verschoben ");
+  let userToMoveId = message.content.slice(0, "!keepAndMove".length);
+  message.guild.fetchMember(userToMoveId).then(member => {
+    member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
+      message.member.setDeaf(true);
+      client.on("voiceStateUpdate", (oldMember, newMember) => {
+        if (member.id === oldMember.id && member.id === newMember.id) {
+          if (
+            oldMember.voiceChannel &&
+            newMember.voiceChannel &&
+            oldMember.voiceChannel.id !== newMember.voiceChannel.id
+          ) {
+            message.member.setVoiceChannel(channelIds.stilletreppeVoice);
+          } else {
+            return console.log("User nicht verschoben ");
+          }
         }
-      }
+      });
+      member
+        .createDM()
+        .then((channel: DMChannel) =>
+          channel.send("Du wurdest in den Stille Treppe Kanal verschoben")
+        );
     });
-    member
-      .createDM()
-      .then((channel: DMChannel) =>
-        channel.send("Du wurdest in den Stille Treppe Kanal verschoben")
-      );
   });
 };
 
