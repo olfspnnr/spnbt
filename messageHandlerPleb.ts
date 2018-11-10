@@ -2,7 +2,7 @@ import { Message, Client } from "discord.js";
 
 export const helpTextPleb = [
   "===============",
-  "Funktionen für Plebs: ",
+  "Funktionen für Uninitierte: ",
   "------------------------",
   "!help - Übersicht",
   "!hallo - lass dich begrüßen"
@@ -13,7 +13,7 @@ const writeHelpMessage = async (message: Message) => {
     message.author.createDM().then(channel => {
       channel.send(helpTextPleb);
       channel.send("------------------------");
-      channel.send("Habe einen schönen Tag!");
+      channel.send(`Habe einen schönen Tag ${message.author.username}!`);
     });
     message.delete();
   } catch (error) {

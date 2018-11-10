@@ -3,7 +3,9 @@ import {
   Client,
   ChannelLogsQueryOptions,
   StreamDispatcher,
-  TextChannel
+  TextChannel,
+  GuildMember,
+  DMChannel
 } from "discord.js";
 import { playAudio, helpTextTrusted, createCollector, commandBlock } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
@@ -17,6 +19,7 @@ export interface messageHandleObjectAdmin {
   "!cheer": (message: Message, client?: Client) => void;
   "!playLoud": (message: Message, client?: Client) => void;
   "!clearFails": (message: Message, client?: Client) => void;
+  "!moveAndKeep": (message: Message, client?: Client) => void;
   "!testfunction": (message: Message, client?: Client) => void;
 }
 
@@ -34,6 +37,7 @@ export const messageHandleObjectAdmin = {
     playAudio(message, true, url, undefined, 1);
   },
   "!clearFails": (message: Message, client?: Client) => clearFailedCommands(message, client),
+  "!moveAndKeep": (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
   "!testfunction": (message: Message, client?: Client) => executeTestFunction(message, client)
 } as messageHandleObjectAdmin;
 
@@ -48,6 +52,7 @@ export const helpTextSpinner = [
   "!cheer - spielt weiblichen Jubel ab",
   "!playLoud - gleich wie !play, nur laut",
   "!clearFails - löscht alle gefailten commands",
+  "!moveAndKeep  - Moved einen User in die Stille Treppe und behält ihn dort",
   "!testfunction - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen"
 ].join("\r");
 
@@ -58,7 +63,7 @@ const writeHelpMessage = async (message: Message) => {
       channel.send(helpTextTrusted);
       channel.send(helpTextPleb);
       channel.send("------------------------");
-      channel.send("Habe einen schönen Tag!");
+      channel.send(`Habe einen schönen Tag ${message.author.username}!`);
     });
     message.delete();
   } catch (error) {
@@ -68,6 +73,29 @@ const writeHelpMessage = async (message: Message) => {
 
 const executeTestFunction = (message: Message, client: Client) => {
   message.delete(250);
+};
+
+const moveAndKeepUserInChannel = (message: Message, client: Client) => {
+  message.member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
+    client.on("voiceStateUpdate", (oldMember, newMember) => {
+      if (member.id === oldMember.id && member.id === newMember.id) {
+        if (
+          oldMember.voiceChannel &&
+          newMember.voiceChannel &&
+          oldMember.voiceChannel.id !== newMember.voiceChannel.id
+        ) {
+          message.member.setVoiceChannel(channelIds.stilletreppeVoice);
+        } else {
+          return console.log("User nicht verschoben ");
+        }
+      }
+    });
+    member
+      .createDM()
+      .then((channel: DMChannel) =>
+        channel.send("Du wurdest in den Stille Treppe Kanal verschoben")
+      );
+  });
 };
 
 const playCheer = (message: Message) =>

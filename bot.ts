@@ -65,7 +65,7 @@ client.on("ready", () => {
 });
 
 client.on("voiceStateUpdate", (oldMember, newMember) => {
-  if (oldMember.voiceChannel === undefined && newMember !== undefined) {
+  if (oldMember.voiceChannel === undefined && newMember.voiceChannel !== undefined) {
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
       `${newMember.user.username}/${newMember.displayName} joined.`
     );

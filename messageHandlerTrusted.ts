@@ -97,7 +97,7 @@ const writeHelpMessage = async (message: Message) => {
       channel.send(helpTextTrusted);
       channel.send(helpTextPleb);
       channel.send("------------------------");
-      channel.send("Habe einen schönen Tag!");
+      channel.send(`Habe einen schönen Tag ${message.author.username}!`);
     });
     message.delete();
   } catch (error) {
