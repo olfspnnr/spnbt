@@ -10,6 +10,7 @@ import {
 import { playAudio, helpTextTrusted, createCollector, commandBlock } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 import { channelIds } from "./bot";
+import { addToQueue, audioQueueElement } from "./shared";
 
 export interface messageHandleObjectAdmin {
   "!help": (message: Message, client?: Client) => void;
@@ -73,6 +74,7 @@ const writeHelpMessage = async (message: Message) => {
 
 const executeTestFunction = (message: Message, client: Client) => {
   message.delete(250);
+  addToQueue({ message: message } as audioQueueElement);
 };
 
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {

@@ -6,8 +6,7 @@ import {
   TextChannel,
   MessageCollector,
   VoiceChannel,
-  StreamDispatcher,
-  GuildMember
+  StreamDispatcher
 } from "discord.js";
 import { auth, currentState, roleIds, channelIds } from "./bot";
 const auth: auth = require("./auth.json");

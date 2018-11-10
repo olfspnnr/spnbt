@@ -1,11 +1,11 @@
 // Import the discord.js module
-import { Client, DMChannel, TextChannel, MessageCollector, Message } from "discord.js";
+import { Client, DMChannel, TextChannel } from "discord.js";
 import "isomorphic-fetch";
 import "opusscript";
-import { messageHandleObjectTrusted, createCollector } from "./messageHandlerTrusted";
+import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
 import { messageHandleObjectAdmin } from "./messageHandlerAdmin";
 import { messageHandleObjectPleb } from "./messageHandlerPleb";
-import { reactionDeletionHandler } from "./shared";
+import { reactionDeletionHandler, AudioQueue } from "./shared";
 
 const auth: auth = require("./auth.json");
 export const { roleIds, userIds, channelIds }: idObject = require("./rolesanduser.json");
@@ -55,6 +55,12 @@ export let currentState = {
   isPlayingAudio: false,
   isInspiring: false
 };
+
+export let audioQueue = new AudioQueue();
+
+audioQueue.on("add", queue => {
+  console.log("added something to the audioQueue");
+});
 
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
