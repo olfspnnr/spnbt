@@ -400,7 +400,7 @@ export const playAudio = (
                     "Du kannst keine Sounds abspielen, wenn du dich nicht in einem Voicechannel befindest."
                   )
                 );
-              return console.log("Voicechannel ist undefined");
+              return reject(console.log("Voicechannel ist undefined"));
             }
 
             if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
@@ -417,12 +417,12 @@ export const playAudio = (
                     function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
                       collector.stop();
                       youtubeStream.destroy();
-                      return resolve(() => dispatcher.end());
+                      return () => dispatcher.end();
                     }
                   }
                 ).dispatcher.on("end", () => resolve());
               } catch (error) {
-                console.log(error);
+                return reject(console.log(error));
               }
             } else {
               voiceChannel
@@ -441,15 +441,15 @@ export const playAudio = (
                         function: (dispatcher, collector) => {
                           collector.stop();
                           youtubeStream.destroy();
-                          return resolve(() => dispatcher.end());
+                          return () => dispatcher.end();
                         }
                       }
                     ).dispatcher.on("end", () => resolve());
                   } catch (error) {
-                    console.log(error);
+                    return reject(console.log(error));
                   }
                 })
-                .catch(error => console.log(error));
+                .catch(error => reject(console.log(error)));
             }
           });
           if (youtubeStream === undefined) {
@@ -461,22 +461,26 @@ export const playAudio = (
         } else {
           try {
             const voiceChannel = message.member.voiceChannel;
-
-            dispatcher = createDispatcher(
-              message,
-              voiceChannel,
-              audioObject.stream,
-              volume,
-              audioObject.length,
-              {
-                command: "!stop",
-                function: (dispatcher: StreamDispatcher, collector) => {
-                  collector.stop();
-                  return resolve(() => dispatcher.end());
-                }
-              }
-            ).dispatcher.on("end", () => resolve());
-          } catch (error) {}
+            voiceChannel.join().then(
+              connection =>
+                (dispatcher = createDispatcher(
+                  message,
+                  voiceChannel,
+                  audioObject.stream,
+                  volume,
+                  audioObject.length,
+                  {
+                    command: "!stop",
+                    function: (dispatcher: StreamDispatcher, collector) => {
+                      collector.stop();
+                      return () => dispatcher.end();
+                    }
+                  }
+                ).dispatcher.on("end", () => resolve()))
+            );
+          } catch (error) {
+            (error: any) => reject(console.log(error));
+          }
         }
       } catch (error) {
         console.log(error);
@@ -485,12 +489,12 @@ export const playAudio = (
           .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
           .then(msg => {
             message.delete();
-            (msg as Message).delete(8000);
+            return resolve((msg as Message).delete(8000));
           })
-          .catch(error => console.log(error));
+          .catch(error => reject(console.log(error)));
       }
     } else {
-      return console.log("Already playing Audio");
+      return reject(console.log("Already playing Audio"));
     }
   });
 
