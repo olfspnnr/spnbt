@@ -60,7 +60,12 @@ export let audioQueue = new AudioQueue();
 
 audioQueue.on("add", queue => {
   console.log("added something to the audioQueue");
+  console.log("current queuelength: " + queue.length);
 });
+
+audioQueue.on("play", song => console.log("now playing: " + song.message));
+
+audioQueue.on("error", error => console.log(error));
 
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
@@ -133,24 +138,28 @@ client.on("message", message => {
     } else {
       if (message.member.user.id === userIds.marcel) {
         message.react(client.emojis.get("508737241930006561")).then(firstReaction => {
-          reactionDeletionHandler(message, firstReaction);
+          reactionDeletionHandler(message, firstReaction, userIds.marcel);
           message
             .react(client.emojis.get("510584011781963786"))
-            .then(secondReaction => reactionDeletionHandler(message, secondReaction));
+            .then(secondReaction =>
+              reactionDeletionHandler(message, secondReaction, userIds.marcel)
+            );
         });
       }
       if (message.member.user.id === userIds.justus) {
         message
           .react(client.emojis.get("508737241443729408"))
-          .then(reaction => reactionDeletionHandler(message, reaction));
+          .then(reaction => reactionDeletionHandler(message, reaction, userIds.justus));
       }
       if (message.member.user.id === userIds.olaf) {
-        message.react("💕").then(reaction => reactionDeletionHandler(message, reaction));
+        message
+          .react("💕")
+          .then(reaction => reactionDeletionHandler(message, reaction, userIds.olaf));
       }
       if (message.member.user.id === userIds.nils) {
         message
           .react(client.emojis.get("510584011781963786"))
-          .then(reaction => reactionDeletionHandler(message, reaction));
+          .then(reaction => reactionDeletionHandler(message, reaction, userIds.nils));
       }
     }
   } catch (error) {

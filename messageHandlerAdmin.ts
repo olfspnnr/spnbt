@@ -1,16 +1,8 @@
-import {
-  Message,
-  Client,
-  ChannelLogsQueryOptions,
-  StreamDispatcher,
-  TextChannel,
-  GuildMember,
-  DMChannel
-} from "discord.js";
-import { playAudio, helpTextTrusted, createCollector, commandBlock } from "./messageHandlerTrusted";
+import { Message, Client, ChannelLogsQueryOptions, GuildMember, DMChannel } from "discord.js";
+import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 import { channelIds } from "./bot";
-import { addToQueue, audioQueueElement } from "./shared";
+import { addToQueue, audioQueueElement, getStreamFromYouTubeLink, getCurrentSong } from "./shared";
 
 export interface messageHandleObjectAdmin {
   "!help": (message: Message, client?: Client) => void;
@@ -73,13 +65,14 @@ const writeHelpMessage = async (message: Message) => {
 };
 
 const executeTestFunction = (message: Message, client: Client) => {
-  message.delete(250);
-  addToQueue({ message: message } as audioQueueElement);
+  getStreamFromYouTubeLink(message)
+    .then((audioElement: audioQueueElement) => addToQueue(audioElement))
+    .catch(error => console.log(error));
 };
 
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {
   message.delete(250);
-  let userToMoveId = message.content.slice("!keepAndMove ".length);
+  let userToMoveId = message.content.slice("!moveAndKeep ".length);
   console.log(userToMoveId);
   message.guild.fetchMember(userToMoveId).then(member => {
     member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
