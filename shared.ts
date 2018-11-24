@@ -39,6 +39,7 @@ export class AudioQueue extends EventEmitter {
       { message: message, volume: volume, audioObject: audioObject, url: url, youtube: youtube }
     ];
     this.emit("add", this.currentQueue);
+    return this.currentQueue;
   };
 
   shift = () => {
