@@ -64,11 +64,7 @@ const writeHelpMessage = async (message: Message) => {
   }
 };
 
-const executeTestFunction = (message: Message, client: Client) => {
-  getStreamFromYouTubeLink(message)
-    .then((audioElement: audioQueueElement) => addToQueue(audioElement))
-    .catch(error => console.log(error));
-};
+const executeTestFunction = (message: Message, client: Client) => {};
 
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {
   message.delete(250);

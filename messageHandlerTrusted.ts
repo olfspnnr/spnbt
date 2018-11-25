@@ -14,6 +14,7 @@ const Twitter = require("twitter");
 import * as ytdl from "ytdl-core";
 import { ReadStream } from "tty";
 import { helpTextPleb } from "./messageHandlerPleb";
+import { getStreamFromYouTubeLink, addToQueue, audioQueueElement } from "./shared";
 
 export interface commandBlock {
   command: string;
@@ -63,6 +64,7 @@ export const messageHandleObjectTrusted = {
     }
     playAudio(message, true, url);
   },
+  "!add": (message: Message, client?: Client) => addToAudioQueue(message, client),
   rigged: (message: Message, client?: Client) => sendAluHut(message),
   "!pin": (message: Message, client?: Client) => pinMessage(message),
   "!wiki": (message: Message, client?: Client) => searchInWiki(message),
@@ -84,6 +86,7 @@ export const helpTextTrusted = [
   "!mindful - Zufällige KI generierte Mindful Session",
   "!flachbader - Flachbader Song => !stop um zu beenden",
   "!play url - Spielt Youtube URL ab => !stop um zu beenden",
+  "!add url - Fügt Sound zu Playlist hinzu",
   '!pin "message" user - Pinnt die Nachricht mit dem Aktuellen Datum an',
   '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht',
   "!wilhelm - spielt einen Willhelm Schrei ab",
@@ -116,6 +119,11 @@ const playWilhelmScream = (message: Message) =>
 
 const playFlachbader = (message: Message) =>
   playAudio(message, true, "https://www.youtube.com/F62LEVZYMog");
+
+const addToAudioQueue = (message: Message, client: Client) =>
+  getStreamFromYouTubeLink(message)
+    .then((audioElement: audioQueueElement) => addToQueue(audioElement))
+    .catch(error => console.log(error));
 
 const sendAluHut = (message: Message) => {
   const attachment = new Attachment(
