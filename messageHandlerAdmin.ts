@@ -106,7 +106,7 @@ const playKnockSound = (message: Message) =>
   playAudio(message, true, "https://www.youtube.com/watch?v=ZqNpXJwgO8o");
 
 const clearFailedCommands = (message: Message, client: Client) => {
-  message.channel.fetchMessages({ limit: 100 } as ChannelLogsQueryOptions).then(messages => {
+  message.channel.fetchMessages({ limit: 25 } as ChannelLogsQueryOptions).then(messages => {
     let messagesWithExclamation = messages.filter(msg => msg.content.slice(0, 1) === "!");
     messagesWithExclamation.forEach(element => {
       if (element.deletable) element.delete();
