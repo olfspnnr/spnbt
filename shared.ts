@@ -1,5 +1,5 @@
-import { MessageCollector, Message, MessageReaction } from "discord.js";
-import { audioQueue } from "./bot";
+import { MessageCollector, Message, MessageReaction, GuildMember } from "discord.js";
+import { audioQueue, roleIds } from "./bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
 import { playAudio } from "./messageHandlerTrusted";
@@ -11,6 +11,30 @@ export interface audioQueueElement {
   audioObject?: { stream: ReadableStream; length: number };
   volume?: number | undefined;
 }
+
+export const stripMemberOfAllRoles = (member: GuildMember) =>
+  new Promise((resolve, reject) =>
+    member
+      .removeRoles(member.roles)
+      .then(member => resolve(member))
+      .catch(error => reject(error))
+  );
+
+export const checkIfMemberHasntRolesAndAssignRoles = (
+  newMember: GuildMember,
+  rolesToCheck: string[],
+  rolesToAdd: string[]
+) => {
+  let hit = false;
+  rolesToCheck.map(role => {
+    if (newMember.roles.has(role)) {
+      hit = true;
+    }
+  });
+  if (!hit) {
+    rolesToAdd.map(role => newMember.addRole(role));
+  }
+};
 
 export const reactionDeletionHandler = (
   message: Message,

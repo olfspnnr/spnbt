@@ -5,7 +5,11 @@ import "opusscript";
 import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
 import { messageHandleObjectAdmin } from "./messageHandlerAdmin";
 import { messageHandleObjectPleb } from "./messageHandlerPleb";
-import { reactionDeletionHandler, AudioQueue } from "./shared";
+import {
+  reactionDeletionHandler,
+  AudioQueue,
+  checkIfMemberHasntRolesAndAssignRoles
+} from "./shared";
 
 const auth: auth = require("./auth.json");
 export const { roleIds, userIds, channelIds }: idObject = require("./rolesanduser.json");
@@ -31,6 +35,8 @@ export interface ChannelIds {
 export interface Roles {
   spinner: string;
   trusted: string;
+  uninitiert: string;
+  poop: string;
 }
 
 export interface UserIds {
@@ -81,10 +87,30 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
       `${newMember.user.username}/${newMember.displayName} joined.`
     );
+    try {
+      checkIfMemberHasntRolesAndAssignRoles(
+        newMember,
+        [roleIds.uninitiert, roleIds.poop],
+        [roleIds.uninitiert]
+      );
+    } catch (error) {
+      console.log(error);
+    }
   } else if (newMember.voiceChannel === undefined) {
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
       `${oldMember.user.username}/${oldMember.displayName} left.`
     );
+  } else if (newMember.voiceChannel !== undefined && oldMember.voiceChannel !== undefined) {
+    console.log(`${oldMember.user.username}/${oldMember.displayName} moved Channels.`);
+    try {
+      checkIfMemberHasntRolesAndAssignRoles(
+        newMember,
+        [roleIds.uninitiert, roleIds.poop],
+        [roleIds.uninitiert]
+      );
+    } catch (error) {
+      console.log(error);
+    }
   } else {
     return console.log("Konnte nicht entscheiden was passiert ist");
   }

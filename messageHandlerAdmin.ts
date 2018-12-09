@@ -1,8 +1,15 @@
-import { Message, Client, ChannelLogsQueryOptions, GuildMember, DMChannel } from "discord.js";
+import {
+  Message,
+  Client,
+  ChannelLogsQueryOptions,
+  GuildMember,
+  DMChannel,
+  Guild
+} from "discord.js";
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
-import { channelIds } from "./bot";
-import { addToQueue, audioQueueElement, getStreamFromYouTubeLink, getCurrentSong } from "./shared";
+import { channelIds, roleIds } from "./bot";
+import { stripMemberOfAllRoles } from "./shared";
 
 export interface messageHandleObjectAdmin {
   "!help": (message: Message, client?: Client) => void;
@@ -14,6 +21,7 @@ export interface messageHandleObjectAdmin {
   "!clearFails": (message: Message, client?: Client) => void;
   "!moveAndKeep": (message: Message, client?: Client) => void;
   "!testfunction": (message: Message, client?: Client) => void;
+  "!poop": (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObjectAdmin = {
@@ -31,7 +39,8 @@ export const messageHandleObjectAdmin = {
   },
   "!clearFails": (message: Message, client?: Client) => clearFailedCommands(message, client),
   "!moveAndKeep": (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
-  "!testfunction": (message: Message, client?: Client) => executeTestFunction(message, client)
+  "!testfunction": (message: Message, client?: Client) => executeTestFunction(message, client),
+  "!poop": (message: Message, client?: Client) => executeTestFunction(message, client)
 } as messageHandleObjectAdmin;
 
 export const helpTextSpinner = [
@@ -46,7 +55,8 @@ export const helpTextSpinner = [
   "!playLoud - gleich wie !play, nur laut",
   "!clearFails - löscht alle gefailten commands",
   "!moveAndKeep  - Moved einen User in die Stille Treppe und behält ihn dort",
-  "!testfunction - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen"
+  "!testfunction - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
+  "!poop - weist eine Person der Poopgruppe zu"
 ].join("\r");
 
 const writeHelpMessage = async (message: Message) => {
@@ -64,15 +74,32 @@ const writeHelpMessage = async (message: Message) => {
   }
 };
 
-const executeTestFunction = (message: Message, client: Client) => {};
+const executeTestFunction = (message: Message, client: Client) => {
+  message.delete(250);
+  let userToAssignRoleToID = message.content.slice("!moveAndKeep ".length);
+  userToAssignRoleToID = !!~userToAssignRoleToID.indexOf("<@")
+    ? userToAssignRoleToID.replace("<@", "").replace(">", "")
+    : userToAssignRoleToID;
+  userToAssignRoleToID = userToAssignRoleToID.replace(/\\/g, "").replace(" ", "");
+  console.log(userToAssignRoleToID);
+  message.guild
+    .fetchMember(userToAssignRoleToID)
+    .then(member =>
+      stripMemberOfAllRoles(member).then((member: GuildMember) => member.addRole(roleIds.poop))
+    );
+};
 
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {
   message.delete(250);
   let userToMoveId = message.content.slice("!moveAndKeep ".length);
+  userToMoveId = !!~userToMoveId.indexOf("<@")
+    ? userToMoveId.replace("<@", "").replace(">", "")
+    : userToMoveId;
+  userToMoveId = userToMoveId.replace(/\\/g, "").replace(" ", "");
   console.log(userToMoveId);
   message.guild.fetchMember(userToMoveId).then(member => {
     member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
-      message.member.setDeaf(true);
+      message.guild.fetchMember(userToMoveId).then(member => member.setDeaf(true));
       client.on("voiceStateUpdate", (oldMember, newMember) => {
         if (member.id === oldMember.id && member.id === newMember.id) {
           if (
