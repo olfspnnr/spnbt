@@ -1,5 +1,12 @@
-import { MessageCollector, Message, MessageReaction, GuildMember } from "discord.js";
-import { audioQueue, roleIds } from "./bot";
+import {
+  MessageCollector,
+  Message,
+  MessageReaction,
+  GuildMember,
+  Client,
+  TextChannel
+} from "discord.js";
+import { audioQueue, roleIds, channelIds } from "./bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
 import { playAudio } from "./messageHandlerTrusted";
@@ -21,6 +28,7 @@ export const stripMemberOfAllRoles = (member: GuildMember) =>
   );
 
 export const checkIfMemberHasntRolesAndAssignRoles = (
+  client: Client,
   newMember: GuildMember,
   rolesToCheck: string[],
   rolesToAdd: string[]
@@ -32,7 +40,15 @@ export const checkIfMemberHasntRolesAndAssignRoles = (
     }
   });
   if (!hit) {
-    rolesToAdd.map(role => newMember.addRole(role));
+    rolesToAdd.map(role => {
+      newMember
+        .addRole(role)
+        .then(() =>
+          (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
+            `<@${newMember.user.id}> you werde assigned role "Uninitiert".`
+          )
+        );
+    });
   }
 };
 

@@ -89,6 +89,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
     );
     try {
       checkIfMemberHasntRolesAndAssignRoles(
+        client,
         newMember,
         [roleIds.uninitiert, roleIds.poop],
         [roleIds.uninitiert]
@@ -104,6 +105,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
     console.log(`${oldMember.user.username}/${oldMember.displayName} moved Channels.`);
     try {
       checkIfMemberHasntRolesAndAssignRoles(
+        client,
         newMember,
         [roleIds.uninitiert, roleIds.poop],
         [roleIds.uninitiert]
