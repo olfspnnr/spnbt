@@ -40,7 +40,7 @@ export const messageHandleObjectAdmin = {
   "!clearFails": (message: Message, client?: Client) => clearFailedCommands(message, client),
   "!moveAndKeep": (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
   "!testfunction": (message: Message, client?: Client) => executeTestFunction(message, client),
-  "!poop": (message: Message, client?: Client) => executeTestFunction(message, client)
+  "!poop": (message: Message, client?: Client) => poopCommand(message, client)
 } as messageHandleObjectAdmin;
 
 export const helpTextSpinner = [
@@ -74,7 +74,9 @@ const writeHelpMessage = async (message: Message) => {
   }
 };
 
-const executeTestFunction = (message: Message, client: Client) => {
+const executeTestFunction = (message: Message, client: Client) => {};
+
+const poopCommand = (message: Message, client: Client) => {
   message.delete(250);
   let userToAssignRoleToID = message.content.slice("!moveAndKeep ".length);
   userToAssignRoleToID = !!~userToAssignRoleToID.indexOf("<@")
