@@ -134,62 +134,76 @@ client.on("message", message => {
     );
 
     let possibleFunction: any = undefined;
-    if (message.member.roles.has(roleIds.spinner)) {
-      possibleFunction = (messageHandleObjectAdmin as any)[
-        `${message.content.slice(
-          0,
-          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-        )}`
-      ];
-    }
-    if (
-      (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) &&
-      possibleFunction === undefined
-    ) {
-      possibleFunction = (messageHandleObjectTrusted as any)[
-        `${message.content.slice(
-          0,
-          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-        )}`
-      ];
-    }
-    if (possibleFunction === undefined) {
-      possibleFunction = (messageHandleObjectPleb as any)[
-        `${message.content.slice(
-          0,
-          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-        )}`
-      ];
-    }
-    if (typeof possibleFunction === "function") {
-      return possibleFunction(message, client);
-    } else {
-      if (message.member.user.id === userIds.marcel) {
-        message.react(client.emojis.get("508737241930006561")).then(firstReaction => {
-          reactionDeletionHandler(message, firstReaction, userIds.marcel);
+    if (message.content.slice(0, 1) === "!" && message.member.id !== userIds.spinbot) {
+      if (message.member.roles.has(roleIds.spinner)) {
+        possibleFunction = (messageHandleObjectAdmin as any)[
+          `${message.content
+            .slice(1)
+            .slice(
+              0,
+              !!~message.content.indexOf(" ")
+                ? message.content.indexOf(" ")
+                : message.content.length
+            )}`
+        ];
+      }
+      if (
+        (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) &&
+        possibleFunction === undefined
+      ) {
+        possibleFunction = (messageHandleObjectTrusted as any)[
+          `${message.content
+            .slice(1)
+            .slice(
+              0,
+              !!~message.content.indexOf(" ")
+                ? message.content.indexOf(" ")
+                : message.content.length
+            )}`
+        ];
+      }
+      if (possibleFunction === undefined) {
+        possibleFunction = (messageHandleObjectPleb as any)[
+          `${message.content
+            .slice(1)
+            .slice(
+              0,
+              !!~message.content.indexOf(" ")
+                ? message.content.indexOf(" ")
+                : message.content.length
+            )}`
+        ];
+      }
+      if (typeof possibleFunction === "function") {
+        return possibleFunction(message, client);
+      } else {
+        if (message.member.user.id === userIds.marcel) {
+          message.react(client.emojis.get("508737241930006561")).then(firstReaction => {
+            reactionDeletionHandler(message, firstReaction, userIds.marcel);
+            message
+              .react(client.emojis.get("510584011781963786"))
+              .then(secondReaction =>
+                reactionDeletionHandler(message, secondReaction, userIds.marcel)
+              );
+          });
+        }
+        if (message.member.user.id === userIds.justus) {
+          message
+            .react(client.emojis.get("508737241443729408"))
+            .then(reaction => reactionDeletionHandler(message, reaction, userIds.justus));
+        }
+        if (message.member.user.id === userIds.olaf) {
+          message
+            .react("💕")
+            .then(reaction => reactionDeletionHandler(message, reaction, userIds.olaf));
+        }
+        if (message.member.user.id === userIds.nils) {
           message
             .react(client.emojis.get("510584011781963786"))
-            .then(secondReaction =>
-              reactionDeletionHandler(message, secondReaction, userIds.marcel)
-            );
-        });
+            .then(reaction => reactionDeletionHandler(message, reaction, userIds.nils));
+        }
       }
-      if (message.member.user.id === userIds.justus) {
-        message
-          .react(client.emojis.get("508737241443729408"))
-          .then(reaction => reactionDeletionHandler(message, reaction, userIds.justus));
-      }
-      if (message.member.user.id === userIds.olaf) {
-        message
-          .react("💕")
-          .then(reaction => reactionDeletionHandler(message, reaction, userIds.olaf));
-      }
-      if (message.member.user.id === userIds.nils) {
-        message
-          .react(client.emojis.get("510584011781963786"))
-          .then(reaction => reactionDeletionHandler(message, reaction, userIds.nils));
-      }
-    }
+    } else console.log("Kein Ausrufezeichen");
   } catch (error) {
     console.log(error);
     return console.log(

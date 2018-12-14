@@ -29,48 +29,48 @@ const twitterClient = new Twitter({
 });
 
 export interface messageHandleObjectTrusted {
-  "!test": () => void;
-  "!daddy": (message: Message, client?: Client) => void;
-  "!twitter": (message: Message, client?: Client) => void;
-  "!help": (message: Message, client?: Client) => void;
-  "!natalieneu": (message: Message, client?: Client) => void;
-  "!inspire": (message: Message, client?: Client) => void;
-  "!inspireMode": (message: Message, client?: Client) => void;
-  "!mindful": (message: Message, client?: Client) => void;
-  "!flachbader": (message: Message, client?: Client) => void;
-  "!play": (message: Message, client?: Client) => void;
+  test: () => void;
+  daddy: (message: Message, client?: Client) => void;
+  twitter: (message: Message, client?: Client) => void;
+  help: (message: Message, client?: Client) => void;
+  natalieneu: (message: Message, client?: Client) => void;
+  inspire: (message: Message, client?: Client) => void;
+  inspireMode: (message: Message, client?: Client) => void;
+  mindful: (message: Message, client?: Client) => void;
+  flachbader: (message: Message, client?: Client) => void;
+  play: (message: Message, client?: Client) => void;
   rigged: (message: Message, client?: Client) => void;
-  "!pin": (message: Message, client?: Client) => void;
-  "!wiki": (message: Message, client?: Client) => void;
-  "!wilhelm": (message: Message, client?: Client) => void;
+  pin: (message: Message, client?: Client) => void;
+  wiki: (message: Message, client?: Client) => void;
+  wilhelm: (message: Message, client?: Client) => void;
   "<:mist:509083062051799050>": (message: Message) => void;
-  "!fault": (message: Message) => void;
+  fault: (message: Message) => void;
 }
 
 export const messageHandleObjectTrusted = {
-  "!help": (message: Message, client?: Client) => writeHelpMessage(message),
-  "!test": () => console.log("Hallo welt!"),
-  "!daddy": async (message: Message, client?: Client) => sendDaddyImage(message),
-  "!twitter": (message: Message, client?: Client) => listenToHashtag(message, client),
-  "!natalieneu": (message: Message, client?: Client) => getNatalieRosenke(message),
-  "!inspireMode": (message: Message, client?: Client) => inspireMode(message, client),
-  "!inspire": (message: Message, client?: Client) => sendInspiringMessage(message, client),
-  "!mindful": (message: Message, client?: Client) => playMindfulAudio(message),
-  "!flachbader": (message: Message, client?: Client) => playFlachbader(message),
-  "!play": (message: Message, client?: Client) => {
+  help: (message: Message, client?: Client) => writeHelpMessage(message),
+  test: () => console.log("Hallo welt!"),
+  daddy: async (message: Message, client?: Client) => sendDaddyImage(message),
+  twitter: (message: Message, client?: Client) => listenToHashtag(message, client),
+  natalieneu: (message: Message, client?: Client) => getNatalieRosenke(message),
+  inspireMode: (message: Message, client?: Client) => inspireMode(message, client),
+  inspire: (message: Message, client?: Client) => sendInspiringMessage(message, client),
+  mindful: (message: Message, client?: Client) => playMindfulAudio(message),
+  flachbader: (message: Message, client?: Client) => playFlachbader(message),
+  play: (message: Message, client?: Client) => {
     let url = message.content.slice("!play ".length);
     if (!!~url.indexOf('"')) {
       url = url.replace('"', "");
     }
     playAudio(message, true, url);
   },
-  "!add": (message: Message, client?: Client) => addToAudioQueue(message, client),
+  add: (message: Message, client?: Client) => addToAudioQueue(message, client),
   rigged: (message: Message, client?: Client) => sendAluHut(message),
-  "!pin": (message: Message, client?: Client) => pinMessage(message),
-  "!wiki": (message: Message, client?: Client) => searchInWiki(message),
-  "!wilhelm": (message: Message, client?: Client) => playWilhelmScream(message),
+  pin: (message: Message, client?: Client) => pinMessage(message),
+  wiki: (message: Message, client?: Client) => searchInWiki(message),
+  wilhelm: (message: Message, client?: Client) => playWilhelmScream(message),
   "<:mist:509083062051799050>": (message: Message) => playMistSound(message),
-  "!fault": (message: Message) => playItsNotYourFault(message)
+  fault: (message: Message) => playItsNotYourFault(message)
 } as messageHandleObjectTrusted;
 
 export const helpTextTrusted = [

@@ -12,35 +12,35 @@ import { channelIds, roleIds } from "./bot";
 import { stripMemberOfAllRoles } from "./shared";
 
 export interface messageHandleObjectAdmin {
-  "!help": (message: Message, client?: Client) => void;
-  "!leavevoice": (message: Message, client?: Client) => void;
-  "!joinvoice": (message: Message, client?: Client) => void;
-  "!knock": (message: Message, client?: Client) => void;
-  "!cheer": (message: Message, client?: Client) => void;
-  "!playLoud": (message: Message, client?: Client) => void;
-  "!clearFails": (message: Message, client?: Client) => void;
-  "!moveAndKeep": (message: Message, client?: Client) => void;
-  "!testfunction": (message: Message, client?: Client) => void;
-  "!poop": (message: Message, client?: Client) => void;
+  help: (message: Message, client?: Client) => void;
+  leavevoice: (message: Message, client?: Client) => void;
+  joinvoice: (message: Message, client?: Client) => void;
+  knock: (message: Message, client?: Client) => void;
+  cheer: (message: Message, client?: Client) => void;
+  playLoud: (message: Message, client?: Client) => void;
+  clearFails: (message: Message, client?: Client) => void;
+  moveAndKeep: (message: Message, client?: Client) => void;
+  testfunction: (message: Message, client?: Client) => void;
+  poop: (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObjectAdmin = {
-  "!help": (message: Message) => writeHelpMessage(message),
-  "!leavevoice": (message: Message) => leaveVoiceChannel(message),
-  "!joinvoice": (message: Message, client?: Client) => enterVoiceChannel(message, client),
-  "!knock": (message: Message) => playKnockSound(message),
-  "!cheer": (message: Message) => playCheer(message),
-  "!playLoud": (message: Message) => {
-    let url = message.content.slice("!play ".length);
+  help: (message: Message) => writeHelpMessage(message),
+  leavevoice: (message: Message) => leaveVoiceChannel(message),
+  joinvoice: (message: Message, client?: Client) => enterVoiceChannel(message, client),
+  knock: (message: Message) => playKnockSound(message),
+  cheer: (message: Message) => playCheer(message),
+  playLoud: (message: Message) => {
+    let url = message.content.slice("!playLoud ".length);
     if (!!~url.indexOf('"')) {
       url = url.replace('"', "");
     }
     playAudio(message, true, url, undefined, 1);
   },
-  "!clearFails": (message: Message, client?: Client) => clearFailedCommands(message, client),
-  "!moveAndKeep": (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
-  "!testfunction": (message: Message, client?: Client) => executeTestFunction(message, client),
-  "!poop": (message: Message, client?: Client) => poopCommand(message, client)
+  clearFails: (message: Message, client?: Client) => clearFailedCommands(message, client),
+  moveAndKeep: (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
+  testfunction: (message: Message, client?: Client) => executeTestFunction(message, client),
+  poop: (message: Message, client?: Client) => poopCommand(message, client)
 } as messageHandleObjectAdmin;
 
 export const helpTextSpinner = [
