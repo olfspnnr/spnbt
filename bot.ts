@@ -134,45 +134,25 @@ client.on("message", message => {
     );
 
     let possibleFunction: any = undefined;
-    if (message.content.slice(0, 1) === "!" && message.member.id !== userIds.spinbot) {
+    if (message.member.id !== userIds.spinbot) {
+      let functionCall = `${message.content.slice(
+        0,
+        !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+      )}`;
+      if (functionCall.slice(0, 1) === "!") {
+        functionCall = functionCall.slice(1);
+      }
       if (message.member.roles.has(roleIds.spinner)) {
-        possibleFunction = (messageHandleObjectAdmin as any)[
-          `${message.content
-            .slice(1)
-            .slice(
-              0,
-              !!~message.content.indexOf(" ")
-                ? message.content.indexOf(" ")
-                : message.content.length
-            )}`
-        ];
+        possibleFunction = (messageHandleObjectAdmin as any)[functionCall];
       }
       if (
         (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) &&
         possibleFunction === undefined
       ) {
-        possibleFunction = (messageHandleObjectTrusted as any)[
-          `${message.content
-            .slice(1)
-            .slice(
-              0,
-              !!~message.content.indexOf(" ")
-                ? message.content.indexOf(" ")
-                : message.content.length
-            )}`
-        ];
+        possibleFunction = (messageHandleObjectTrusted as any)[functionCall];
       }
       if (possibleFunction === undefined) {
-        possibleFunction = (messageHandleObjectPleb as any)[
-          `${message.content
-            .slice(1)
-            .slice(
-              0,
-              !!~message.content.indexOf(" ")
-                ? message.content.indexOf(" ")
-                : message.content.length
-            )}`
-        ];
+        possibleFunction = (messageHandleObjectPleb as any)[functionCall];
       }
       if (typeof possibleFunction === "function") {
         return possibleFunction(message, client);
@@ -203,7 +183,7 @@ client.on("message", message => {
             .then(reaction => reactionDeletionHandler(message, reaction, userIds.nils));
         }
       }
-    } else console.log("Kein Ausrufezeichen");
+    } else console.log("Nachricht von Bernd");
   } catch (error) {
     console.log(error);
     return console.log(
