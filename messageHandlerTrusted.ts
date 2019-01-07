@@ -555,13 +555,21 @@ const sendInspiringMessage = (message: Message, client: Client) =>
               {
                 command: "!save",
                 function: (extProp: any, collector: MessageCollector) => {
-                  (client.channels.get(channelIds.inspirationText) as TextChannel).send(attachment);
-                  message.channel
-                    .send(`Bild gespeichert im dedizierten Inspirationskanal`)
-                    .then((saveMsg: Message) => {
-                      collector.stop();
-                      saveMsg.delete(8000);
-                    });
+                  (client.channels.get(channelIds.inspirationText) as TextChannel)
+                    .send(attachment)
+                    .then(() =>
+                      message.channel
+                        .send(`Bild gespeichert im dedizierten Inspirationskanal`)
+                        .then((saveMsg: Message) => {
+                          collector.stop();
+                          saveMsg.delete(8000);
+                        })
+                    )
+                    .catch(error =>
+                      message.channel
+                        .send("Fehler beim Speichern des Bildes :(")
+                        .then((errorMsg: Message) => errorMsg.delete(12000))
+                    );
                 }
               },
               {
