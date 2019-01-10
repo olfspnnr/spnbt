@@ -143,16 +143,16 @@ client.on("message", message => {
         functionCall = functionCall.slice(1);
       }
       if (message.member.roles.has(roleIds.spinner)) {
-        possibleFunction = (messageHandleObjectAdmin as any)[functionCall];
+        possibleFunction = (messageHandleObjectAdmin as any)[functionCall] || undefined;
       }
       if (
         (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) &&
         possibleFunction === undefined
       ) {
-        possibleFunction = (messageHandleObjectTrusted as any)[functionCall];
+        possibleFunction = (messageHandleObjectTrusted as any)[functionCall] || undefined;
       }
       if (possibleFunction === undefined) {
-        possibleFunction = (messageHandleObjectPleb as any)[functionCall];
+        possibleFunction = (messageHandleObjectPleb as any)[functionCall] || undefined;
       }
       if (typeof possibleFunction === "function") {
         return possibleFunction(message, client);
