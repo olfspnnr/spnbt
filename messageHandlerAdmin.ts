@@ -81,16 +81,19 @@ const writeHelpMessage = async (message: Message) => {
 const executeTestFunction = (message: Message, client: Client) => {};
 
 const renameAdrian = (message: Message, client: Client, global: any) => {
-  if (global.renameAdrian !== undefined && global.renameAdrian) {
-    console.log("Werde nun Adrian umbennen");
-    message.guild.members.get(userIds.adrian).setNickname("Omniadrimon");
-    global["renameAdrian"] = true;
-  } else {
-    console.log("Werde nun Adrian nichtmehr umbennen");
-    global.renameAdrian = false;
-  }
-  message.delete(150);
-  return console.log(global);
+  if (message.guild.members.get(userIds.adrian)) {
+    if (global.renameAdrian !== undefined && global.renameAdrian) {
+      console.log("Werde nun Adrian umbennen");
+      message.guild.members.get(userIds.adrian).setNickname("Omniadrimon");
+      global["renameAdrian"] = true;
+    } else {
+      console.log("Werde nun Adrian nichtmehr umbennen");
+      global.renameAdrian = false;
+    }
+    message.delete(150);
+    return console.log(global);
+  } else
+    message.channel.sendMessage("Adrian ist nicht online").then((msg: Message) => msg.delete(2500));
 };
 
 const poopCommand = (message: Message, client: Client) => {
