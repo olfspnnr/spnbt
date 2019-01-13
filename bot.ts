@@ -54,6 +54,12 @@ export interface idObject {
   channelIds: ChannelIds;
 }
 
+export interface globalObject {
+  renameAdrian?: boolean;
+}
+
+let global = {} as globalObject;
+
 // Create an instance of a Discord client
 const client = new Client();
 
@@ -118,6 +124,15 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
   }
 });
 
+client.on("guildMemberUpdate", (oldUser, newUser) => {
+  console.log(`${oldUser.nickname} => ${newUser.nickname}`);
+  if (global.renameAdrian) {
+    if (newUser.user.id === userIds.adrian && newUser.nickname !== "Omniadrimon") {
+      newUser.setNickname("Omniadrimon");
+    }
+  }
+});
+
 // Create an event listener for messages
 client.on("message", message => {
   if (message.guild === null && message.channel instanceof DMChannel) {
@@ -155,7 +170,7 @@ client.on("message", message => {
         possibleFunction = (messageHandleObjectPleb as any)[functionCall] || undefined;
       }
       if (typeof possibleFunction === "function") {
-        return possibleFunction(message, client);
+        return possibleFunction(message, client, global);
       } else {
         if (message.member.user.id === userIds.marcel) {
           message.react(client.emojis.get("508737241930006561")).then(firstReaction => {

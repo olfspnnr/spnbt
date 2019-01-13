@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
-import { channelIds, roleIds } from "./bot";
+import { channelIds, roleIds, userIds, globalObject } from "./bot";
 import { stripMemberOfAllRoles } from "./shared";
 
 export interface messageHandleObjectAdmin {
@@ -20,8 +20,9 @@ export interface messageHandleObjectAdmin {
   playLoud: (message: Message, client?: Client) => void;
   clearFails: (message: Message, client?: Client) => void;
   moveAndKeep: (message: Message, client?: Client) => void;
-  testfunction: (message: Message, client?: Client) => void;
+  test: (message: Message, client?: Client) => void;
   poop: (message: Message, client?: Client) => void;
+  renameAdrian: (message: Message, client?: Client, global?: any) => void;
 }
 
 export const messageHandleObjectAdmin = {
@@ -39,8 +40,10 @@ export const messageHandleObjectAdmin = {
   },
   clearFails: (message: Message, client?: Client) => clearFailedCommands(message, client),
   moveAndKeep: (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
-  testfunction: (message: Message, client?: Client) => executeTestFunction(message, client),
-  poop: (message: Message, client?: Client) => poopCommand(message, client)
+  test: (message: Message, client?: Client) => executeTestFunction(message, client),
+  poop: (message: Message, client?: Client) => poopCommand(message, client),
+  renameAdrian: (message: Message, client?: Client, global?: globalObject) =>
+    renameAdrian(message, client, global)
 } as messageHandleObjectAdmin;
 
 export const helpTextSpinner = [
@@ -55,8 +58,9 @@ export const helpTextSpinner = [
   "!playLoud - gleich wie !play, nur laut",
   "!clearFails - löscht alle gefailten commands",
   "!moveAndKeep  - Moved einen User in die Stille Treppe und behält ihn dort",
-  "!testfunction - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
-  "!poop - weist eine Person der Poopgruppe zu"
+  "!test - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
+  "!poop - weist eine Person der Poopgruppe zu",
+  "!renameAdrian - nennt Adrian um zu 'Omniadrimon' / toggle ob dies automatisch passieren soll"
 ].join("\r");
 
 const writeHelpMessage = async (message: Message) => {
@@ -75,6 +79,19 @@ const writeHelpMessage = async (message: Message) => {
 };
 
 const executeTestFunction = (message: Message, client: Client) => {};
+
+const renameAdrian = (message: Message, client: Client, global: any) => {
+  if (global.renameAdrian !== undefined && global.renameAdrian) {
+    console.log("Werde nun Adrian umbennen");
+    message.guild.members.get(userIds.adrian).setNickname("Omniadrimon");
+    global["renameAdrian"] = true;
+  } else {
+    console.log("Werde nun Adrian nichtmehr umbennen");
+    global.renameAdrian = false;
+  }
+  message.delete(150);
+  return console.log(global);
+};
 
 const poopCommand = (message: Message, client: Client) => {
   message.delete(250);
