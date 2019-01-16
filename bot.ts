@@ -86,6 +86,7 @@ audioQueue.on("error", error => console.log(error));
 
 client.on("ready", () => {
   console.log("I am ready!");
+  client.user.setGame("mit deinen Gefühlen");
 });
 
 client.on("voiceStateUpdate", (oldMember, newMember) => {
