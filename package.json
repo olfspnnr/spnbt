@@ -11,12 +11,14 @@
   "dependencies": {
     "@types/node": "^10.12.1",
     "@types/twitter": "0.0.28",
+    "@types/websocket": "0.0.40",
     "@types/ws": "^6.0.1",
     "discord.js": "^11.4.2",
     "es6-promise": "^4.2.5",
     "isomorphic-fetch": "^2.2.1",
     "opusscript": "0.0.6",
     "twitter": "^1.7.1",
+    "websocket": "^1.0.28",
     "ws": "^6.1.0",
     "ytdl-core": "^0.27.1"
   }

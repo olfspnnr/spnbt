@@ -4,9 +4,10 @@ import {
   MessageReaction,
   GuildMember,
   Client,
-  TextChannel
+  TextChannel,
+  Emoji
 } from "discord.js";
-import { audioQueue, roleIds, channelIds } from "./bot";
+import { audioQueue, roleIds, channelIds, UserIds, globalObject } from "./bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
 import { playAudio } from "./messageHandlerTrusted";
@@ -45,7 +46,9 @@ export const checkIfMemberHasntRolesAndAssignRoles = (
         .addRole(role)
         .then(() =>
           (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-            `<@${newMember.user.id}> you werde assigned role "Uninitiert".`
+            `<@${
+              newMember.user.id
+            }> you werde assigned role "Stressed Out". Reconnect may be necessary to be able to talk.`
           )
         );
     });
@@ -149,3 +152,49 @@ export class AudioQueue extends EventEmitter {
     }
   };
 }
+
+export const ruleSet = [
+  { user: "olaf", reactionToAdd: "💕" },
+  { user: "nils", reactionToAdd: 510584011781963786 },
+  { user: "justus", reactionToAdd: 508737241443729408 },
+  { user: "marcel", reactionToAdd: 508737241930006561 }
+] as reactionRuleSet[];
+
+export const handleAdrianNameChange = (
+  global: globalObject,
+  newUser: GuildMember,
+  userIds: UserIds
+) => {
+  if (global.renameAdrian) {
+    if (newUser.user.id === userIds.adrian && newUser.nickname !== "Omniadrimon") {
+      newUser.setNickname("Omniadrimon");
+    }
+  }
+};
+
+export interface reactionRuleSet {
+  user: string;
+  reactionToAdd: MessageReaction | number | string;
+}
+
+export const addReactionToMessage = (
+  message: Message,
+  client: Client,
+  userIds: UserIds,
+  rulesets: reactionRuleSet[]
+) => {
+  rulesets.map(ruleset => {
+    let emoji: Emoji | string | number = undefined;
+    if (typeof ruleset.reactionToAdd !== "string" && typeof ruleset.reactionToAdd !== "number") {
+      emoji = client.emojis.get("" + ruleset.reactionToAdd);
+    } else emoji = ruleset.reactionToAdd;
+    if (message.member.user.id === (userIds as any)[ruleset.user]) {
+      message
+        .react(emoji as string | Emoji)
+        .then(reaction =>
+          reactionDeletionHandler(message, reaction, (userIds as any)[ruleset.user])
+        )
+        .catch(error => console.log(error));
+    }
+  });
+};

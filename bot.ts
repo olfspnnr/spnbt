@@ -8,8 +8,12 @@ import { messageHandleObjectPleb } from "./messageHandlerPleb";
 import {
   reactionDeletionHandler,
   AudioQueue,
-  checkIfMemberHasntRolesAndAssignRoles
+  checkIfMemberHasntRolesAndAssignRoles,
+  handleAdrianNameChange,
+  addReactionToMessage,
+  ruleSet
 } from "./shared";
+import { websocketServer } from "./server";
 
 const auth: auth = require("./auth.json");
 export const { roleIds, userIds, channelIds }: idObject = require("./rolesanduser.json");
@@ -87,6 +91,11 @@ audioQueue.on("error", error => console.log(error));
 client.on("ready", () => {
   console.log("I am ready!");
   client.user.setGame("mit dem Fühls");
+  let server = new websocketServer({
+    port: 8080,
+    onMessage: (message: any) =>
+      (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(message.payload)
+  });
 });
 
 client.on("voiceStateUpdate", (oldMember, newMember) => {
@@ -127,11 +136,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 
 client.on("guildMemberUpdate", (oldUser, newUser) => {
   console.log(`${oldUser.nickname} => ${newUser.nickname}`);
-  if (global.renameAdrian) {
-    if (newUser.user.id === userIds.adrian && newUser.nickname !== "Omniadrimon") {
-      newUser.setNickname("Omniadrimon");
-    }
-  }
+  handleAdrianNameChange(global, newUser, userIds);
 });
 
 // Create an event listener for messages
@@ -173,31 +178,7 @@ client.on("message", message => {
       if (typeof possibleFunction === "function") {
         return possibleFunction(message, client, global);
       } else {
-        if (message.member.user.id === userIds.marcel) {
-          message.react(client.emojis.get("508737241930006561")).then(firstReaction => {
-            reactionDeletionHandler(message, firstReaction, userIds.marcel);
-            message
-              .react(client.emojis.get("510584011781963786"))
-              .then(secondReaction =>
-                reactionDeletionHandler(message, secondReaction, userIds.marcel)
-              );
-          });
-        }
-        if (message.member.user.id === userIds.justus) {
-          message
-            .react(client.emojis.get("508737241443729408"))
-            .then(reaction => reactionDeletionHandler(message, reaction, userIds.justus));
-        }
-        if (message.member.user.id === userIds.olaf) {
-          message
-            .react("💕")
-            .then(reaction => reactionDeletionHandler(message, reaction, userIds.olaf));
-        }
-        if (message.member.user.id === userIds.nils) {
-          message
-            .react(client.emojis.get("510584011781963786"))
-            .then(reaction => reactionDeletionHandler(message, reaction, userIds.nils));
-        }
+        addReactionToMessage(message, client, userIds, ruleSet);
       }
     } else console.log("Nachricht von Bernd");
   } catch (error) {
