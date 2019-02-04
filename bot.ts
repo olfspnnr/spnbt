@@ -90,7 +90,7 @@ audioQueue.on("error", error => console.log(error));
 
 client.on("ready", () => {
   console.log("I am ready!");
-  client.user.setGame("mit dem Fühls");
+  client.user.setGame("mit deinen Gefühlen");
   let server = new websocketServer({
     port: 8080,
     onMessage: (message: any) =>
@@ -119,16 +119,6 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
     );
   } else if (newMember.voiceChannel !== undefined && oldMember.voiceChannel !== undefined) {
     console.log(`${oldMember.user.username}/${oldMember.displayName} moved Channels.`);
-    try {
-      checkIfMemberHasntRolesAndAssignRoles(
-        client,
-        newMember,
-        [roleIds.uninitiert, roleIds.poop],
-        [roleIds.uninitiert]
-      );
-    } catch (error) {
-      console.log(error);
-    }
   } else {
     return console.log("Konnte nicht entscheiden was passiert ist");
   }
