@@ -153,7 +153,6 @@ const spitLovooWisdom = (message: Message, currenState: globalObject) => {
           } 🕵️‍${currentState.lovooArray.length}`
         }
       } as RichEmbed)
-      .then(msg => msg.deletable && msg.delete(30000))
       .catch(error => {
         message.channel
           .send("Da ist was fehlgelaufen - Ups")

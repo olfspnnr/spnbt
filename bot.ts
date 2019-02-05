@@ -134,32 +134,35 @@ client.on("message", message => {
     );
 
     let possibleFunction: any = undefined;
-    if (message.member.id !== userIds.spinbot) {
-      let functionCall = `${message.content.slice(
-        0,
-        !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
-      )}`;
-      if (functionCall.slice(0, 1) === "!") {
-        functionCall = functionCall.slice(1);
-      }
-      if (message.member.roles.has(roleIds.spinner)) {
-        possibleFunction = (messageHandleObjectAdmin as any)[functionCall] || undefined;
-      }
-      if (
-        (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) &&
-        possibleFunction === undefined
-      ) {
-        possibleFunction = (messageHandleObjectTrusted as any)[functionCall] || undefined;
-      }
-      if (possibleFunction === undefined) {
-        possibleFunction = (messageHandleObjectPleb as any)[functionCall] || undefined;
-      }
-      if (typeof possibleFunction === "function") {
-        return possibleFunction(message, client, currentState);
-      } else {
-        addReactionToMessage(message, client, userIds, ruleSet);
-      }
-    } else console.log("Nachricht von Bernd");
+    if (message.content.slice(0, 1) === "!") {
+      if (message.member.id !== userIds.spinbot) {
+        let functionCall = `${message.content.slice(
+          0,
+          !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
+        )}`;
+        if (functionCall.slice(0, 1) === "!") {
+          functionCall = functionCall.slice(1);
+        }
+        if (message.member.roles.has(roleIds.spinner)) {
+          possibleFunction = (messageHandleObjectAdmin as any)[functionCall] || undefined;
+        }
+        if (
+          (message.member.roles.has(roleIds.spinner) ||
+            message.member.roles.has(roleIds.trusted)) &&
+          possibleFunction === undefined
+        ) {
+          possibleFunction = (messageHandleObjectTrusted as any)[functionCall] || undefined;
+        }
+        if (possibleFunction === undefined) {
+          possibleFunction = (messageHandleObjectPleb as any)[functionCall] || undefined;
+        }
+        if (typeof possibleFunction === "function") {
+          return possibleFunction(message, client, currentState);
+        } else {
+          console.log("Scheint kein Command zu sein");
+        }
+      } else console.log("Nachricht von Bernd");
+    } else addReactionToMessage(message, client, userIds, ruleSet);
   } catch (error) {
     console.log(error);
     return console.log(

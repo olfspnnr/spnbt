@@ -93,9 +93,15 @@ export interface audioQueueElement {
 
 export const setStateProp = (propName: string, valueToSet: any) =>
   new Promise((resolve, reject) => {
-    if ((currentState as any)[propName] !== undefined) {
+    if ((currentState as any)[propName] === undefined) {
       currentState = { ...currentState, [propName]: valueToSet };
       return resolve(currentState);
+    } else if (typeof (currentState as any)[propName] === "object") {
+      if ((currentState as any)[propName].length !== undefined) {
+        (currentState as any)[propName] = [...(currentState as any)[propName], ...valueToSet];
+      } else {
+        (currentState as any)[propName] = { ...(currentState as any)[propName], ...valueToSet };
+      }
     }
     return reject(false);
   });
@@ -287,15 +293,15 @@ export const handleAdrianNameChange = (
 };
 
 export const ruleSet = [
-  { user: "olaf", reactionToAdd: "💕" },
-  { user: "nils", reactionToAdd: 510584011781963786 },
-  { user: "justus", reactionToAdd: 508737241443729408 },
-  { user: "marcel", reactionToAdd: 508737241930006561 }
+  { user: "olaf", reactionToAdd: "♥" },
+  { user: "nils", reactionToAdd: "katze" },
+  { user: "justus", reactionToAdd: "pill-1" },
+  { user: "marcel", reactionToAdd: "daddy" }
 ] as reactionRuleSet[];
 
 export interface reactionRuleSet {
   user: string;
-  reactionToAdd: MessageReaction | number | string;
+  reactionToAdd: number | string;
 }
 
 export const addReactionToMessage = (
@@ -306,12 +312,14 @@ export const addReactionToMessage = (
 ) => {
   rulesets.map(ruleset => {
     let emoji: Emoji | string | number = undefined;
-    if (typeof ruleset.reactionToAdd !== "string") {
-      emoji = client.emojis.get("" + ruleset.reactionToAdd);
+    if (typeof ruleset.reactionToAdd === "number" || typeof ruleset.reactionToAdd === "string") {
+      if (typeof ruleset.reactionToAdd === "string")
+        emoji = client.emojis.find(emoji => emoji.name === ruleset.reactionToAdd);
+      else emoji = client.emojis.find(emoji => emoji.id === ruleset.reactionToAdd);
     } else emoji = ruleset.reactionToAdd;
     if (message.member.user.id === (userIds as any)[ruleset.user]) {
       message
-        .react(emoji as string | Emoji)
+        .react(emoji)
         .then(reaction =>
           reactionDeletionHandler(message, reaction, (userIds as any)[ruleset.user])
         )
