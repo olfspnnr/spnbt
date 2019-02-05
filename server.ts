@@ -1,5 +1,6 @@
 import * as websocket from "websocket";
 import * as http from "http";
+import * as https from "https";
 
 interface webSocketServerProps {
   port: number;
@@ -14,10 +15,7 @@ export class websocketServer {
     this.webSocketsServerPort = port;
     this.Servers = {
       webSocketServer: websocket.server,
-      httpServer: http.createServer((request, response) => {
-        // Not important for us. We're writing WebSocket server,
-        // not HTTP server
-      })
+      httpsServer: https.createServer({})
     };
     this.onMessage = (message: any) => onMessage(message);
     this.initialise();
