@@ -6,15 +6,22 @@ import {
   TextChannel,
   MessageCollector,
   VoiceChannel,
-  StreamDispatcher
+  StreamDispatcher,
+  RichEmbed
 } from "discord.js";
-import { auth, currentState, roleIds, channelIds } from "./bot";
+import { auth, roleIds, channelIds } from "./bot";
 const auth: auth = require("./auth.json");
 const Twitter = require("twitter");
 import * as ytdl from "ytdl-core";
 import { ReadStream } from "tty";
 import { helpTextPleb } from "./messageHandlerPleb";
-import { getStreamFromYouTubeLink, addToQueue, audioQueueElement } from "./shared";
+import {
+  getStreamFromYouTubeLink,
+  addToQueue,
+  audioQueueElement,
+  currentState,
+  globalObject
+} from "./shared";
 
 export interface commandBlock {
   command: string;
@@ -45,6 +52,7 @@ export interface messageHandleObjectTrusted {
   wilhelm: (message: Message, client?: Client) => void;
   "<:mist:509083062051799050>": (message: Message) => void;
   fault: (message: Message) => void;
+  wisdom: (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObjectTrusted = {
@@ -70,7 +78,8 @@ export const messageHandleObjectTrusted = {
   wiki: (message: Message, client?: Client) => searchInWiki(message),
   wilhelm: (message: Message, client?: Client) => playWilhelmScream(message),
   "<:mist:509083062051799050>": (message: Message) => playMistSound(message),
-  fault: (message: Message) => playItsNotYourFault(message)
+  fault: (message: Message) => playItsNotYourFault(message),
+  wisdom: (message: Message, client?: Client) => spitLovooWisdom(message, currentState)
 } as messageHandleObjectTrusted;
 
 export const helpTextTrusted = [
@@ -91,7 +100,8 @@ export const helpTextTrusted = [
   '!wiki searchterm - Gibt eine Auswahl für den Begriff zurück => Nummer => "!link" eintippen wenn link gewünscht',
   "!wilhelm - spielt einen Willhelm Schrei ab",
   ":mist: - spielt Mist Sound ab",
-  "!fault - spielt die weltberühmte Szene aus dem Klassiker 'Good Will Hunting' ab."
+  "!fault - spielt die weltberühmte Szene aus dem Klassiker 'Good Will Hunting' ab.",
+  "!widsom - präsentiert eine Weißheit von einem LovooUser."
 ].join("\r");
 
 const writeHelpMessage = async (message: Message) => {
@@ -106,6 +116,57 @@ const writeHelpMessage = async (message: Message) => {
   } catch (error) {
     return console.log(error);
   }
+};
+
+const spitLovooWisdom = (message: Message, currenState: globalObject) => {
+  if (currentState.lovooArray && currentState.lovooArray.length > 0) {
+    const currentElement = currentState.lovooArray.pop();
+    message.channel
+      .sendEmbed({
+        color: 0xff6633,
+        title: "Wisdom of Lovoo~",
+        author: {
+          name: currentElement.name,
+          url: `https://www.lovoo.com/profile/${currentElement.id}`
+        },
+        image: {
+          ...currentElement.images[0]
+        },
+        thumbnail: {
+          url:
+            "https://cdn.discordapp.com/attachments/542410380757041173/542430421686681629/ezgif-5-2f5180a04e62.png"
+        },
+        description: currentElement.freetext,
+        fields: [
+          {
+            name: "Info:",
+            value: `${currentElement.age} Jahre - ${(currentElement.flirtInterests &&
+              currentElement.flirtInterests
+                .map(intrest => (intrest === "frie" ? "friends" : intrest))
+                .join(" - ")) ||
+              "Keine Angabe"}`
+          }
+        ],
+        footer: {
+          text: `🏡${currentElement.locations.home.city} 📍${
+            currentElement.locations.current.city
+          } 🕵️‍${currentState.lovooArray.length}`
+        }
+      } as RichEmbed)
+      .then(msg => msg.deletable && msg.delete(30000))
+      .catch(error => {
+        message.channel
+          .send("Da ist was fehlgelaufen - Ups")
+          .then((catchedMsg: Message) => catchedMsg.deletable && catchedMsg.delete(10000));
+        console.log(error);
+      });
+  } else {
+    message.channel
+      .send("Sorry, keine LovooUser geladen ;(")
+      .then((msg: Message) => msg.deletable && msg.delete(15000))
+      .catch(error => console.log(error));
+  }
+  message.deletable && message.delete(500);
 };
 
 const playItsNotYourFault = (message: Message) =>

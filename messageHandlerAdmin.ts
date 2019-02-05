@@ -1,15 +1,8 @@
-import {
-  Message,
-  Client,
-  ChannelLogsQueryOptions,
-  GuildMember,
-  DMChannel,
-  Guild
-} from "discord.js";
+import { Message, Client, ChannelLogsQueryOptions, GuildMember, DMChannel } from "discord.js";
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
-import { channelIds, roleIds, userIds, globalObject } from "./bot";
-import { stripMemberOfAllRoles } from "./shared";
+import { channelIds, roleIds, userIds } from "./bot";
+import { stripMemberOfAllRoles, globalObject, getState } from "./shared";
 
 export interface messageHandleObjectAdmin {
   help: (message: Message, client?: Client) => void;
@@ -23,6 +16,7 @@ export interface messageHandleObjectAdmin {
   test: (message: Message, client?: Client) => void;
   poop: (message: Message, client?: Client) => void;
   renameAdrian: (message: Message, client?: Client, global?: any) => void;
+  getLovooAmount: (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObjectAdmin = {
@@ -43,7 +37,8 @@ export const messageHandleObjectAdmin = {
   test: (message: Message, client?: Client) => executeTestFunction(message, client),
   poop: (message: Message, client?: Client) => poopCommand(message, client),
   renameAdrian: (message: Message, client?: Client, global?: globalObject) =>
-    renameAdrian(message, client, global)
+    renameAdrian(message, client, global),
+  getLovooAmount: (message: Message, client?: Client) => getLovooAmount(message, client)
 } as messageHandleObjectAdmin;
 
 export const helpTextSpinner = [
@@ -60,7 +55,8 @@ export const helpTextSpinner = [
   "!moveAndKeep  - Moved einen User in die Stille Treppe und behält ihn dort",
   "!test - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
   "!poop - weist eine Person der Poopgruppe zu",
-  "!renameAdrian - nennt Adrian um zu 'Omniadrimon' / toggle ob dies automatisch passieren soll"
+  "!renameAdrian - nennt Adrian um zu 'Omniadrimon' / toggle ob dies automatisch passieren soll",
+  "!getLovooAmount - gibt die Anzahl der Lovoo-User im 'Speicher' zurück."
 ].join("\r");
 
 const writeHelpMessage = async (message: Message) => {
@@ -78,20 +74,35 @@ const writeHelpMessage = async (message: Message) => {
   }
 };
 
-const executeTestFunction = (message: Message, client: Client) => {};
+const executeTestFunction = (message: Message, client: Client) => {
+  console.log("TEST");
 
-const renameAdrian = (message: Message, client: Client, global: any) => {
+  message.deletable && message.delete(250);
+};
+
+const getLovooAmount = (message: Message, client: Client) => {
+  let currentState = getState();
+  if (currentState.lovooArray) {
+    message.channel
+      .send(`Derzeit vorhandene User: ${currentState.lovooArray.length}`)
+      .then((msg: Message) => msg.deletable && msg.delete(60000))
+      .catch(error => console.log({ caller: "getLovooAmount", error: error }));
+  }
+  message.deletable && message.delete(250);
+};
+
+const renameAdrian = (message: Message, client: Client, currentState: any) => {
   if (message.guild.members.get(userIds.adrian)) {
-    if (global.renameAdrian !== undefined && global.renameAdrian) {
+    if (currentState.renameAdrian !== undefined && currentState.renameAdrian) {
       console.log("Werde nun Adrian umbennen");
       message.guild.members.get(userIds.adrian).setNickname("Omniadrimon");
-      global["renameAdrian"] = true;
+      currentState["renameAdrian"] = true;
     } else {
       console.log("Werde nun Adrian nichtmehr umbennen");
-      global.renameAdrian = false;
+      currentState.renameAdrian = false;
     }
     message.delete(150);
-    return console.log(global);
+    return console.log(currentState);
   } else
     message.channel.sendMessage("Adrian ist nicht online").then((msg: Message) => msg.delete(2500));
 };

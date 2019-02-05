@@ -6,12 +6,13 @@ import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
 import { messageHandleObjectAdmin } from "./messageHandlerAdmin";
 import { messageHandleObjectPleb } from "./messageHandlerPleb";
 import {
-  reactionDeletionHandler,
   AudioQueue,
   checkIfMemberHasntRolesAndAssignRoles,
   handleAdrianNameChange,
   addReactionToMessage,
-  ruleSet
+  ruleSet,
+  currentState,
+  handleWebSocketMessage
 } from "./shared";
 import { websocketServer } from "./server";
 
@@ -58,19 +59,8 @@ export interface idObject {
   channelIds: ChannelIds;
 }
 
-export interface globalObject {
-  renameAdrian?: boolean;
-}
-
-let global = {} as globalObject;
-
 // Create an instance of a Discord client
 const client = new Client();
-
-export let currentState = {
-  isPlayingAudio: false,
-  isInspiring: false
-};
 
 export let audioQueue = new AudioQueue();
 
@@ -93,8 +83,7 @@ client.on("ready", () => {
   client.user.setGame("mit deinen Gefühlen");
   let server = new websocketServer({
     port: 8080,
-    onMessage: (message: any) =>
-      (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(message.payload)
+    onMessage: (message: any) => handleWebSocketMessage(message)
   });
 });
 
@@ -126,7 +115,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 
 client.on("guildMemberUpdate", (oldUser, newUser) => {
   console.log(`${oldUser.nickname} => ${newUser.nickname}`);
-  handleAdrianNameChange(global, newUser, userIds);
+  handleAdrianNameChange(currentState, newUser, userIds);
 });
 
 // Create an event listener for messages
@@ -166,7 +155,7 @@ client.on("message", message => {
         possibleFunction = (messageHandleObjectPleb as any)[functionCall] || undefined;
       }
       if (typeof possibleFunction === "function") {
-        return possibleFunction(message, client, global);
+        return possibleFunction(message, client, currentState);
       } else {
         addReactionToMessage(message, client, userIds, ruleSet);
       }

@@ -42,8 +42,7 @@ export class websocketServer {
       let connection = request.accept(null, request.origin);
       console.log(new Date() + " Connection accepted.");
       connection.on("message", function(message: any) {
-        console.log("message received:");
-        console.log(message);
+        console.log("message received");
         that.onMessage(JSON.parse(message.utf8Data));
       });
       // user disconnected
