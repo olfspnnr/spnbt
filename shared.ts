@@ -77,10 +77,15 @@ export interface lovooUserEntry {
 }
 
 export interface globalObject {
-  renameAdrian?: boolean;
+  renameUser?: userToRename[];
   isPlayingAudio?: boolean;
   isInspiring?: boolean;
   lovooArray?: lovooUserEntry[];
+}
+
+export interface userToRename {
+  id: string;
+  isBeingRenamed: boolean;
 }
 
 export interface audioQueueElement {
@@ -109,7 +114,7 @@ export const setStateProp = (propName: string, valueToSet: any) =>
 export const getState = () => ({ ...currentState });
 
 export let currentState = {
-  renameAdrian: false,
+  renameUser: [],
   isPlayingAudio: false,
   isInspiring: false,
   lovooArray: []
@@ -285,7 +290,7 @@ export const handleAdrianNameChange = (
   newUser: GuildMember,
   userIds: UserIds
 ) => {
-  if (global.renameAdrian) {
+  if (global.renameUser) {
     if (newUser.user.id === userIds.adrian && newUser.nickname !== "Omniadrimon") {
       newUser.setNickname("Omniadrimon");
     }

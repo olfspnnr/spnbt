@@ -2,7 +2,7 @@ import { Message, Client, ChannelLogsQueryOptions, GuildMember, DMChannel } from
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 import { channelIds, roleIds, userIds } from "./bot";
-import { stripMemberOfAllRoles, globalObject, getState } from "./shared";
+import { stripMemberOfAllRoles, globalObject, getState, userToRename } from "./shared";
 
 export interface messageHandleObjectAdmin {
   help: (message: Message, client?: Client) => void;
@@ -15,7 +15,7 @@ export interface messageHandleObjectAdmin {
   moveAndKeep: (message: Message, client?: Client) => void;
   test: (message: Message, client?: Client) => void;
   poop: (message: Message, client?: Client) => void;
-  renameAdrian: (message: Message, client?: Client, global?: any) => void;
+  renameUser: (message: Message, client?: Client, global?: any) => void;
   getLovooAmount: (message: Message, client?: Client) => void;
 }
 
@@ -36,8 +36,8 @@ export const messageHandleObjectAdmin = {
   moveAndKeep: (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
   test: (message: Message, client?: Client) => executeTestFunction(message, client),
   poop: (message: Message, client?: Client) => poopCommand(message, client),
-  renameAdrian: (message: Message, client?: Client, global?: globalObject) =>
-    renameAdrian(message, client, global),
+  renameUser: (message: Message, client?: Client, global?: globalObject) =>
+    renameUser(message, client, global),
   getLovooAmount: (message: Message, client?: Client) => getLovooAmount(message, client)
 } as messageHandleObjectAdmin;
 
@@ -55,7 +55,7 @@ export const helpTextSpinner = [
   "!moveAndKeep  - Moved einen User in die Stille Treppe und behält ihn dort",
   "!test - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
   "!poop - weist eine Person der Poopgruppe zu",
-  "!renameAdrian - nennt Adrian um zu 'Omniadrimon' / toggle ob dies automatisch passieren soll",
+  "!renameUser - nennt User um zu angegebenen Namen / toggle ob dies automatisch passieren soll",
   "!getLovooAmount - gibt die Anzahl der Lovoo-User im 'Speicher' zurück."
 ].join("\r");
 
@@ -91,20 +91,40 @@ const getLovooAmount = (message: Message, client: Client) => {
   message.deletable && message.delete(250);
 };
 
-const renameAdrian = (message: Message, client: Client, currentState: any) => {
-  if (message.guild.members.get(userIds.adrian)) {
-    if (currentState.renameAdrian !== undefined && currentState.renameAdrian) {
-      console.log("Werde nun Adrian umbennen");
-      message.guild.members.get(userIds.adrian).setNickname("Omniadrimon");
-      currentState["renameAdrian"] = true;
+const renameUser = (message: Message, client: Client, currentState: globalObject) => {
+  console.log(message.content);
+  let [userId, nicknameToSet] = message.content.slice("!renameUser ".length).split(" ");
+  console.log({ userid: userId, nickname: nicknameToSet });
+  userId = userId
+    .replace("<@", "")
+    .replace("!", "")
+    .replace(">", "");
+  if (message.guild.members.some(member => member.id === userId)) {
+    console.log("user gefunden");
+    if (currentState.renameUser.some(userRe => userRe.id === userId)) {
+      currentState.renameUser = currentState.renameUser.map(userRe => {
+        if (userRe.id === userId) {
+          return { ...userRe, isBeingRenamed: !userRe.isBeingRenamed };
+        } else return userRe;
+      });
+    } else currentState.renameUser.push({ id: userId, isBeingRenamed: true } as userToRename);
+
+    let user = currentState.renameUser.find(user => user.id === userId);
+    if (user.isBeingRenamed) {
+      message.guild.members.get(user.id).setNickname(nicknameToSet);
+      console.log("Werde nun User umbennen");
     } else {
-      console.log("Werde nun Adrian nichtmehr umbennen");
-      currentState.renameAdrian = false;
+      message.guild.members
+        .get(user.id)
+        .setNickname(message.guild.members.get(user.id).user.username);
+      console.log("Werde nun User nichtmehr umbennen");
     }
-    message.delete(150);
-    return console.log(currentState);
   } else
-    message.channel.sendMessage("Adrian ist nicht online").then((msg: Message) => msg.delete(2500));
+    message.channel
+      .send("User nicht gefunden")
+      .then((msg: Message) => msg.deletable && msg.delete(15000));
+  message.deletable && message.delete(500);
+  return console.log(currentState.renameUser);
 };
 
 const poopCommand = (message: Message, client: Client) => {
