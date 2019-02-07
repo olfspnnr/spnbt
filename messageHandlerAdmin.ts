@@ -3,6 +3,7 @@ import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 import { channelIds, roleIds, userIds } from "./bot";
 import { stripMemberOfAllRoles, globalObject, getState, userToRename } from "./shared";
+import { client } from "websocket";
 
 export interface messageHandleObjectAdmin {
   help: (message: Message, client?: Client) => void;
@@ -17,6 +18,7 @@ export interface messageHandleObjectAdmin {
   poop: (message: Message, client?: Client) => void;
   renameUser: (message: Message, client?: Client, global?: any) => void;
   getLovooAmount: (message: Message, client?: Client) => void;
+  bulkDelete: (message: Message, client?: Client) => void;
 }
 
 export const messageHandleObjectAdmin = {
@@ -38,7 +40,8 @@ export const messageHandleObjectAdmin = {
   poop: (message: Message, client?: Client) => poopCommand(message, client),
   renameUser: (message: Message, client?: Client, global?: globalObject) =>
     renameUser(message, client, global),
-  getLovooAmount: (message: Message, client?: Client) => getLovooAmount(message, client)
+  getLovooAmount: (message: Message, client?: Client) => getLovooAmount(message, client),
+  bulkDelete: (message: Message, client?: Client) => bulkDelete(message, client)
 } as messageHandleObjectAdmin;
 
 export const helpTextSpinner = [
@@ -55,8 +58,9 @@ export const helpTextSpinner = [
   "!moveAndKeep  - Moved einen User in die Stille Treppe und behält ihn dort",
   "!test - zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
   "!poop - weist eine Person der Poopgruppe zu",
-  "!renameUser - nennt User um zu angegebenen Namen / toggle ob dies automatisch passieren soll",
-  "!getLovooAmount - gibt die Anzahl der Lovoo-User im 'Speicher' zurück."
+  "!renameUser - nennt User um zu angegebenen Namen / toggle ob dies automatisch passieren soll - !renameUser @[user] [nickname]",
+  "!getLovooAmount - gibt die Anzahl der Lovoo-User im 'Speicher' zurück.",
+  "!bulkDelete - filtert die letzten 25 Nachrichten nach der ID und löscht diese (Außer gepinnte Nachrichten) - !bulkDelte @[user] ?[anzahl]"
 ].join("\r");
 
 const writeHelpMessage = async (message: Message) => {
@@ -80,6 +84,28 @@ const executeTestFunction = (message: Message, client: Client) => {
   message.deletable && message.delete(250);
 };
 
+const bulkDelete = (message: Message, client: Client) => {
+  let [userId, anzahl] = message.content.slice("!renameUser ".length).split(" ");
+  userId = userId
+    .replace(/<@/g, "")
+    .replace(/!/g, "")
+    .replace(/>/g, "");
+  let parsedAnzahl = anzahl ? parseInt(anzahl) : undefined;
+  if (parsedAnzahl > 100) {
+    parsedAnzahl = 100;
+  }
+  console.log({ userid: userId });
+  if (message.guild.members.some(member => member.id === userId)) {
+    message.channel.fetchMessages({ limit: parsedAnzahl || 25 }).then(msgs => {
+      let messagesToBeDeleted = msgs.filter(
+        message => message.author.id === userId && !message.pinned
+      );
+      messagesToBeDeleted.deleteAll();
+      message.deletable && message.delete(500);
+    });
+  } else message.deletable && message.delete(2500);
+};
+
 const getLovooAmount = (message: Message, client: Client) => {
   let currentState = getState();
   if (currentState.lovooArray) {
@@ -92,13 +118,12 @@ const getLovooAmount = (message: Message, client: Client) => {
 };
 
 const renameUser = (message: Message, client: Client, currentState: globalObject) => {
-  console.log(message.content);
   let [userId, nicknameToSet] = message.content.slice("!renameUser ".length).split(" ");
   console.log({ userid: userId, nickname: nicknameToSet });
   userId = userId
-    .replace("<@", "")
-    .replace("!", "")
-    .replace(">", "");
+    .replace(/<@/g, "")
+    .replace(/!/g, "")
+    .replace(/>/g, "");
   if (message.guild.members.some(member => member.id === userId)) {
     console.log("user gefunden");
     if (currentState.renameUser.some(userRe => userRe.id === userId)) {
@@ -131,7 +156,10 @@ const poopCommand = (message: Message, client: Client) => {
   message.delete(250);
   let userToAssignRoleToID = message.content.slice("!moveAndKeep ".length);
   userToAssignRoleToID = !!~userToAssignRoleToID.indexOf("<@")
-    ? userToAssignRoleToID.replace("<@", "").replace(">", "")
+    ? userToAssignRoleToID
+        .replace(/<@/g, "")
+        .replace(/!/g, "")
+        .replace(/>/g, "")
     : userToAssignRoleToID;
   userToAssignRoleToID = userToAssignRoleToID.replace(/\\/g, "").replace(" ", "");
   console.log(userToAssignRoleToID);
@@ -146,7 +174,10 @@ const moveAndKeepUserInChannel = (message: Message, client: Client) => {
   message.delete(250);
   let userToMoveId = message.content.slice("!moveAndKeep ".length);
   userToMoveId = !!~userToMoveId.indexOf("<@")
-    ? userToMoveId.replace("<@", "").replace(">", "")
+    ? userToMoveId
+        .replace(/<@/g, "")
+        .replace(/!/g, "")
+        .replace(/>/g, "")
     : userToMoveId;
   userToMoveId = userToMoveId.replace(/\\/g, "").replace(" ", "");
   console.log(userToMoveId);

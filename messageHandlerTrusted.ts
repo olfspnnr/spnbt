@@ -126,7 +126,7 @@ const spitLovooWisdom = (message: Message, currenState: globalObject) => {
         color: 0xff6633,
         title: "Wisdom of Lovoo~",
         author: {
-          name: currentElement.name,
+          name: `${currentElement.name}${currentElement.verifications.verified ? " - ✔" : ""}`,
           url: `https://www.lovoo.com/profile/${currentElement.id}`
         },
         image: {
@@ -134,7 +134,7 @@ const spitLovooWisdom = (message: Message, currenState: globalObject) => {
         },
         thumbnail: {
           url:
-            "https://cdn.discordapp.com/attachments/542410380757041173/542430421686681629/ezgif-5-2f5180a04e62.png"
+            "https://cdn.discordapp.com/attachments/542410380757041173/543170245221941348/ezgif-5-2f5180a04e62.png"
         },
         description: currentElement.freetext,
         fields: [
@@ -144,7 +144,7 @@ const spitLovooWisdom = (message: Message, currenState: globalObject) => {
               currentElement.flirtInterests
                 .map(intrest => (intrest === "frie" ? "friends" : intrest))
                 .join(" - ")) ||
-              "Keine Angabe"}`
+              "Keine Angabe"} - ${currentElement.isOnline > 0 ? "Online" : "Offline"}`
           }
         ],
         footer: {
@@ -153,6 +153,7 @@ const spitLovooWisdom = (message: Message, currenState: globalObject) => {
           } 🕵️‍${currentState.lovooArray.length}`
         }
       } as RichEmbed)
+      .then((msg: Message) => msg.deletable && msg.delete(120000))
       .catch(error => {
         message.channel
           .send("Da ist was fehlgelaufen - Ups")
