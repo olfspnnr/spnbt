@@ -76,7 +76,7 @@ export interface lovooUserEntry {
   verifications: Verifications;
 }
 
-export interface globalObject {
+export interface State {
   renameUser?: userToRename[];
   isPlayingAudio?: boolean;
   isInspiring?: boolean;
@@ -86,6 +86,7 @@ export interface globalObject {
 export interface userToRename {
   id: string;
   isBeingRenamed: boolean;
+  renameTo?: string;
 }
 
 export interface audioQueueElement {
@@ -118,7 +119,7 @@ export let currentState = {
   isPlayingAudio: false,
   isInspiring: false,
   lovooArray: []
-} as globalObject;
+} as State;
 
 export interface wsMessage {
   type: string;
@@ -285,15 +286,13 @@ export class AudioQueue extends EventEmitter {
   };
 }
 
-export const handleAdrianNameChange = (
-  global: globalObject,
-  newUser: GuildMember,
-  userIds: UserIds
-) => {
-  if (global.renameUser) {
-    if (newUser.user.id === userIds.adrian && newUser.nickname !== "Omniadrimon") {
-      newUser.setNickname("Omniadrimon");
-    }
+export const handleAdrianNameChange = (currentState: State, userToChange: GuildMember) => {
+  if (currentState.renameUser) {
+    currentState.renameUser.map(rename => {
+      if (rename.id === userToChange.id && rename.isBeingRenamed) {
+        userToChange.setNickname(rename.renameTo || userToChange.user.username);
+      }
+    });
   }
 };
 

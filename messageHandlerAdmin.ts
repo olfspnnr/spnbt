@@ -2,7 +2,7 @@ import { Message, Client, ChannelLogsQueryOptions, GuildMember, DMChannel } from
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 import { channelIds, roleIds, userIds } from "./bot";
-import { stripMemberOfAllRoles, globalObject, getState, userToRename } from "./shared";
+import { stripMemberOfAllRoles, State, getState, userToRename } from "./shared";
 import { client } from "websocket";
 
 export interface messageHandleObjectAdmin {
@@ -38,7 +38,7 @@ export const messageHandleObjectAdmin = {
   moveAndKeep: (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
   test: (message: Message, client?: Client) => executeTestFunction(message, client),
   poop: (message: Message, client?: Client) => poopCommand(message, client),
-  renameUser: (message: Message, client?: Client, global?: globalObject) =>
+  renameUser: (message: Message, client?: Client, global?: State) =>
     renameUser(message, client, global),
   getLovooAmount: (message: Message, client?: Client) => getLovooAmount(message, client),
   bulkDelete: (message: Message, client?: Client) => bulkDelete(message, client)
@@ -117,7 +117,7 @@ const getLovooAmount = (message: Message, client: Client) => {
   message.deletable && message.delete(250);
 };
 
-const renameUser = (message: Message, client: Client, currentState: globalObject) => {
+const renameUser = (message: Message, client: Client, currentState: State) => {
   let [userId, nicknameToSet] = message.content.slice("!renameUser ".length).split(" ");
   console.log({ userid: userId, nickname: nicknameToSet });
   userId = userId
@@ -132,7 +132,12 @@ const renameUser = (message: Message, client: Client, currentState: globalObject
           return { ...userRe, isBeingRenamed: !userRe.isBeingRenamed };
         } else return userRe;
       });
-    } else currentState.renameUser.push({ id: userId, isBeingRenamed: true } as userToRename);
+    } else
+      currentState.renameUser.push({
+        id: userId,
+        isBeingRenamed: true,
+        renameTo: nicknameToSet
+      } as userToRename);
 
     let user = currentState.renameUser.find(user => user.id === userId);
     if (user.isBeingRenamed) {

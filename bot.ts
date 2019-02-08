@@ -8,7 +8,7 @@ import { messageHandleObjectPleb } from "./messageHandlerPleb";
 import {
   AudioQueue,
   checkIfMemberHasntRolesAndAssignRoles,
-  handleAdrianNameChange,
+  handleAdrianNameChange as handleNameChange,
   addReactionToMessage,
   ruleSet,
   currentState,
@@ -87,6 +87,8 @@ client.on("ready", () => {
   });
 });
 
+client.on("error", error => console.error(error));
+
 client.on("voiceStateUpdate", (oldMember, newMember) => {
   if (oldMember.voiceChannel === undefined && newMember.voiceChannel !== undefined) {
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
@@ -115,7 +117,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 
 client.on("guildMemberUpdate", (oldUser, newUser) => {
   console.log(`${oldUser.nickname} => ${newUser.nickname}`);
-  handleAdrianNameChange(currentState, newUser, userIds);
+  handleNameChange(currentState, newUser);
 });
 
 // Create an event listener for messages

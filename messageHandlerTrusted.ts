@@ -20,7 +20,7 @@ import {
   addToQueue,
   audioQueueElement,
   currentState,
-  globalObject
+  State
 } from "./shared";
 
 export interface commandBlock {
@@ -52,7 +52,7 @@ export interface messageHandleObjectTrusted {
   wilhelm: (message: Message, client?: Client) => void;
   "<:mist:509083062051799050>": (message: Message) => void;
   fault: (message: Message) => void;
-  wisdom: (message: Message, client?: Client) => void;
+  wisdom: (message: Message, client?: Client, numberToRepeat?: number) => void;
 }
 
 export const messageHandleObjectTrusted = {
@@ -79,7 +79,8 @@ export const messageHandleObjectTrusted = {
   wilhelm: (message: Message, client?: Client) => playWilhelmScream(message),
   "<:mist:509083062051799050>": (message: Message) => playMistSound(message),
   fault: (message: Message) => playItsNotYourFault(message),
-  wisdom: (message: Message, client?: Client) => spitLovooWisdom(message, currentState)
+  wisdom: (message: Message, client?: Client, numberToRepeat?: number) =>
+    spitLovooWisdom(message, currentState)
 } as messageHandleObjectTrusted;
 
 export const helpTextTrusted = [
@@ -118,7 +119,10 @@ const writeHelpMessage = async (message: Message) => {
   }
 };
 
-const spitLovooWisdom = (message: Message, currenState: globalObject) => {
+const spitLovooWisdom = (message: Message, currenState: State, numberToRepeat?: number) => {
+  let toRepeat =
+    numberToRepeat ||
+    (message.content.length > "!wisdom".length && message.content.slice("!wisdom ".length));
   if (currentState.lovooArray && currentState.lovooArray.length > 0) {
     const currentElement = currentState.lovooArray.pop();
     message.channel
@@ -153,7 +157,19 @@ const spitLovooWisdom = (message: Message, currenState: globalObject) => {
           } 🕵️‍${currentState.lovooArray.length}`
         }
       } as RichEmbed)
-      .then((msg: Message) => msg.deletable && msg.delete(120000))
+      .then((msg: Message) => {
+        msg.deletable &&
+          msg.delete(120000).then(() => {
+            if (toRepeat) {
+              if (typeof toRepeat === "number") {
+                toRepeat -= 1;
+              } else {
+                toRepeat = parseInt(toRepeat);
+              }
+            }
+            if (toRepeat > 0) spitLovooWisdom(message, currentState, toRepeat as number);
+          });
+      })
       .catch(error => {
         message.channel
           .send("Da ist was fehlgelaufen - Ups")
