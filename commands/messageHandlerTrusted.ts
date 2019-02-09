@@ -9,8 +9,7 @@ import {
   StreamDispatcher,
   RichEmbed
 } from "discord.js";
-import { auth, roleIds, channelIds } from "../bot";
-const auth: auth = require("./auth.json");
+import { auth, roleIds, channelIds, generalFunctionProps as commandProps } from "../bot";
 const Twitter = require("twitter");
 import * as ytdl from "ytdl-core";
 import { ReadStream } from "tty";
@@ -28,59 +27,56 @@ export interface commandBlock {
   function: (...any: any[]) => any;
 }
 
-const twitterClient = new Twitter({
-  consumer_key: auth.consumer_key,
-  consumer_secret: auth.consumer_secret,
-  access_token_key: auth.access_token_key,
-  access_token_secret: auth.access_token_secret
-});
-
 export interface messageHandleObjectTrusted {
+  [key: string]: (props: commandProps) => void;
   test: () => void;
-  daddy: (message: Message, client?: Client) => void;
-  twitter: (message: Message, client?: Client) => void;
-  help: (message: Message, client?: Client) => void;
-  natalieneu: (message: Message, client?: Client) => void;
-  inspire: (message: Message, client?: Client) => void;
-  inspireMode: (message: Message, client?: Client) => void;
-  mindful: (message: Message, client?: Client) => void;
-  flachbader: (message: Message, client?: Client) => void;
-  play: (message: Message, client?: Client) => void;
-  rigged: (message: Message, client?: Client) => void;
-  pin: (message: Message, client?: Client) => void;
-  wiki: (message: Message, client?: Client) => void;
-  wilhelm: (message: Message, client?: Client) => void;
-  "<:mist:509083062051799050>": (message: Message) => void;
-  fault: (message: Message) => void;
-  wisdom: (message: Message, client?: Client, numberToRepeat?: number) => void;
+  daddy: (props: commandProps) => void;
+  twitter: (props: commandProps) => void;
+  help: (props: commandProps) => void;
+  natalieneu: (props: commandProps) => void;
+  inspire: (props: commandProps) => void;
+  inspireMode: (props: commandProps) => void;
+  mindful: (props: commandProps) => void;
+  flachbader: (props: commandProps) => void;
+  play: (props: commandProps) => void;
+  add: (props: commandProps) => void;
+  rigged: (props: commandProps) => void;
+  pin: (props: commandProps) => void;
+  wiki: (props: commandProps) => void;
+  wilhelm: (props: commandProps) => void;
+  "<:mist:509083062051799050>": (props: commandProps) => void;
+  fault: (props: commandProps) => void;
+  wisdom: (props: commandProps) => void;
 }
 
 export const messageHandleObjectTrusted = {
-  help: (message: Message, client?: Client) => writeHelpMessage(message),
+  help: ({ discord: { message, client }, custom }) => writeHelpMessage(message),
   test: () => console.log("Hallo welt!"),
-  daddy: async (message: Message, client?: Client) => sendDaddyImage(message),
-  twitter: (message: Message, client?: Client) => listenToHashtag(message, client),
-  natalieneu: (message: Message, client?: Client) => getNatalieRosenke(message),
-  inspireMode: (message: Message, client?: Client) => inspireMode(message, client),
-  inspire: (message: Message, client?: Client) => sendInspiringMessage(message, client),
-  mindful: (message: Message, client?: Client) => playMindfulAudio(message),
-  flachbader: (message: Message, client?: Client) => playFlachbader(message),
-  play: (message: Message, client?: Client) => {
+  daddy: async ({ discord: { message, client }, custom }) => sendDaddyImage(message),
+  twitter: ({ discord: { message, client }, custom }, twitterClient?: Twitter) =>
+    listenToHashtag(message, client, twitterClient),
+  natalieneu: ({ discord: { message, client }, custom }) =>
+    getNatalieRosenke(message, custom.twitterClient),
+  inspireMode: ({ discord: { message, client }, custom }) => inspireMode(message, client),
+  inspire: ({ discord: { message, client }, custom }) => sendInspiringMessage(message, client),
+  mindful: ({ discord: { message, client }, custom }) => playMindfulAudio(message),
+  flachbader: ({ discord: { message, client }, custom }) => playFlachbader(message),
+  play: ({ discord: { message, client }, custom }) => {
     let url = message.content.slice("!play ".length);
     if (!!~url.indexOf('"')) {
       url = url.replace('"', "");
     }
     playAudio(message, true, url);
   },
-  add: (message: Message, client?: Client) => addToAudioQueue(message, client),
-  rigged: (message: Message, client?: Client) => sendAluHut(message),
-  pin: (message: Message, client?: Client) => pinMessage(message),
-  wiki: (message: Message, client?: Client) => searchInWiki(message),
-  wilhelm: (message: Message, client?: Client) => playWilhelmScream(message),
-  "<:mist:509083062051799050>": (message: Message) => playMistSound(message),
-  fault: (message: Message) => playItsNotYourFault(message),
-  wisdom: (message: Message, client?: Client, numberToRepeat?: number) =>
-    spitLovooWisdom(message, currentState)
+  add: ({ discord: { message, client }, custom }) => addToAudioQueue(message, client),
+  rigged: ({ discord: { message, client }, custom }) => sendAluHut(message),
+  pin: ({ discord: { message, client }, custom }) => pinMessage(message),
+  wiki: ({ discord: { message, client }, custom }) => searchInWiki(message),
+  wilhelm: ({ discord: { message, client }, custom }) => playWilhelmScream(message),
+  "<:mist:509083062051799050>": ({ discord: { message, client }, custom }) =>
+    playMistSound(message),
+  fault: ({ discord: { message, client }, custom }) => playItsNotYourFault(message),
+  wisdom: ({ discord: { message, client }, custom }) => spitLovooWisdom(message, currentState)
 } as messageHandleObjectTrusted;
 
 export const helpTextTrusted = [
@@ -286,8 +282,8 @@ const searchInWiki = (message: Message) => {
   }
 };
 
-const getNatalieRosenke = (message: Message) =>
-  twitterClient.get(
+const getNatalieRosenke = (message: Message, twitterClient: Twitter) =>
+  (twitterClient as any).get(
     "statuses/user_timeline",
     { user_id: "1053658318743441408", count: 3 },
     (error: any, tweets: any, response: any) => {
@@ -303,13 +299,15 @@ const getNatalieRosenke = (message: Message) =>
     }
   );
 
-const listenToHashtag = (message: Message, client: Client) => {
+const listenToHashtag = (message: Message, client: Client, twitterClient: Twitter) => {
   let hashtag = message.content.split('"')[1];
   const maxCount = 5;
   let currentCount = 0;
   console.log(`Hört auf: ${hashtag}`);
   message.delete();
-  twitterClient.stream("statuses/filter", { track: hashtag }, function(stream: ReadStream) {
+  (twitterClient as any).stream("statuses/filter", { track: hashtag }, function(
+    stream: ReadStream
+  ) {
     (client.channels.get(channelIds.kikaloungeText) as TextChannel)
       .send(`Hört auf: ${hashtag}`)
       .then(msg => {

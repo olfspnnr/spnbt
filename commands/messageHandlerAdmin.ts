@@ -1,46 +1,47 @@
 import { Message, Client, ChannelLogsQueryOptions, GuildMember, DMChannel } from "discord.js";
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
-import { channelIds, roleIds, userIds } from "../bot";
+import { channelIds, roleIds, userIds, generalFunctionProps } from "../bot";
 import { stripMemberOfAllRoles, State, getState, userToRename } from "../shared";
 
 export interface messageHandleObjectAdmin {
-  help: (message: Message, client?: Client) => void;
-  leavevoice: (message: Message, client?: Client) => void;
-  joinvoice: (message: Message, client?: Client) => void;
-  knock: (message: Message, client?: Client) => void;
-  cheer: (message: Message, client?: Client) => void;
-  playLoud: (message: Message, client?: Client) => void;
-  clearFails: (message: Message, client?: Client) => void;
-  moveAndKeep: (message: Message, client?: Client) => void;
-  test: (message: Message, client?: Client) => void;
-  poop: (message: Message, client?: Client) => void;
-  renameUser: (message: Message, client?: Client, global?: any) => void;
-  getLovooAmount: (message: Message, client?: Client) => void;
-  bulkDelete: (message: Message, client?: Client) => void;
+  help: (prop: generalFunctionProps) => void;
+  leavevoice: (prop: generalFunctionProps) => void;
+  joinvoice: (prop: generalFunctionProps) => void;
+  knock: (prop: generalFunctionProps) => void;
+  cheer: (prop: generalFunctionProps) => void;
+  playLoud: (prop: generalFunctionProps) => void;
+  clearFails: (prop: generalFunctionProps) => void;
+  moveAndKeep: (prop: generalFunctionProps) => void;
+  test: (prop: generalFunctionProps) => void;
+  poop: (prop: generalFunctionProps) => void;
+  renameUser: (prop: generalFunctionProps) => void;
+  getLovooAmount: (prop: generalFunctionProps) => void;
+  bulkDelete: (prop: generalFunctionProps) => void;
 }
 
 export const messageHandleObjectAdmin = {
-  help: (message: Message) => writeHelpMessage(message),
-  leavevoice: (message: Message) => leaveVoiceChannel(message),
-  joinvoice: (message: Message, client?: Client) => enterVoiceChannel(message, client),
-  knock: (message: Message) => playKnockSound(message),
-  cheer: (message: Message) => playCheer(message),
-  playLoud: (message: Message) => {
+  help: ({ discord: { message, client }, custom }) => writeHelpMessage(message),
+  leavevoice: ({ discord: { message, client }, custom }) => leaveVoiceChannel(message),
+  joinvoice: ({ discord: { message, client }, custom }) => enterVoiceChannel(message, client),
+  knock: ({ discord: { message, client }, custom }) => playKnockSound(message),
+  cheer: ({ discord: { message, client }, custom }) => playCheer(message),
+  playLoud: ({ discord: { message, client }, custom }) => {
     let url = message.content.slice("!playLoud ".length);
     if (!!~url.indexOf('"')) {
       url = url.replace('"', "");
     }
     playAudio(message, true, url, undefined, 1);
   },
-  clearFails: (message: Message, client?: Client) => clearFailedCommands(message, client),
-  moveAndKeep: (message: Message, client?: Client) => moveAndKeepUserInChannel(message, client),
-  test: (message: Message, client?: Client) => executeTestFunction(message, client),
-  poop: (message: Message, client?: Client) => poopCommand(message, client),
-  renameUser: (message: Message, client?: Client, global?: State) =>
-    renameUser(message, client, global),
-  getLovooAmount: (message: Message, client?: Client) => getLovooAmount(message, client),
-  bulkDelete: (message: Message, client?: Client) => bulkDelete(message, client)
+  clearFails: ({ discord: { message, client }, custom }) => clearFailedCommands(message, client),
+  moveAndKeep: ({ discord: { message, client }, custom }) =>
+    moveAndKeepUserInChannel(message, client),
+  test: ({ discord: { message, client }, custom }) => executeTestFunction(message, client),
+  poop: ({ discord: { message, client }, custom }) => poopCommand(message, client),
+  renameUser: ({ discord: { message, client }, custom }) =>
+    renameUser(message, client, custom.currentState),
+  getLovooAmount: ({ discord: { message, client }, custom }) => getLovooAmount(message, client),
+  bulkDelete: ({ discord: { message, client }, custom }) => bulkDelete(message, client)
 } as messageHandleObjectAdmin;
 
 export const helpTextSpinner = [

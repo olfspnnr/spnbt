@@ -1,4 +1,5 @@
 import { Message, Client } from "discord.js";
+import { generalFunctionProps } from "../bot";
 
 export const helpTextPleb = [
   "===============",
@@ -22,13 +23,13 @@ const writeHelpMessage = async (message: Message) => {
 };
 
 export interface messageHandleObjectPleb {
-  help: (message: Message, client?: Client) => void;
-  hallo: (message: Message, client?: Client) => void;
+  help: (prop: generalFunctionProps) => void;
+  hallo: (prop: generalFunctionProps) => void;
 }
 
 export const messageHandleObjectPleb = {
-  help: (message: Message, client?: Client) => writeHelpMessage(message),
-  hallo: async (message: Message, client?: Client) => sayHallo(message)
+  help: ({ discord: { message, client }, custom }) => writeHelpMessage(message),
+  hallo: async ({ discord: { message, client }, custom }) => sayHallo(message)
 } as messageHandleObjectPleb;
 
 const sayHallo = async (message: Message) => {

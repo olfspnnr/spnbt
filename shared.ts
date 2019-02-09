@@ -329,26 +329,39 @@ export interface reactionRuleSet {
 export const addReactionToMessage = (
   message: Message,
   client: Client,
-  userIds: UserIds,
-  rulesets: reactionRuleSet[]
+  userIds?: UserIds,
+  rulesets?: reactionRuleSet[],
+  reaction?: string
 ) => {
-  rulesets.map(ruleset => {
-    let emoji: Emoji | string = undefined;
-    ruleSet.map(({ user, reactionToAdd }) => {
-      if (userIds[user] === message.member.id) {
-        emoji = client.emojis.find(emoji => emoji.name === reactionToAdd);
-      }
-      if (!emoji) {
-        emoji = reactionToAdd;
+  if (ruleSet && userIds) {
+    rulesets.map(ruleset => {
+      let emoji: Emoji | string = undefined;
+      ruleSet.map(({ user, reactionToAdd }) => {
+        if (userIds[user] === message.member.id) {
+          emoji = client.emojis.find(emoji => emoji.name === reactionToAdd);
+        }
+        if (!emoji) {
+          emoji = reactionToAdd;
+        }
+      });
+      if (message.member.user.id === (userIds as any)[ruleset.user]) {
+        message
+          .react(emoji)
+          .then(reaction =>
+            reactionDeletionHandler(message, reaction, (userIds as any)[ruleset.user])
+          )
+          .catch(error => console.log(error));
       }
     });
-    if (message.member.user.id === (userIds as any)[ruleset.user]) {
-      message
-        .react(emoji)
-        .then(reaction =>
-          reactionDeletionHandler(message, reaction, (userIds as any)[ruleset.user])
-        )
-        .catch(error => console.log(error));
+  } else {
+    let emoji: Emoji | string = undefined;
+    emoji = client.emojis.find(emoji => emoji.name === reaction);
+    if (!emoji) {
+      emoji = reaction;
     }
-  });
+    message
+      .react(emoji)
+      .then(reaction => reactionDeletionHandler(message, reaction, message.client.user.id))
+      .catch(error => console.log(error));
+  }
 };
