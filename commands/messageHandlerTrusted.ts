@@ -9,7 +9,7 @@ import {
   StreamDispatcher,
   RichEmbed
 } from "discord.js";
-import { auth, roleIds, channelIds } from "./bot";
+import { auth, roleIds, channelIds } from "../bot";
 const auth: auth = require("./auth.json");
 const Twitter = require("twitter");
 import * as ytdl from "ytdl-core";
@@ -21,7 +21,7 @@ import {
   audioQueueElement,
   currentState,
   State
-} from "./shared";
+} from "../shared";
 
 export interface commandBlock {
   command: string;

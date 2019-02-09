@@ -10,7 +10,7 @@ import {
 import { audioQueue, roleIds, channelIds, UserIds } from "./bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
-import { playAudio } from "./messageHandlerTrusted";
+import { playAudio } from "./commands/messageHandlerTrusted";
 
 export interface Options {
   profileShareable: number;

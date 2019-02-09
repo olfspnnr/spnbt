@@ -1,9 +1,9 @@
 // Import the discord.js module
 import { Client, DMChannel, TextChannel } from "discord.js";
 import "isomorphic-fetch";
-import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
-import { messageHandleObjectAdmin } from "./messageHandlerAdmin";
-import { messageHandleObjectPleb } from "./messageHandlerPleb";
+import { messageHandleObjectTrusted } from "./commands/messageHandlerTrusted";
+import { messageHandleObjectAdmin } from "./commands/messageHandlerAdmin";
+import { messageHandleObjectPleb } from "./commands/messageHandlerPleb";
 import {
   AudioQueue,
   checkIfMemberHasntRolesAndAssignRoles,
@@ -81,7 +81,7 @@ audioQueue.on("error", error => console.log(error));
 export let clock = new Clock();
 clock.initialise();
 clock.getEmitter().on("lenny", () => {
-  (client.channels.get(channelIds.kikaloungeText) as TextChannel).send("( ͡° ͜ʖ ͡°)");
+  (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(`( ͡° ͜ʖ ͡°)`);
 });
 
 /**

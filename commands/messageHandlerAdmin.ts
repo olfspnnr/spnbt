@@ -1,9 +1,8 @@
 import { Message, Client, ChannelLogsQueryOptions, GuildMember, DMChannel } from "discord.js";
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
-import { channelIds, roleIds, userIds } from "./bot";
-import { stripMemberOfAllRoles, State, getState, userToRename } from "./shared";
-import { client } from "websocket";
+import { channelIds, roleIds, userIds } from "../bot";
+import { stripMemberOfAllRoles, State, getState, userToRename } from "../shared";
 
 export interface messageHandleObjectAdmin {
   help: (message: Message, client?: Client) => void;
