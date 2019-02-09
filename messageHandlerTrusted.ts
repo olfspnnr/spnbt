@@ -159,7 +159,7 @@ const spitLovooWisdom = (message: Message, currenState: State, numberToRepeat?: 
       } as RichEmbed)
       .then((msg: Message) => {
         msg.deletable &&
-          msg.delete(120000).then(() => {
+          msg.delete(45000).then(() => {
             if (toRepeat) {
               if (typeof toRepeat === "number") {
                 toRepeat -= 1;

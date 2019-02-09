@@ -80,7 +80,6 @@ const writeHelpMessage = async (message: Message) => {
 
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
-
   message.deletable && message.delete(250);
 };
 

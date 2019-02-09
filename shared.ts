@@ -97,6 +97,22 @@ export interface audioQueueElement {
   volume?: number | undefined;
 }
 
+export const repeatMessageWithLenny = (message: Message) => {
+  if (message.content.includes("lenny") || message.content.includes("Lenny")) {
+    message.channel
+      .send(
+        message.content
+          .split("lenny")
+          .join("( ͡° ͜ʖ ͡°)")
+          .split("Lenny")
+          .join("(͡° ͜ʖ ͡°)")
+      )
+      .then(() => {
+        message.deletable && message.delete(250);
+      });
+  }
+};
+
 export const setStateProp = (propName: string, valueToSet: any) =>
   new Promise((resolve, reject) => {
     if ((currentState as any)[propName] === undefined) {
@@ -297,15 +313,17 @@ export const handleAdrianNameChange = (currentState: State, userToChange: GuildM
 };
 
 export const ruleSet = [
-  { user: "olaf", reactionToAdd: "♥" },
+  { user: "olaf", reactionToAdd: "💕" },
   { user: "nils", reactionToAdd: "katze" },
   { user: "justus", reactionToAdd: "pill-1" },
-  { user: "marcel", reactionToAdd: "daddy" }
+  { user: "marcel", reactionToAdd: "daddy" },
+  { user: "franny", reactionToAdd: "🔥" },
+  { user: "adrian", reactionToAdd: "💩" }
 ] as reactionRuleSet[];
 
 export interface reactionRuleSet {
   user: string;
-  reactionToAdd: number | string;
+  reactionToAdd: string;
 }
 
 export const addReactionToMessage = (
@@ -315,12 +333,15 @@ export const addReactionToMessage = (
   rulesets: reactionRuleSet[]
 ) => {
   rulesets.map(ruleset => {
-    let emoji: Emoji | string | number = undefined;
-    if (typeof ruleset.reactionToAdd === "number" || typeof ruleset.reactionToAdd === "string") {
-      if (typeof ruleset.reactionToAdd === "string")
-        emoji = client.emojis.find(emoji => emoji.name === ruleset.reactionToAdd);
-      else emoji = client.emojis.find(emoji => emoji.id === ruleset.reactionToAdd);
-    } else emoji = ruleset.reactionToAdd;
+    let emoji: Emoji | string = undefined;
+    ruleSet.map(({ user, reactionToAdd }) => {
+      if (userIds[user] === message.member.id) {
+        emoji = client.emojis.find(emoji => emoji.name === reactionToAdd);
+      }
+      if (!emoji) {
+        emoji = reactionToAdd;
+      }
+    });
     if (message.member.user.id === (userIds as any)[ruleset.user]) {
       message
         .react(emoji)

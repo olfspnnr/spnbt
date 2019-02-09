@@ -12,9 +12,11 @@ import {
   addReactionToMessage,
   ruleSet,
   currentState,
-  handleWebSocketMessage
+  handleWebSocketMessage,
+  repeatMessageWithLenny
 } from "./shared";
 import { websocketServer } from "./server";
+import { Clock } from "./clock";
 
 const auth: auth = require("./auth.json");
 export const { roleIds, userIds, channelIds }: idObject = require("./rolesanduser.json");
@@ -28,6 +30,7 @@ export interface auth {
 }
 
 export interface ChannelIds {
+  [key: string]: string;
   halloweltkanalText: string;
   kikaloungeText: string;
   kikaloungeVoice: string;
@@ -45,12 +48,14 @@ export interface Roles {
 }
 
 export interface UserIds {
+  [key: string]: string;
   spinbot: string;
   marcel: string;
   justus: string;
   adrian: string;
   nils: string;
   olaf: string;
+  franny: string;
 }
 
 export interface idObject {
@@ -73,6 +78,12 @@ audioQueue.on("play", song => console.log("now playing: " + song.message));
 
 audioQueue.on("error", error => console.log(error));
 
+export let clock = new Clock();
+clock.initialise();
+clock.getEmitter().on("lenny", () => {
+  (client.channels.get(channelIds.kikaloungeText) as TextChannel).send("( ͡° ͜ʖ ͡°)");
+});
+
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
  * received from Discord
@@ -80,7 +91,7 @@ audioQueue.on("error", error => console.log(error));
 
 client.on("ready", () => {
   console.log("I am ready!");
-  client.user.setGame("mit deinen Gefühlen");
+  client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
   let server = new websocketServer({
     port: 8080,
     onMessage: (message: any) => handleWebSocketMessage(message)
@@ -164,7 +175,10 @@ client.on("message", message => {
           console.log("Scheint kein Command zu sein");
         }
       } else console.log("Nachricht von Bernd");
-    } else addReactionToMessage(message, client, userIds, ruleSet);
+    } else {
+      addReactionToMessage(message, client, userIds, ruleSet);
+      repeatMessageWithLenny(message);
+    }
   } catch (error) {
     console.log(error);
     return console.log(
