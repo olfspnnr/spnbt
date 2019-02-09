@@ -47,10 +47,17 @@ export interface ChannelIds {
 }
 
 export interface Roles {
+  [key: string]: string;
   spinner: string;
   trusted: string;
   uninitiert: string;
   poop: string;
+}
+export enum RoleNames {
+  spinner = "spinner",
+  trusted = "trusted",
+  uninitiert = "unintiert",
+  poop = "poop"
 }
 
 export interface UserIds {

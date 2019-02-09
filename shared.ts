@@ -7,7 +7,7 @@ import {
   TextChannel,
   Emoji
 } from "discord.js";
-import { audioQueue, roleIds, channelIds, UserIds } from "./bot";
+import { audioQueue, roleIds, channelIds, UserIds, RoleNames } from "./bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
 import { playAudio } from "./commands/messageHandlerTrusted";
@@ -178,8 +178,9 @@ export const checkIfMemberHasntRolesAndAssignRoles = (
   rolesToCheck: string[],
   rolesToAdd: string[]
 ) => {
-  let checkRoles = rolesToCheck.filter(role => newMember.roles.has(role));
-  if (checkRoles.length <= 0) {
+  let checkRoles = rolesToCheck.some(role => newMember.roles.has(role));
+  console.log({ checkRole: checkRoles });
+  if (!checkRoles) {
     assignRolesToMember(client, newMember, rolesToAdd);
   }
 };
@@ -190,15 +191,15 @@ export const assignRolesToMember = (
   rolesToAdd: string[]
 ) => {
   let roleNames: any = {};
-  Object.keys(roleIds).map(prop => (roleNames[(roleIds as any)[prop]] = prop));
+  Object.keys(roleIds).map(prop => (roleNames[roleIds[prop]] = prop));
   rolesToAdd.map(role => {
     newMember
       .addRole(role)
       .then(() =>
         (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-          `<@${newMember.user.id}> you werde assigned role "${
-            roleNames[role]
-          }". Reconnect may be necessary to be able to talk.`
+          `<@${newMember.user.id}> you werde assigned role "${roleNames[role]}". ${
+            role === RoleNames.uninitiert ? "Reconnect may be necessary to be able to talk." : ""
+          }`
         )
       );
   });
