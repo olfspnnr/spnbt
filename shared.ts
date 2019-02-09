@@ -316,7 +316,7 @@ export const handleAdrianNameChange = (currentState: State, userToChange: GuildM
 export const ruleSet = [
   { user: "olaf", reactionToAdd: "💕" },
   { user: "nils", reactionToAdd: "katze" },
-  { user: "justus", reactionToAdd: "pill-1" },
+  { user: "justus", reactionToAdd: "pill~1" },
   { user: "marcel", reactionToAdd: "daddy" },
   { user: "franny", reactionToAdd: "🔥" },
   { user: "adrian", reactionToAdd: "💩" }
@@ -339,10 +339,10 @@ export const addReactionToMessage = (
       let emoji: Emoji | string = undefined;
       ruleSet.map(({ user, reactionToAdd }) => {
         if (userIds[user] === message.member.id) {
-          emoji = client.emojis.find(emoji => emoji.name === reactionToAdd);
-        }
-        if (!emoji) {
-          emoji = reactionToAdd;
+          emoji = client.emojis.find(emoji => emoji.identifier === reactionToAdd);
+          if (!emoji) {
+            emoji = reactionToAdd;
+          }
         }
       });
       if (message.member.user.id === (userIds as any)[ruleset.user]) {

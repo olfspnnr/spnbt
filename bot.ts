@@ -18,6 +18,7 @@ import {
 import { websocketServer } from "./server";
 import { Clock } from "./clock";
 import "node-opus";
+const fs = require("fs");
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
 const config: config = require("../configs/config.json");
@@ -192,7 +193,7 @@ const handleMessageCall = (message: Message) => {
 
 // Create an instance of a Discord client
 const client = new Client();
-
+const commandFiles = fs.readdirSync("./commands").filter((file: any) => file.endsWith(".ts"));
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
  * received from Discord
