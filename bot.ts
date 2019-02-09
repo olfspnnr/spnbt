@@ -1,7 +1,6 @@
 // Import the discord.js module
 import { Client, DMChannel, TextChannel } from "discord.js";
 import "isomorphic-fetch";
-import "opusscript";
 import { messageHandleObjectTrusted } from "./messageHandlerTrusted";
 import { messageHandleObjectAdmin } from "./messageHandlerAdmin";
 import { messageHandleObjectPleb } from "./messageHandlerPleb";
@@ -17,6 +16,7 @@ import {
 } from "./shared";
 import { websocketServer } from "./server";
 import { Clock } from "./clock";
+import "node-opus";
 
 const auth: auth = require("./auth.json");
 export const { roleIds, userIds, channelIds }: idObject = require("./rolesanduser.json");
@@ -89,7 +89,7 @@ clock.getEmitter().on("lenny", () => {
  * received from Discord
  */
 
-client.on("ready", () => {
+client.once("ready", () => {
   console.log("I am ready!");
   client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
   let server = new websocketServer({
@@ -148,7 +148,7 @@ client.on("message", message => {
 
     let possibleFunction: any = undefined;
     if (message.content.slice(0, 1) === "!") {
-      if (message.member.id !== userIds.spinbot) {
+      if (!message.author.bot) {
         let functionCall = `${message.content.slice(
           0,
           !!~message.content.indexOf(" ") ? message.content.indexOf(" ") : message.content.length
