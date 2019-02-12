@@ -5,12 +5,21 @@ import {
   GuildMember,
   Client,
   TextChannel,
-  Emoji
+  Emoji,
+  StreamDispatcher,
+  VoiceChannel,
+  MessageOptions,
+  Attachment
 } from "discord.js";
 import { audioQueue, roleIds, channelIds, UserIds, RoleNames } from "../bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
-import { playAudio } from "../commands/messageHandlerTrusted";
+import { userToRename } from "../commands/renameUser";
+
+export interface commandBlock {
+  command: string;
+  function: (...any: any[]) => any;
+}
 
 export interface Options {
   profileShareable: number;
@@ -81,12 +90,6 @@ export interface State {
   isPlayingAudio?: boolean;
   isInspiring?: boolean;
   lovooArray?: lovooUserEntry[];
-}
-
-export interface userToRename {
-  id: string;
-  isBeingRenamed: boolean;
-  renameTo?: string;
 }
 
 export interface audioQueueElement {
@@ -410,3 +413,250 @@ export const handleVoiceStateUpdate = (
     return console.log("Konnte nicht entscheiden was passiert ist");
   }
 };
+
+export const writeHelpMessage = async (message: Message) => {
+  let helpMessages = [] as string[];
+  try {
+    message.author.createDM().then(channel => {
+      channel.send(helpMessages);
+      channel.send("------------------------");
+      channel.send(`Habe einen schönen Tag ${message.author.username}!`);
+    });
+    message.delete();
+  } catch (error) {
+    return console.log(error);
+  }
+};
+
+export const playAudio = (
+  message: Message,
+  youtube: boolean,
+  url?: string,
+  audioObject?: { stream: ReadableStream; length: number },
+  volume?: number | undefined
+) =>
+  new Promise((resolve, reject) => {
+    console.log(currentState);
+    if (currentState.isPlayingAudio === false) {
+      try {
+        let dispatcher: StreamDispatcher;
+        if (youtube) {
+          const youtubeStream = ytdl(url, {
+            filter: "audioonly"
+          }).on("info", info => {
+            const voiceChannel = message.member.voiceChannel;
+            if (voiceChannel === undefined || voiceChannel === null) {
+              message.member
+                .createDM()
+                .then(dmChannel =>
+                  dmChannel.send(
+                    "Du kannst keine Sounds abspielen, wenn du dich nicht in einem Voicechannel befindest."
+                  )
+                );
+              return reject(console.log("Voicechannel ist undefined"));
+            }
+
+            if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
+              currentState.isPlayingAudio = true;
+              try {
+                dispatcher = createDispatcher(
+                  message,
+                  voiceChannel,
+                  youtubeStream,
+                  volume,
+                  info.length_seconds,
+                  {
+                    command: "!stop",
+                    function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
+                      collector.stop();
+                      youtubeStream.destroy();
+                      return () => dispatcher.end();
+                    }
+                  }
+                ).dispatcher.on("end", () => resolve());
+              } catch (error) {
+                return reject(console.log(error));
+              }
+            } else {
+              voiceChannel
+                .join()
+                .then(connection => {
+                  currentState.isPlayingAudio = true;
+                  try {
+                    dispatcher = createDispatcher(
+                      message,
+                      voiceChannel,
+                      youtubeStream,
+                      volume,
+                      info.length_seconds,
+                      {
+                        command: "!stop",
+                        function: (dispatcher, collector) => {
+                          collector.stop();
+                          youtubeStream.destroy();
+                          return () => dispatcher.end();
+                        }
+                      }
+                    ).dispatcher.on("end", () => resolve());
+                  } catch (error) {
+                    return reject(console.log(error));
+                  }
+                })
+                .catch(error => reject(console.log(error)));
+            }
+          });
+          if (youtubeStream === undefined) {
+            console.log("test");
+            return;
+          }
+          dispatcher && dispatcher.on("end", () => resolve(() => {}));
+          youtubeStream.on("error", error => reject(error));
+        } else {
+          try {
+            const voiceChannel = message.member.voiceChannel;
+            voiceChannel.join().then(
+              connection =>
+                (dispatcher = createDispatcher(
+                  message,
+                  voiceChannel,
+                  audioObject.stream,
+                  volume,
+                  audioObject.length,
+                  {
+                    command: "!stop",
+                    function: (dispatcher: StreamDispatcher, collector) => {
+                      collector.stop();
+                      return () => dispatcher.end();
+                    }
+                  }
+                ).dispatcher.on("end", () => resolve()))
+            );
+          } catch (error) {
+            (error: any) => reject(console.log(error));
+          }
+        }
+      } catch (error) {
+        console.log(error);
+        currentState.isPlayingAudio = false;
+        message.channel
+          .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
+          .then(msg => {
+            message.delete();
+            return resolve((msg as Message).delete(8000));
+          })
+          .catch(error => reject(console.log(error)));
+      }
+    } else {
+      return reject(console.log("Already playing Audio"));
+    }
+  });
+
+const createCollector = (
+  message: Message,
+  timeToDeletion: number,
+  externalProptertyForFunction?: any,
+  ...triggerMessages: commandBlock[]
+) => {
+  let triggerMessagesRef = [...triggerMessages];
+  let collector = new MessageCollector(
+    message.channel,
+    (m: Message) =>
+      m.author.id === message.author.id ||
+      m.member.roles.has(roleIds.spinner) ||
+      m.member.roles.has(roleIds.trusted),
+    {
+      time: timeToDeletion
+    }
+  );
+  collector.on("collect", (followUpMessage: Message) => {
+    try {
+      if (triggerMessagesRef.filter(msg => msg.command === followUpMessage.content)[0]) {
+        if (
+          followUpMessage.content ===
+          triggerMessagesRef.filter(msg => msg.command === followUpMessage.content)[0].command
+        ) {
+          triggerMessagesRef
+            .filter(msg => msg.command === followUpMessage.content)[0]
+            .function(externalProptertyForFunction, collector);
+          followUpMessage.delete();
+        }
+      } else return console.log("Keine Funktion gefunden");
+    } catch (error) {
+      console.log(error);
+    }
+  });
+  return collector;
+};
+
+const createDispatcher = (
+  message: Message,
+  voiceChannel: VoiceChannel,
+  stream: any,
+  volume: number | undefined,
+  length: number,
+  ...blocks: commandBlock[]
+) => {
+  let dispatcher = voiceChannel.connection
+    .playStream(stream, {
+      volume: volume || 0.2
+    })
+    .on("end", end => {
+      message.delete();
+      // voiceChannel.leave();
+      currentState.isPlayingAudio = false;
+    });
+  return {
+    collector: createCollector(message, length * 1000, dispatcher, ...blocks),
+    dispatcher: dispatcher
+  };
+};
+
+export const sendInspiringMessage = (message: Message, client: Client) =>
+  new Promise((resolve, reject) => {
+    fetch("http://inspirobot.me/api?generate=true")
+      .then(response => response.text())
+      .then(data => {
+        console.log(data);
+        const attachment = new Attachment(data);
+        message.channel
+          .send(attachment as MessageOptions)
+          .then(msg => {
+            createCollector(
+              message,
+              120 * 1000,
+              undefined,
+              {
+                command: "!save",
+                function: (extProp: any, collector: MessageCollector) => {
+                  (client.channels.get(channelIds.inspirationText) as TextChannel)
+                    .send(attachment)
+                    .then(() =>
+                      message.channel
+                        .send(`Bild gespeichert im dedizierten Inspirationskanal`)
+                        .then((saveMsg: Message) => {
+                          collector.stop();
+                          saveMsg.delete(8000);
+                        })
+                    )
+                    .catch(error =>
+                      message.channel
+                        .send("Fehler beim Speichern des Bildes :(")
+                        .then((errorMsg: Message) => errorMsg.delete(12000))
+                    );
+                }
+              },
+              {
+                command: "!inspire",
+                function: (extProp: any, collector: MessageCollector) => {
+                  collector.stop();
+                }
+              }
+            );
+            if (message.delete) message.delete();
+            console.log(data);
+            (msg as Message).delete(120000);
+            return resolve(attachment as MessageOptions);
+          })
+          .catch(error => reject(error));
+      });
+  });

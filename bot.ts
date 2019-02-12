@@ -1,9 +1,6 @@
 // Import the discord.js module
 import { Client, DMChannel, TextChannel, Message, GuildMember, Collection } from "discord.js";
 import "isomorphic-fetch";
-import { messageHandleObjectTrusted } from "./commands/messageHandlerTrusted";
-import { messageHandleObjectAdmin } from "./commands/messageHandlerAdmin";
-import { messageHandleObjectPleb } from "./commands/messageHandlerPleb";
 import {
   AudioQueue,
   handleNameChange,
@@ -18,12 +15,13 @@ import {
 import { websocketServer } from "./controller/server";
 import { Clock } from "./controller/clock";
 import "node-opus";
-import { messageHandle } from "./commands/messageHandler";
+import { messageHandleFunction } from "./legacy/messageHandler";
 const fs = require("fs");
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
-const config: config = require("../configs/config.json");
+export const config: config = require("../configs/config.json");
 export const { roleIds, userIds, channelIds }: idObject = require("../configs/rolesanduser.json");
+import * as path from "path";
 
 export interface config {
   prefix: string;
@@ -79,7 +77,7 @@ export interface idObject {
   channelIds: ChannelIds;
 }
 
-export interface generalFunctionProps {
+export interface commandProps {
   discord: {
     message: Message;
     client?: Client;
@@ -123,18 +121,16 @@ const handleMessageCall = (message: Message) => {
   let possibleFunction: any = undefined;
   if (message.content.startsWith(config.prefix) && !message.author.bot) {
     let functionCall = message.content.split(" ")[0].slice(1);
-    if (message.member.roles.has(roleIds.spinner)) {
-      possibleFunction = (messageHandleObjectAdmin as any)[functionCall] || undefined;
-    }
-    if (
-      (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) &&
-      possibleFunction === undefined
-    ) {
-      possibleFunction = (messageHandleObjectTrusted as any)[functionCall] || undefined;
-    }
-    if (possibleFunction === undefined) {
-      possibleFunction = (messageHandleObjectPleb as any)[functionCall] || undefined;
-    }
+    if (commands.has(functionCall)) {
+      try {
+        (commands.get(functionCall) as messageHandleFunction).execute({
+          discord: { message: message, client: client },
+          custom: { currentState: currentState, twitterClient: twitterClient }
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    } else console.log(`${functionCall} nicht gefunden`);
   } else if (!message.author.bot) {
     if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
       repeatMessageWithLenny(message);
@@ -146,7 +142,7 @@ const handleMessageCall = (message: Message) => {
     return possibleFunction({
       discord: { message: message, client: client },
       custom: { currentState: currentState, twitterClient: twitterClient }
-    }) as (prop: generalFunctionProps) => void;
+    }) as (prop: commandProps) => void;
   } else {
     console.log("Scheint kein Command zu sein");
   }
@@ -154,14 +150,25 @@ const handleMessageCall = (message: Message) => {
 
 // Create an instance of a Discord client
 const client = new Client();
-const availableMessageHandlers: { [key: string]: messageHandle } = undefined;
-const commandFiles = fs.readdirSync("./commands").filter((file: any) => file.endsWith(".ts"));
-
+export const commands = new Collection();
+const commandFiles = fs.readdirSync("./dist/commands").filter((file: any) => file.endsWith(".js"));
+let PromiseArr = [];
 for (let file in commandFiles) {
-  const command = require(`./commands/${file}`) as messageHandle;
-  availableMessageHandlers[file] = { ...command };
+  console.log(commandFiles[file]);
+  PromiseArr.push(
+    import(path.resolve(__dirname, "..", "./dist/commands", commandFiles[file]))
+      .then((command: any) => {
+        let innerObject = command[commandFiles[file].split(".")[0]];
+        commands.set(innerObject.name, innerObject);
+        return;
+      })
+      .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
+  );
 }
 
+Promise.all(PromiseArr).then(() => {
+  console.log("Alle Module erfolgreich geladen");
+});
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
  * received from Discord
