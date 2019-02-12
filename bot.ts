@@ -113,12 +113,9 @@ const handleMessageCall = (message: Message) => {
   if (message.guild === null && message.channel instanceof DMChannel) {
     return console.log(`directMessage => ${message.author.username}: ${message.content}`);
   }
-
   console.log(`${message.member.displayName}/${message.member.user.username}: ${message.content}
       `);
   console.log(`${message.content.split(" ").shift()}`);
-
-  let possibleFunction: any = undefined;
   if (message.content.startsWith(config.prefix) && !message.author.bot) {
     let functionCall = message.content.split(" ")[0].slice(1);
     if (commands.has(functionCall)) {
@@ -137,15 +134,6 @@ const handleMessageCall = (message: Message) => {
       addReactionToMessage(message, client, userIds, ruleSet);
     }
   } else console.log("Nachricht von Bot");
-
-  if (typeof possibleFunction === "function") {
-    return possibleFunction({
-      discord: { message: message, client: client },
-      custom: { currentState: currentState, twitterClient: twitterClient }
-    }) as (prop: commandProps) => void;
-  } else {
-    console.log("Scheint kein Command zu sein");
-  }
 };
 
 // Create an instance of a Discord client
