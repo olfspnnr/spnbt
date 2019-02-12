@@ -7,10 +7,10 @@ import {
   TextChannel,
   Emoji
 } from "discord.js";
-import { audioQueue, roleIds, channelIds, UserIds, RoleNames } from "./bot";
+import { audioQueue, roleIds, channelIds, UserIds, RoleNames } from "../bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
-import { playAudio } from "./commands/messageHandlerTrusted";
+import { playAudio } from "../commands/messageHandlerTrusted";
 
 export interface Options {
   profileShareable: number;
@@ -303,7 +303,7 @@ export class AudioQueue extends EventEmitter {
   };
 }
 
-export const handleAdrianNameChange = (currentState: State, userToChange: GuildMember) => {
+export const handleNameChange = (currentState: State, userToChange: GuildMember) => {
   if (currentState.renameUser) {
     currentState.renameUser.map(rename => {
       if (rename.id === userToChange.id && rename.isBeingRenamed) {
@@ -364,5 +364,49 @@ export const addReactionToMessage = (
       .react(emoji)
       .then(reaction => reactionDeletionHandler(message, reaction, message.client.user.id))
       .catch(error => console.log(error));
+  }
+};
+
+export const handleVoiceStateUpdate = (
+  oldMember: GuildMember,
+  newMember: GuildMember,
+  client: Client
+) => {
+  if (oldMember.voiceChannel === undefined && newMember.voiceChannel !== undefined) {
+    (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
+      `${newMember.user.username}/${newMember.displayName} joined.`
+    );
+    try {
+      checkIfMemberHasntRolesAndAssignRoles(
+        client,
+        newMember,
+        [roleIds.uninitiert, roleIds.poop],
+        [roleIds.uninitiert]
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  } else if (newMember.voiceChannel === undefined) {
+    (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
+      `${oldMember.user.username}/${oldMember.displayName} left.`
+    );
+  } else if (newMember.voiceChannel !== undefined && oldMember.voiceChannel !== undefined) {
+    console.log(`Something changed with [${oldMember.user.username}/${oldMember.displayName}]`);
+    let differences = {};
+    Object.keys(oldMember).map(key => {
+      Object.keys(newMember).map(newKey => {
+        if ((oldMember as any)[newKey] !== (newMember as any)[newKey]) {
+          (differences as any)[newKey] = `${(oldMember as any)[newKey]} => ${
+            (newMember as any)[newKey]
+          }`;
+        }
+      });
+    });
+    let different = Object.keys(differences)
+      .map(key => `${key}: ${(differences as any)[key]}`)
+      .join(";\n");
+    console.log(different);
+  } else {
+    return console.log("Konnte nicht entscheiden was passiert ist");
   }
 };

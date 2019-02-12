@@ -2,9 +2,11 @@ import { Message, Client, ChannelLogsQueryOptions, GuildMember, DMChannel } from
 import { playAudio, helpTextTrusted } from "./messageHandlerTrusted";
 import { helpTextPleb } from "./messageHandlerPleb";
 import { channelIds, roleIds, userIds, generalFunctionProps } from "../bot";
-import { stripMemberOfAllRoles, State, getState, userToRename } from "../shared";
+import { stripMemberOfAllRoles, State, getState, userToRename } from "../controller/shared";
+import { messageHandle, messageHandleFunction } from "./messageHandler";
 
 export interface messageHandleObjectAdmin {
+  [key: string]: (prop: generalFunctionProps) => void;
   help: (prop: generalFunctionProps) => void;
   leavevoice: (prop: generalFunctionProps) => void;
   joinvoice: (prop: generalFunctionProps) => void;
@@ -43,6 +45,18 @@ export const messageHandleObjectAdmin = {
   getLovooAmount: ({ discord: { message, client }, custom }) => getLovooAmount(message, client),
   bulkDelete: ({ discord: { message, client }, custom }) => bulkDelete(message, client)
 } as messageHandleObjectAdmin;
+
+export const messageHandleAdmin = {
+  roles: [roleIds.spinner, roleIds.trusted],
+  functions: Object.keys(messageHandleObjectAdmin).map(
+    key =>
+      ({
+        name: key,
+        description: key,
+        execute: messageHandleObjectAdmin[key]
+      } as messageHandleFunction)
+  )
+} as messageHandle;
 
 export const helpTextSpinner = [
   "===============",

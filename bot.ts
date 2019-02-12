@@ -1,23 +1,24 @@
 // Import the discord.js module
-import { Client, DMChannel, TextChannel, Message, GuildMember } from "discord.js";
+import { Client, DMChannel, TextChannel, Message, GuildMember, Collection } from "discord.js";
 import "isomorphic-fetch";
 import { messageHandleObjectTrusted } from "./commands/messageHandlerTrusted";
 import { messageHandleObjectAdmin } from "./commands/messageHandlerAdmin";
 import { messageHandleObjectPleb } from "./commands/messageHandlerPleb";
 import {
   AudioQueue,
-  checkIfMemberHasntRolesAndAssignRoles,
-  handleAdrianNameChange as handleNameChange,
+  handleNameChange,
   addReactionToMessage,
   ruleSet,
   currentState,
   handleWebSocketMessage,
   repeatMessageWithLenny,
-  State
-} from "./shared";
-import { websocketServer } from "./server";
-import { Clock } from "./clock";
+  State,
+  handleVoiceStateUpdate
+} from "./controller/shared";
+import { websocketServer } from "./controller/server";
+import { Clock } from "./controller/clock";
 import "node-opus";
+import { messageHandle } from "./commands/messageHandler";
 const fs = require("fs");
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
@@ -110,46 +111,6 @@ const twitterClient = new Twitter({
   access_token_secret: auth.access_token_secret
 });
 
-const handleVoiceStateUpdate = (oldMember: GuildMember, newMember: GuildMember) => {
-  if (oldMember.voiceChannel === undefined && newMember.voiceChannel !== undefined) {
-    (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-      `${newMember.user.username}/${newMember.displayName} joined.`
-    );
-    try {
-      checkIfMemberHasntRolesAndAssignRoles(
-        client,
-        newMember,
-        [roleIds.uninitiert, roleIds.poop],
-        [roleIds.uninitiert]
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  } else if (newMember.voiceChannel === undefined) {
-    (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-      `${oldMember.user.username}/${oldMember.displayName} left.`
-    );
-  } else if (newMember.voiceChannel !== undefined && oldMember.voiceChannel !== undefined) {
-    console.log(`Something changed with [${oldMember.user.username}/${oldMember.displayName}]`);
-    let differences = {};
-    Object.keys(oldMember).map(key => {
-      Object.keys(newMember).map(newKey => {
-        if ((oldMember as any)[newKey] !== (newMember as any)[newKey]) {
-          (differences as any)[newKey] = `${(oldMember as any)[newKey]} => ${
-            (newMember as any)[newKey]
-          }`;
-        }
-      });
-    });
-    let different = Object.keys(differences)
-      .map(key => `${key}: ${(differences as any)[key]}`)
-      .join(";\n");
-    console.log(different);
-  } else {
-    return console.log("Konnte nicht entscheiden was passiert ist");
-  }
-};
-
 const handleMessageCall = (message: Message) => {
   if (message.guild === null && message.channel instanceof DMChannel) {
     return console.log(`directMessage => ${message.author.username}: ${message.content}`);
@@ -193,7 +154,14 @@ const handleMessageCall = (message: Message) => {
 
 // Create an instance of a Discord client
 const client = new Client();
+const availableMessageHandlers: { [key: string]: messageHandle } = undefined;
 const commandFiles = fs.readdirSync("./commands").filter((file: any) => file.endsWith(".ts"));
+
+for (let file in commandFiles) {
+  const command = require(`./commands/${file}`) as messageHandle;
+  availableMessageHandlers[file] = { ...command };
+}
+
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
  * received from Discord
@@ -210,7 +178,9 @@ client.once("ready", () => {
 
 client.on("error", error => console.error(error));
 
-client.on("voiceStateUpdate", handleVoiceStateUpdate);
+client.on("voiceStateUpdate", (oldMember, newMember) =>
+  handleVoiceStateUpdate(oldMember, newMember, client)
+);
 
 client.on("guildMemberUpdate", (oldUser, newUser) => {
   console.log(`${oldUser.nickname} => ${newUser.nickname}`);

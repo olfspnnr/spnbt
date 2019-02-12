@@ -20,7 +20,7 @@ import {
   audioQueueElement,
   currentState,
   State
-} from "../shared";
+} from "../controller/shared";
 
 export interface commandBlock {
   command: string;
