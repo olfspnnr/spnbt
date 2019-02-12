@@ -1,1 +1,1 @@
-export const helpTextPleb = ["!help - Übersicht", "!hallo - lass dich begrüßen"].join("\r");
+// export const helpTextPleb = ["!help - Übersicht", "!hallo - lass dich begrüßen"].join("\r");
