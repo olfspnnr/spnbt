@@ -16,6 +16,9 @@ const spitLovooWisdom = (message: Message, currentState: State, numberToRepeat?:
   let toRepeat =
     numberToRepeat ||
     (message.content.length > "!wisdom".length && message.content.slice("!wisdom ".length));
+  if (toRepeat && toRepeat > currentState.lovooArray.length) {
+    toRepeat = currentState.lovooArray.length;
+  }
   if (currentState.lovooArray && currentState.lovooArray.length > 0) {
     const currentElement = currentState.lovooArray.pop();
     message.channel
