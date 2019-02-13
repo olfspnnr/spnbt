@@ -6,7 +6,7 @@ export const play = {
   name: "play",
   description: "zum playen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
   usage: `[${config.prefix}play url]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }) => {
     let url = message.content.slice("!play ".length);
     if (!!~url.indexOf('"')) {

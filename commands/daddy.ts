@@ -7,7 +7,7 @@ export const daddy = {
   name: "daddy",
   description: "Bildniss der Daddygames",
   usage: `[${config.prefix}daddy]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => sendDaddyImage(message)
 } as messageHandleFunction;
 

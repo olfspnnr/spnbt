@@ -7,7 +7,7 @@ export const natalieneu = {
   name: "natalieneu",
   description: "neuste Tweets von Natalie Rosenke",
   usage: `[${config.prefix}natalieneu]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     getNatalieRosenke(message, custom.twitterClient)
 } as messageHandleFunction;

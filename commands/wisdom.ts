@@ -7,7 +7,7 @@ export const wisdom = {
   name: "wisdom",
   description: "präsentiert eine Weißheit von einem LovooUser",
   usage: `[${config.prefix}wisdom]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     spitLovooWisdom(message, custom.currentState)
 } as messageHandleFunction;

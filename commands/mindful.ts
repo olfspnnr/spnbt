@@ -7,7 +7,7 @@ export const mindful = {
   name: "mindful",
   description: "Zufällige KI generierte Mindful Session",
   usage: `[${config.prefix}mindful]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     playMindfulAudio(message, custom.currentState)
 } as messageHandleFunction;

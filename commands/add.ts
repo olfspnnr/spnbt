@@ -12,7 +12,7 @@ export const add = {
   name: "add",
   description: "Fügt Sound zu Playlist hinzu",
   usage: `[${config.prefix}add url]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }) => addToAudioQueue(message, client)
 } as messageHandleFunction;
 

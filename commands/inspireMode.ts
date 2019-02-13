@@ -7,7 +7,7 @@ export const inspireMode = {
   name: "inspireMode",
   description: "Zufällige KI generierter Quote; alle 2 Minuten",
   usage: `[${config.prefix}inspireMode]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     inspireModeFunc(message, client, custom.currentState)
 } as messageHandleFunction;

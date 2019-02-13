@@ -16,6 +16,7 @@ import { audioQueue, roleIds, channelIds, UserIds, RoleNames } from "../bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
 import { userToRename } from "../commands/renameUser";
+import { messageHandleFunction } from "../legacy/messageHandler";
 
 export interface commandBlock {
   command: string;
@@ -417,8 +418,11 @@ export const handleVoiceStateUpdate = (
   }
 };
 
-export const writeHelpMessage = async (message: Message) => {
-  let helpMessages = [] as string[];
+export const writeHelpMessage = async (message: Message, commands: Collection<any, any>) => {
+  let helpMessages = commands.map((command: messageHandleFunction) => {
+    if (command.roles.some(role => message.member.roles.has(roleIds[role])))
+      return ` ${command.usage} -- ${command.description}`;
+  });
   try {
     message.author.createDM().then(channel => {
       channel.send(helpMessages);

@@ -7,7 +7,7 @@ export const flachbader = {
   name: "flachbader",
   description: "Spielt den Weltberühmten Song ab",
   usage: `[${config.prefix}flachbader]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => playFlachbader(message)
 } as messageHandleFunction;
 

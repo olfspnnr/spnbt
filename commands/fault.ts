@@ -7,7 +7,7 @@ export const fault = {
   name: "fault",
   description: "spielt die weltberühmte Szene aus dem Klassiker 'Good Will Hunting' ab.",
   usage: `[${config.prefix}fault]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     playAudio(message, true, "https://www.youtube.com/watch?v=wklDd8o8HFQ")
 } as messageHandleFunction;

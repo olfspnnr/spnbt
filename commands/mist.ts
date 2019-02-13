@@ -7,7 +7,7 @@ export const mist = {
   name: "mist",
   description: "spielt Mist Sound ab",
   usage: `[${config.prefix}mist]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => playMistSound(message)
 } as messageHandleFunction;
 

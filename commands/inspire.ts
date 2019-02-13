@@ -7,7 +7,7 @@ export const inspire = {
   name: "inspire",
   description: "Zufällige KI generierter Quote",
   usage: `[${config.prefix}inspire]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     sendInspiringMessage(message, client)
 } as messageHandleFunction;

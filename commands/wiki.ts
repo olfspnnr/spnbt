@@ -7,7 +7,7 @@ export const wiki = {
   name: "wiki",
   description: "Durchsucht Wikipedia nach dem Suchbegriff",
   usage: `[${config.prefix}wiki suchbegriff => Zahl aus der Auswahl => !link]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }) => searchInWiki(message)
 } as messageHandleFunction;
 

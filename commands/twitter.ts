@@ -8,7 +8,7 @@ export const twitter = {
   name: "twitter",
   description: "holt sich die 5 neusten Tweets zum Hashtag",
   usage: `[${config.prefix}twitter "hashtag"]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     listenToHashtag(message, client, custom.twitterClient)
 } as messageHandleFunction;

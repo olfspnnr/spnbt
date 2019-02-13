@@ -7,9 +7,8 @@ export const hallo = {
   name: "hallo",
   description: "lass dich von Bernd begrüßen",
   usage: `[${config.prefix}hallo]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
-  execute: ({ discord: { message, client }, custom }: commandProps) =>
-    sayHallo(message)
+  roles: [RoleNames.spinner, RoleNames.trusted, RoleNames.uninitiert],
+  execute: ({ discord: { message, client }, custom }: commandProps) => sayHallo(message)
 } as messageHandleFunction;
 
 const sayHallo = async (message: Message) => {

@@ -7,7 +7,7 @@ export const rigged = {
   name: "rigged",
   description: "Aluhut",
   usage: `[${config.prefix}rigged]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => sendAluHut(message)
 } as messageHandleFunction;
 

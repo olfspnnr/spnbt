@@ -7,7 +7,7 @@ export const test = {
   name: "test",
   description: "zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
   usage: `[${config.prefix}test]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     executeTestFunction(message, client)
 } as messageHandleFunction;

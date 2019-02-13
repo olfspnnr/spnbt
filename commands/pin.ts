@@ -7,7 +7,7 @@ export const pin = {
   name: "pin",
   description: "Pinnt die Nachricht mit dem Aktuellen Datum an",
   usage: `[${config.prefix}pin "Nachricht" name]`,
-  roles: [RoleNames.spinner, roleIds.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => pinMessage(message)
 } as messageHandleFunction;
 
