@@ -52,7 +52,7 @@ const spitLovooWisdom = (message: Message, currentState: State, numberToRepeat?:
       } as RichEmbed)
       .then((msg: Message) => {
         msg.deletable &&
-          msg.delete(45000).then(() => {
+          msg.delete(45000).then(deletedMessage => {
             if (toRepeat) {
               if (typeof toRepeat === "number") {
                 toRepeat -= 1;
@@ -60,7 +60,7 @@ const spitLovooWisdom = (message: Message, currentState: State, numberToRepeat?:
                 toRepeat = parseInt(toRepeat);
               }
             }
-            if (toRepeat > 0) spitLovooWisdom(message, currentState, toRepeat as number);
+            if (toRepeat > 0) spitLovooWisdom(deletedMessage, currentState, toRepeat as number);
           });
       })
       .catch(error => {
