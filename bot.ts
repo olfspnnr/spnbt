@@ -119,8 +119,8 @@ const handleMessageCall = (message: Message) => {
   console.log(`${message.content.split(" ").shift()}`);
   if (message.content.startsWith(config.prefix) && !message.author.bot) {
     let functionCall = message.content.split(" ")[0].slice(1);
-    if (commands.has(functionCall)) {
-      let command = commands.get(functionCall) as messageHandleFunction;
+    if (currentState.commands.has(functionCall)) {
+      let command = currentState.commands.get(functionCall) as messageHandleFunction;
       try {
         if (command.roles.some((role: RoleNames) => message.member.roles.has(roleIds[role]))) {
           command.execute({
