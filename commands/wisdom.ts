@@ -5,7 +5,7 @@ import { Message, Client, RichEmbed } from "discord.js";
 
 export const wisdom = {
   name: "wisdom",
-  description: "präsentiert eine Weißheit von einem LovooUser",
+  description: "präsentiert eine Weisheit von einem LovooUser",
   usage: `[${config.prefix}wisdom]`,
   roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>

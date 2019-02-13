@@ -418,14 +418,36 @@ export const handleVoiceStateUpdate = (
   }
 };
 
+const chunk = (arr: string[], len: number) => {
+  let chunks = [];
+  let i = 0;
+  let n = arr.length;
+
+  while (i < n) {
+    chunks.push(arr.slice(i, (i += len)));
+  }
+
+  return chunks;
+};
+
 export const writeHelpMessage = async (message: Message, commands: Collection<any, any>) => {
   let helpMessages = commands.map((command: messageHandleFunction) => {
     if (command.roles.some(role => message.member.roles.has(roleIds[role])))
-      return ` ${command.usage} -- ${command.description}`;
+      return `**${command.usage}** ${command.description}`;
+    else return undefined;
   });
+  if (helpMessages) helpMessages = helpMessages.filter(entry => entry);
+  let helpMessageChunks = chunk(helpMessages, 10);
   try {
     message.author.createDM().then(channel => {
-      channel.send(helpMessages);
+      channel.send("Mit folgenden Befehlen kann ich zu eurem Chillout beitragen:");
+      channel.send("------------------------");
+      helpMessageChunks.map((part, idx) => {
+        if (idx === 0) channel.send([...part]);
+        else {
+          channel.send(["-", ...part]);
+        }
+      });
       channel.send("------------------------");
       channel.send(`Habe einen schönen Tag ${message.author.username}!`);
     });
