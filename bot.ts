@@ -85,6 +85,7 @@ export interface commandProps {
   custom?: {
     currentState?: State;
     twitterClient?: Twitter;
+    loadedCommands?: messageHandleFunction[];
   };
 }
 
@@ -119,11 +120,14 @@ const handleMessageCall = (message: Message) => {
   if (message.content.startsWith(config.prefix) && !message.author.bot) {
     let functionCall = message.content.split(" ")[0].slice(1);
     if (commands.has(functionCall)) {
+      let command = commands.get(functionCall) as messageHandleFunction;
       try {
-        (commands.get(functionCall) as messageHandleFunction).execute({
-          discord: { message: message, client: client },
-          custom: { currentState: currentState, twitterClient: twitterClient }
-        });
+        if (command.roles.some((role: RoleNames) => message.member.roles.has(roleIds[role]))) {
+          command.execute({
+            discord: { message: message, client: client },
+            custom: { currentState: currentState, twitterClient: twitterClient }
+          });
+        } else throw "Unzureichende Berechtigung";
       } catch (error) {
         console.log(error);
       }
@@ -138,7 +142,7 @@ const handleMessageCall = (message: Message) => {
 
 // Create an instance of a Discord client
 const client = new Client();
-export const commands = new Collection();
+
 const commandFiles = fs.readdirSync("./dist/commands").filter((file: any) => file.endsWith(".js"));
 let PromiseArr = [];
 for (let file in commandFiles) {
@@ -147,7 +151,7 @@ for (let file in commandFiles) {
     import(path.resolve(__dirname, "..", "./dist/commands", commandFiles[file]))
       .then((command: any) => {
         let innerObject = command[commandFiles[file].split(".")[0]];
-        commands.set(innerObject.name, innerObject);
+        currentState.commands.set(innerObject.name, innerObject);
         return;
       })
       .catch((error: any) => console.log({ file: commandFiles[file], error: error }))

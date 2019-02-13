@@ -13,7 +13,7 @@ export const poop = {
 
 const poopCommand = (message: Message) => {
   message.delete(250);
-  let userToAssignRoleToID = message.content.slice("!moveAndKeep ".length);
+  let userToAssignRoleToID = message.content.slice("!poop ".length);
   userToAssignRoleToID = !!~userToAssignRoleToID.indexOf("<@")
     ? userToAssignRoleToID
         .replace(/<@/g, "")

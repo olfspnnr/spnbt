@@ -9,7 +9,8 @@ import {
   StreamDispatcher,
   VoiceChannel,
   MessageOptions,
-  Attachment
+  Attachment,
+  Collection
 } from "discord.js";
 import { audioQueue, roleIds, channelIds, UserIds, RoleNames } from "../bot";
 import * as ytdl from "ytdl-core";
@@ -90,6 +91,7 @@ export interface State {
   isPlayingAudio?: boolean;
   isInspiring?: boolean;
   lovooArray?: lovooUserEntry[];
+  commands?: Collection<any, any>;
 }
 
 export interface audioQueueElement {
@@ -137,7 +139,8 @@ export let currentState = {
   renameUser: [],
   isPlayingAudio: false,
   isInspiring: false,
-  lovooArray: []
+  lovooArray: [],
+  commands: new Collection()
 } as State;
 
 export interface wsMessage {
