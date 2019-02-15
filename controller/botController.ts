@@ -21,15 +21,15 @@ import {
   RoleNames,
   commandProps,
   config,
-  userIds,
-  fs
+  userIds
 } from "../bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
 import { userToRename } from "../commands/renameUser";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import * as path from "path";
-import { setStateProp, getStateProp, getState } from "./stateController";
+import { setStateProp, getStateProp, getState, setState } from "./stateController";
+const fs = require("fs");
 
 export interface commandBlock {
   command: string;
@@ -698,7 +698,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
 
 export const loadCommands = () =>
   new Promise(resolve => {
-    let tempCollection = new Collection<string, messageHandleFunction>();
+    let currentState = getState();
     const commandFiles = fs
       .readdirSync("./dist/commands")
       .filter((file: any) => file.endsWith(".js"));
@@ -706,10 +706,10 @@ export const loadCommands = () =>
     for (let file in commandFiles) {
       console.log(commandFiles[file]);
       PromiseArr.push(
-        import(path.resolve(__dirname, "..", "./dist/commands", commandFiles[file]))
+        import(path.resolve(__dirname, "..", "./commands", commandFiles[file]))
           .then((command: any) => {
             let innerObject = command[commandFiles[file].split(".")[0]];
-            tempCollection.set(innerObject.name, innerObject);
+            currentState.commands.set(innerObject.name, innerObject);
             return;
           })
           .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
@@ -718,6 +718,6 @@ export const loadCommands = () =>
 
     Promise.all(PromiseArr).then(() => {
       console.log("Alle Module erfolgreich geladen");
-      return resolve(tempCollection);
+      setState(currentState).then(state => resolve(state.commands));
     });
   }) as Promise<Collection<string, messageHandleFunction>>;

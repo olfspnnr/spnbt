@@ -4,10 +4,7 @@ import "isomorphic-fetch";
 import {
   AudioQueue,
   handleNameChange,
-  addReactionToMessage,
-  ruleSet,
   handleWebSocketMessage,
-  repeatMessageWithLenny,
   handleVoiceStateUpdate,
   checkIfMemberHasntRolesAndAssignRoles,
   loadCommands,
@@ -17,8 +14,8 @@ import { websocketServer } from "./controller/server";
 import { Clock } from "./controller/clock";
 import "node-opus";
 import { messageHandleFunction } from "./legacy/messageHandler";
-import { setStateProp } from "./controller/stateController";
-export const fs = require("fs");
+import { setStateProp, setState } from "./controller/stateController";
+
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
 export const config: config = require("../configs/config.json");
@@ -116,7 +113,7 @@ setStateProp("reloadCommands", () => {
   loadCommands().then(commands => setStateProp("commands", commands));
 });
 loadCommands().then(loadedCommands => {
-  setStateProp("loadedCommands", loadedCommands);
+  setState({ commands: loadedCommands });
   /**
    * The ready event is vital, it means that only _after_ this will your bot start reacting to information
    * received from Discord
