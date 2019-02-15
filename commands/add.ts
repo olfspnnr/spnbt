@@ -4,7 +4,7 @@ import {
   getStreamFromYouTubeLink,
   audioQueueElement,
   addToQueue
-} from "../controller/shared";
+} from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
 

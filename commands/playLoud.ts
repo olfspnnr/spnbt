@@ -1,6 +1,6 @@
 import { commandProps, RoleNames, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
-import { playAudio } from "../controller/shared";
+import { playAudio } from "../controller/botController";
 
 export const playLoud = {
   name: "playLoud",

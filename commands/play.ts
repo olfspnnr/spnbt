@@ -1,5 +1,5 @@
 import { commandProps, RoleNames, config, roleIds } from "../bot";
-import { writeHelpMessage, playAudio } from "../controller/shared";
+import { writeHelpMessage, playAudio } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 
 export const play = {

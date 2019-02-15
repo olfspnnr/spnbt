@@ -1,7 +1,7 @@
 import { commandProps, RoleNames, config } from "../bot";
-import { writeHelpMessage, getState } from "../controller/shared";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
+import { getState } from "../controller/stateController";
 
 export const getLovooAmount = {
   name: "getLovooAmount",

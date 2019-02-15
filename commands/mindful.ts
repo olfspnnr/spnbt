@@ -1,18 +1,19 @@
 import { commandProps, RoleNames, config, roleIds } from "../bot";
-import { writeHelpMessage, playAudio, State } from "../controller/shared";
+import { writeHelpMessage, playAudio } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
+import { getState } from "../controller/stateController";
 
 export const mindful = {
   name: "mindful",
   description: "Zufällige KI generierte Mindful Session",
   usage: `[${config.prefix}mindful]`,
   roles: [RoleNames.spinner, RoleNames.trusted],
-  execute: ({ discord: { message, client }, custom }: commandProps) =>
-    playMindfulAudio(message, custom.currentState)
+  execute: ({ discord: { message, client }, custom }: commandProps) => playMindfulAudio(message)
 } as messageHandleFunction;
 
-const playMindfulAudio = (message: Message, currentState: State) => {
+const playMindfulAudio = (message: Message) => {
+  let currentState = getState();
   if (!currentState.isPlayingAudio) {
     message.delete();
     fetch("http://inspirobot.me/api?generateFlow=1&sessionID=a473f800-395a-4e38-9766-1227cf8b2299")

@@ -1,7 +1,8 @@
 import { commandProps, RoleNames, config, roleIds } from "../bot";
-import { writeHelpMessage, State, sendInspiringMessage } from "../controller/shared";
+import { writeHelpMessage, sendInspiringMessage } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, MessageOptions } from "discord.js";
+import { getState } from "../controller/stateController";
 
 export const inspireMode = {
   name: "inspireMode",
@@ -9,7 +10,7 @@ export const inspireMode = {
   usage: `[${config.prefix}inspireMode]`,
   roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    inspireModeFunc(message, client, custom.currentState)
+    inspireModeFunc(message, client)
 } as messageHandleFunction;
 
 const repeatInspire: (message: Message, client: Client) => void = (
@@ -24,7 +25,8 @@ const repeatInspire: (message: Message, client: Client) => void = (
     120000
   );
 
-const inspireModeFunc = (message: Message, client: Client, currentState: State) => {
+const inspireModeFunc = (message: Message, client: Client) => {
+  let currentState = getState();
   if (!currentState.isInspiring) {
     let messageCopy = { ...message } as Message;
     return sendInspiringMessage(message, client)

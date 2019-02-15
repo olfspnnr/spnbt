@@ -10,13 +10,26 @@ import {
   VoiceChannel,
   MessageOptions,
   Attachment,
-  Collection
+  Collection,
+  DMChannel
 } from "discord.js";
-import { audioQueue, roleIds, channelIds, UserIds, RoleNames } from "../bot";
+import {
+  audioQueue,
+  roleIds,
+  channelIds,
+  UserIds,
+  RoleNames,
+  commandProps,
+  config,
+  userIds,
+  fs
+} from "../bot";
 import * as ytdl from "ytdl-core";
 import { EventEmitter } from "events";
 import { userToRename } from "../commands/renameUser";
 import { messageHandleFunction } from "../legacy/messageHandler";
+import * as path from "path";
+import { setStateProp, getStateProp, getState } from "./stateController";
 
 export interface commandBlock {
   command: string;
@@ -87,14 +100,6 @@ export interface lovooUserEntry {
   verifications: Verifications;
 }
 
-export interface State {
-  renameUser?: userToRename[];
-  isPlayingAudio?: boolean;
-  isInspiring?: boolean;
-  lovooArray?: lovooUserEntry[];
-  commands?: Collection<any, any>;
-}
-
 export interface audioQueueElement {
   message: Message;
   youtube: boolean;
@@ -118,31 +123,6 @@ export const repeatMessageWithLenny = (message: Message) => {
       });
   }
 };
-
-export const setStateProp = (propName: string, valueToSet: any) =>
-  new Promise((resolve, reject) => {
-    if ((currentState as any)[propName] === undefined) {
-      currentState = { ...currentState, [propName]: valueToSet };
-      return resolve(currentState);
-    } else if (typeof (currentState as any)[propName] === "object") {
-      if ((currentState as any)[propName].length !== undefined) {
-        (currentState as any)[propName] = [...(currentState as any)[propName], ...valueToSet];
-      } else {
-        (currentState as any)[propName] = { ...(currentState as any)[propName], ...valueToSet };
-      }
-    }
-    return reject(false);
-  });
-
-export const getState = () => ({ ...currentState });
-
-export let currentState = {
-  renameUser: [],
-  isPlayingAudio: false,
-  isInspiring: false,
-  lovooArray: [],
-  commands: new Collection()
-} as State;
 
 export interface wsMessage {
   type: string;
@@ -310,9 +290,10 @@ export class AudioQueue extends EventEmitter {
   };
 }
 
-export const handleNameChange = (currentState: State, userToChange: GuildMember) => {
-  if (currentState.renameUser) {
-    currentState.renameUser.map(rename => {
+export const handleNameChange = (userToChange: GuildMember) => {
+  let renameUser = getStateProp("renameUser") as userToRename[];
+  if (renameUser) {
+    renameUser.map(rename => {
       if (rename.id === userToChange.id && rename.isBeingRenamed) {
         userToChange.setNickname(rename.renameTo || userToChange.user.username);
       }
@@ -383,16 +364,6 @@ export const handleVoiceStateUpdate = (
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
       `${newMember.user.username}/${newMember.displayName} joined.`
     );
-    try {
-      checkIfMemberHasntRolesAndAssignRoles(
-        client,
-        newMember,
-        [roleIds.uninitiert, roleIds.poop],
-        [roleIds.uninitiert]
-      );
-    } catch (error) {
-      console.log(error);
-    }
   } else if (newMember.voiceChannel === undefined) {
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
       `${oldMember.user.username}/${oldMember.displayName} left.`
@@ -430,7 +401,8 @@ const chunk = (arr: string[], len: number) => {
   return chunks;
 };
 
-export const writeHelpMessage = async (message: Message, commands: Collection<any, any>) => {
+export const writeHelpMessage = async (message: Message) => {
+  let commands = getStateProp("commands") as Collection<string, messageHandleFunction>;
   let helpMessages = commands.map((command: messageHandleFunction) => {
     if (command.roles.some(role => message.member.roles.has(roleIds[role])))
       return `**${command.usage}** ${command.description}`;
@@ -465,8 +437,7 @@ export const playAudio = (
   volume?: number | undefined
 ) =>
   new Promise((resolve, reject) => {
-    console.log(currentState);
-    if (currentState.isPlayingAudio === false) {
+    if ((getStateProp("isPlayingAudio") as boolean) === false) {
       try {
         let dispatcher: StreamDispatcher;
         if (youtube) {
@@ -486,30 +457,34 @@ export const playAudio = (
             }
 
             if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
-              currentState.isPlayingAudio = true;
-              try {
-                dispatcher = createDispatcher(
-                  message,
-                  voiceChannel,
-                  youtubeStream,
-                  volume,
-                  info.length_seconds,
-                  {
-                    command: "!stop",
-                    function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
-                      collector.stop();
-                      youtubeStream.destroy();
-                      return () => dispatcher.end();
-                    }
+              setStateProp("isPlayingAudio", true)
+                .then(currentState => {
+                  try {
+                    dispatcher = createDispatcher(
+                      message,
+                      voiceChannel,
+                      youtubeStream,
+                      volume,
+                      info.length_seconds,
+                      {
+                        command: "!stop",
+                        function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
+                          collector.stop();
+                          youtubeStream.destroy();
+                          return () => dispatcher.end();
+                        }
+                      }
+                    ).dispatcher.on("end", () => resolve());
+                  } catch (error) {
+                    return reject(console.log(error));
                   }
-                ).dispatcher.on("end", () => resolve());
-              } catch (error) {
-                return reject(console.log(error));
-              }
+                })
+                .catch(error => console.log(error));
             } else {
               voiceChannel
                 .join()
                 .then(connection => {
+                  let currentState = getState();
                   currentState.isPlayingAudio = true;
                   try {
                     dispatcher = createDispatcher(
@@ -566,7 +541,7 @@ export const playAudio = (
         }
       } catch (error) {
         console.log(error);
-        currentState.isPlayingAudio = false;
+        setStateProp("isPlayingAudio", false);
         message.channel
           .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
           .then(msg => {
@@ -632,7 +607,7 @@ const createDispatcher = (
     .on("end", end => {
       message.delete();
       // voiceChannel.leave();
-      currentState.isPlayingAudio = false;
+      setStateProp("isPlayingAudio", false);
     });
   return {
     collector: createCollector(message, length * 1000, dispatcher, ...blocks),
@@ -689,3 +664,60 @@ export const sendInspiringMessage = (message: Message, client: Client) =>
           .catch(error => reject(error));
       });
   });
+
+export const handleMessageCall = (message: Message, client: Client, twitterClient: Twitter) => {
+  if (message.guild === null && message.channel instanceof DMChannel) {
+    return console.log(`directMessage => ${message.author.username}: ${message.content}`);
+  }
+  console.log(`${message.member.displayName}/${message.member.user.username}: ${message.content}
+      `);
+  console.log(`${message.content.split(" ").shift()}`);
+  if (message.content.startsWith(config.prefix) && !message.author.bot) {
+    let functionCall = message.content.split(" ")[0].slice(1);
+    let currentState = getState();
+    if (currentState.commands.has(functionCall)) {
+      let command = currentState.commands.get(functionCall) as messageHandleFunction;
+      try {
+        if (command.roles.some((role: RoleNames) => message.member.roles.has(roleIds[role]))) {
+          command.execute({
+            discord: { message: message, client: client },
+            custom: { twitterClient: twitterClient }
+          });
+        } else throw "Unzureichende Berechtigung";
+      } catch (error) {
+        console.log(error);
+      }
+    } else console.log(`${functionCall} nicht gefunden`);
+  } else if (!message.author.bot) {
+    if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
+      repeatMessageWithLenny(message);
+      addReactionToMessage(message, client, userIds, ruleSet);
+    }
+  } else console.log("Nachricht von Bot");
+};
+
+export const loadCommands = () =>
+  new Promise(resolve => {
+    let tempCollection = new Collection<string, messageHandleFunction>();
+    const commandFiles = fs
+      .readdirSync("./dist/commands")
+      .filter((file: any) => file.endsWith(".js"));
+    let PromiseArr = [];
+    for (let file in commandFiles) {
+      console.log(commandFiles[file]);
+      PromiseArr.push(
+        import(path.resolve(__dirname, "..", "./dist/commands", commandFiles[file]))
+          .then((command: any) => {
+            let innerObject = command[commandFiles[file].split(".")[0]];
+            tempCollection.set(innerObject.name, innerObject);
+            return;
+          })
+          .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
+      );
+    }
+
+    Promise.all(PromiseArr).then(() => {
+      console.log("Alle Module erfolgreich geladen");
+      return resolve(tempCollection);
+    });
+  }) as Promise<Collection<string, messageHandleFunction>>;

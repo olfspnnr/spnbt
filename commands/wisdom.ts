@@ -1,26 +1,27 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
-import { writeHelpMessage, State } from "../controller/shared";
+import { commandProps, RoleNames, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, RichEmbed } from "discord.js";
+import { getStateProp, getState, setStateProp } from "../controller/stateController";
 
 export const wisdom = {
   name: "wisdom",
   description: "präsentiert eine Weisheit von einem LovooUser",
   usage: `[${config.prefix}wisdom]`,
   roles: [RoleNames.spinner, RoleNames.trusted],
-  execute: ({ discord: { message, client }, custom }: commandProps) =>
-    spitLovooWisdom(message, custom.currentState)
+  execute: ({ discord: { message, client }, custom }: commandProps) => spitLovooWisdom(message)
 } as messageHandleFunction;
 
-const spitLovooWisdom = (message: Message, currentState: State, numberToRepeat?: number) => {
+const spitLovooWisdom = (message: Message, numberToRepeat?: number) => {
   let toRepeat =
     numberToRepeat ||
     (message.content.length > "!wisdom".length && message.content.slice("!wisdom ".length));
+  let currentState = getState();
   if (toRepeat && toRepeat > currentState.lovooArray.length) {
     toRepeat = currentState.lovooArray.length;
   }
   if (currentState.lovooArray && currentState.lovooArray.length > 0) {
     const currentElement = currentState.lovooArray.pop();
+    setStateProp("lovooArray", currentState.lovooArray);
     message.channel
       .sendEmbed({
         color: 0xff6633,
@@ -63,7 +64,7 @@ const spitLovooWisdom = (message: Message, currentState: State, numberToRepeat?:
                 toRepeat = parseInt(toRepeat);
               }
             }
-            if (toRepeat > 0) spitLovooWisdom(deletedMessage, currentState, toRepeat as number);
+            if (toRepeat > 0) spitLovooWisdom(deletedMessage, toRepeat as number);
           });
       })
       .catch(error => {

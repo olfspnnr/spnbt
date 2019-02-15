@@ -1,7 +1,7 @@
 import { commandProps, RoleNames, config } from "../bot";
-import { writeHelpMessage, State } from "../controller/shared";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message } from "discord.js";
+import { getState, setStateProp } from "../controller/stateController";
 
 export interface userToRename {
   id: string;
@@ -14,11 +14,11 @@ export const renameUser = {
   description: "nennt User um zu angegebenen Namen / toggle ob dies automatisch passieren soll",
   usage: `[${config.prefix}renameUser userId nickname]`,
   roles: [RoleNames.spinner],
-  execute: ({ discord: { message, client }, custom }: commandProps) =>
-    renameUserFunc(message, custom.currentState)
+  execute: ({ discord: { message, client }, custom }: commandProps) => renameUserFunc(message)
 } as messageHandleFunction;
 
-const renameUserFunc = (message: Message, currentState: State) => {
+const renameUserFunc = (message: Message) => {
+  let currentState = getState();
   let [userId, nicknameToSet] = message.content.slice("!renameUser ".length).split(" ");
   console.log({ userid: userId, nickname: nicknameToSet });
   userId = userId
@@ -33,6 +33,7 @@ const renameUserFunc = (message: Message, currentState: State) => {
           return { ...userRe, isBeingRenamed: !userRe.isBeingRenamed };
         } else return userRe;
       });
+      setStateProp("renameUser", currentState.renameUser);
     } else
       currentState.renameUser.push({
         id: userId,

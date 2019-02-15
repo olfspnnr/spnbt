@@ -1,7 +1,7 @@
 import { commandProps, RoleNames, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message } from "discord.js";
-import { playAudio } from "../controller/shared";
+import { playAudio } from "../controller/botController";
 
 export const knock = {
   name: "knock",
