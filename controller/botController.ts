@@ -389,7 +389,7 @@ export const handleVoiceStateUpdate = (
   }
 };
 
-const chunk = (arr: string[], len: number) => {
+export const chunk = (arr: string[], len: number) => {
   let chunks = [];
   let i = 0;
   let n = arr.length;
