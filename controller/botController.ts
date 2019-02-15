@@ -303,7 +303,7 @@ export const handleNameChange = (userToChange: GuildMember) => {
 
 export const ruleSet = [
   { user: "olaf", reactionToAdd: "💕" },
-  { user: "nils", reactionToAdd: "katze" },
+  { user: "nils", reactionToAdd: "katze1" },
   { user: "justus", reactionToAdd: "pill~1" },
   { user: "marcel", reactionToAdd: "daddy" },
   { user: "franny", reactionToAdd: "🔥" },
