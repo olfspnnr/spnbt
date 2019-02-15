@@ -113,52 +113,53 @@ setStateProp("reloadCommands", () => {
   loadCommands().then(commands => setStateProp("commands", commands));
 });
 loadCommands().then(loadedCommands => {
-  setState({ commands: loadedCommands });
-  /**
-   * The ready event is vital, it means that only _after_ this will your bot start reacting to information
-   * received from Discord
-   */
-  client.once("ready", () => {
-    console.log("I am ready!");
-    client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
-    let server = new websocketServer({
-      port: 8080,
-      onMessage: (message: any) => handleWebSocketMessage(message)
+  setState({ commands: loadedCommands }).then(state => {
+    /**
+     * The ready event is vital, it means that only _after_ this will your bot start reacting to information
+     * received from Discord
+     */
+    client.once("ready", () => {
+      console.log("I am ready!");
+      client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
+      let server = new websocketServer({
+        port: 8080,
+        onMessage: (message: any) => handleWebSocketMessage(message)
+      });
     });
-  });
 
-  client.on("guildMemberAdd", member => {
-    try {
-      checkIfMemberHasntRolesAndAssignRoles(
-        client,
-        member,
-        [roleIds.uninitiert, roleIds.poop],
-        [roleIds.uninitiert]
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  });
+    client.on("guildMemberAdd", member => {
+      try {
+        checkIfMemberHasntRolesAndAssignRoles(
+          client,
+          member,
+          [roleIds.uninitiert, roleIds.poop],
+          [roleIds.uninitiert]
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    });
 
-  client.on("error", error => console.error(error));
+    client.on("error", error => console.error(error));
 
-  client.on("voiceStateUpdate", (oldMember, newMember) =>
-    handleVoiceStateUpdate(oldMember, newMember, client)
-  );
+    client.on("voiceStateUpdate", (oldMember, newMember) =>
+      handleVoiceStateUpdate(oldMember, newMember, client)
+    );
 
-  client.on("guildMemberUpdate", (oldUser, newUser) => {
-    console.log(`${oldUser.nickname} => ${newUser.nickname}`);
-    handleNameChange(newUser);
-  });
+    client.on("guildMemberUpdate", (oldUser, newUser) => {
+      console.log(`${oldUser.nickname} => ${newUser.nickname}`);
+      handleNameChange(newUser);
+    });
 
-  // Create an event listener for messages
-  client.on("message", message => {
-    try {
-      handleMessageCall(message, client, twitterClient);
-    } catch (error) {
-      console.log(error);
-      return console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
-    }
+    // Create an event listener for messages
+    client.on("message", message => {
+      try {
+        handleMessageCall(message, client, twitterClient);
+      } catch (error) {
+        console.log(error);
+        return console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
+      }
+    });
   });
 });
 

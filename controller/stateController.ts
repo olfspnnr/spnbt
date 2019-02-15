@@ -32,7 +32,8 @@ export const setStateProp = (propName: string, valueToSet: any) =>
 export const setState = (newState: State) =>
   new Promise((resolve, reject) => {
     try {
-      return resolve({ ...currentState, newState });
+      currentState = { ...currentState, ...newState };
+      return resolve(currentState);
     } catch (error) {
       return reject(error);
     }

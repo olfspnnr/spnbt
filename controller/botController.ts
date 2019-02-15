@@ -698,7 +698,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
 
 export const loadCommands = () =>
   new Promise(resolve => {
-    let currentState = getState();
+    let commandCollection = new Collection<string, messageHandleFunction>();
     const commandFiles = fs
       .readdirSync("./dist/commands")
       .filter((file: any) => file.endsWith(".js"));
@@ -709,7 +709,7 @@ export const loadCommands = () =>
         import(path.resolve(__dirname, "..", "./commands", commandFiles[file]))
           .then((command: any) => {
             let innerObject = command[commandFiles[file].split(".")[0]];
-            currentState.commands.set(innerObject.name, innerObject);
+            commandCollection.set(innerObject.name, innerObject);
             return;
           })
           .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
@@ -718,6 +718,6 @@ export const loadCommands = () =>
 
     Promise.all(PromiseArr).then(() => {
       console.log("Alle Module erfolgreich geladen");
-      setState(currentState).then(state => resolve(state.commands));
+      return resolve(commandCollection);
     });
   }) as Promise<Collection<string, messageHandleFunction>>;

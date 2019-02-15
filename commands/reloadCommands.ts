@@ -10,36 +10,40 @@ export const reloadCommands = {
   usage: `[${config.prefix}reloadCommands]`,
   roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => {
-    const backUpState = getState();
-    setState({ commands: new Collection<string, messageHandleFunction>() });
-    loadCommands()
-      .then(commands => {
-        const oldState = getState();
-        setState({ commands: commands }).then(newState => {
-          message.author.createDM().then(channel => {
-            let newCommands = oldState.commands
-              .filter(command => !newState.commands.some(cmd => cmd.name === command.name))
-              .map(cmd => cmd.name);
-            let deletedCommands = newState.commands
-              .filter(cmd => !oldState.commands.some(command => cmd.name === command.name))
-              .map(cmd => cmd.name);
-            channel.send("Folgende Befehle sind neu:");
-            channel.send((newCommands.length > 0 && newCommands) || "Keine");
-            channel.send("Folgende Befehle sind gelöscht:");
-            channel.send((deletedCommands.length > 0 && deletedCommands) || "Keine");
-            channel.send("Folgende Befehle sind geladen:");
-            let commandNameList = chunk(newState.commands.map(cmd => cmd.name), 5);
-            commandNameList.map(chun => {
-              channel.send((chun.length > 0 && chun) || "Keine?");
+    const oldState = getState();
+    setState({ commands: undefined }).then(() => {
+      loadCommands()
+        .then(commands => {
+          setState({ commands: commands }).then(newState => {
+            console.log(oldState);
+            message.author.createDM().then(channel => {
+              let newCommands = oldState.commands
+                .filter(command => !newState.commands.some(cmd => cmd.name === command.name))
+                .map(cmd => cmd.name);
+              let deletedCommands = newState.commands
+                .filter(cmd => !oldState.commands.some(command => cmd.name === command.name))
+                .map(cmd => cmd.name);
+              channel.send("Folgende Befehle sind neu:");
+              channel.send((newCommands.length > 0 && newCommands) || "Keine");
+              channel.send("Folgende Befehle sind gelöscht:");
+              channel.send((deletedCommands.length > 0 && deletedCommands) || "Keine");
+              channel.send("Folgende Befehle sind geladen:");
               channel.send("------------------------------------");
+              let commandNameList = chunk(newState.commands.map(cmd => cmd.name), 5);
+              commandNameList.map(chun => {
+                channel.send(
+                  (chun.length > 0 && [...chun, "------------------------------------"]) || "Keine?"
+                );
+              });
             });
           });
+        })
+        .catch(error => {
+          console.log(error);
+          setState(oldState);
         });
-      })
-      .catch(error => {
-        console.log(error);
-        setState(backUpState);
-      });
+    });
+
     message.delete(250);
   }
 } as messageHandleFunction;
