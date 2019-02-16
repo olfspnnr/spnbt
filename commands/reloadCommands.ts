@@ -2,7 +2,6 @@ import { commandProps, RoleNames, config } from "../bot";
 import { loadCommands, chunk } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { getState, setState } from "../controller/stateController";
-import { Collection } from "discord.js";
 
 export const reloadCommands = {
   name: "reloadCommands",
@@ -17,16 +16,16 @@ export const reloadCommands = {
           setState({ commands: commands }).then(newState => {
             console.log(oldState);
             message.author.createDM().then(channel => {
-              let newCommands = oldState.commands
+              let changedCommands = oldState.commands
                 .filter(command => !newState.commands.some(cmd => cmd.name === command.name))
                 .map(cmd => cmd.name);
-              let deletedCommands = newState.commands
+              let newCommands = newState.commands
                 .filter(cmd => !oldState.commands.some(command => cmd.name === command.name))
                 .map(cmd => cmd.name);
               channel.send("Folgende Befehle sind neu:");
-              channel.send((newCommands.length > 0 && newCommands) || "Keine");
+              channel.send((changedCommands.length > 0 && changedCommands) || "Keine");
               channel.send("Folgende Befehle sind gelöscht:");
-              channel.send((deletedCommands.length > 0 && deletedCommands) || "Keine");
+              channel.send((newCommands.length > 0 && newCommands) || "Keine");
               channel.send("Folgende Befehle sind geladen:");
               channel.send("------------------------------------");
               let commandNameList = chunk(newState.commands.map(cmd => cmd.name), 5);
