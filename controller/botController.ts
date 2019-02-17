@@ -184,8 +184,10 @@ export const assignRolesToMember = (
       .addRole(role)
       .then(() =>
         (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-          `<@${newMember.user.id}> you werde assigned role "${roleNames[role]}". ${
-            role === RoleNames.uninitiert ? "Reconnect may be necessary to be able to talk." : ""
+          `<@${newMember.user.id}> you were assigned role "${roleNames[role]}". ${
+            roleNames[role] === RoleNames.uninitiert
+              ? "Reconnect may be necessary to be able to talk."
+              : ""
           }`
         )
       );
