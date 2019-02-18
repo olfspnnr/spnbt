@@ -90,9 +90,11 @@ export let audioQueue = new AudioQueue();
 audioQueue.on("add", queue => {
   console.log("added something to the audioQueue");
   console.log("current queuelength: " + queue.length);
+  audioQueue.play(audioQueue.shift());
 });
 audioQueue.on("play", song => console.log("now playing: " + song.message));
 audioQueue.on("error", error => console.log(error));
+audioQueue.on("finish", queue => console.log("current queuelength: " + queue.length));
 
 export let clock = new Clock();
 clock.initialise();

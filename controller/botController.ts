@@ -274,13 +274,13 @@ export class AudioQueue extends EventEmitter {
       playAudio(message, youtube, url, audioObject, volume)
         .then(() => {
           this.isPlaying = false;
-          this.emit("finish", audioToBePlayed);
+          this.emit("finish", this.currentQueue);
           this.play(this.shift());
         })
         .catch(error => {
           this.isPlaying = false;
           this.emit("error", error);
-          this.emit("finish", audioToBePlayed);
+          this.emit("finish", this.currentQueue);
           this.play(this.shift());
         });
     } catch (error) {
@@ -455,11 +455,11 @@ export const playAudio = (
                     "Du kannst keine Sounds abspielen, wenn du dich nicht in einem Voicechannel befindest."
                   )
                 );
-              return reject(console.log("Voicechannel ist undefined"));
+              setState({ isPlayingAudio: false }).then(() => reject("voicechanel is undefined"));
             }
 
             if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
-              setStateProp("isPlayingAudio", true)
+              setState({ isPlayingAudio: true })
                 .then(currentState => {
                   try {
                     dispatcher = createDispatcher(
@@ -473,87 +473,117 @@ export const playAudio = (
                         function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
                           collector.stop();
                           youtubeStream.destroy();
-                          return () => dispatcher.end();
+                          return () => {
+                            setState({ isPlayingAudio: false }).then(() => dispatcher.end());
+                          };
                         }
                       }
-                    ).dispatcher.on("end", () => resolve());
+                    ).dispatcher.on("end", () =>
+                      setState({ isPlayingAudio: false }).then(() => resolve())
+                    );
                   } catch (error) {
-                    return reject(console.log(error));
+                    setState({ isPlayingAudio: false }).then(() => reject("test1"));
                   }
                 })
-                .catch(error => console.log(error));
+                .catch(error => setState({ isPlayingAudio: false }).then(() => reject("test2")));
             } else {
               voiceChannel
                 .join()
                 .then(connection => {
-                  let currentState = getState();
-                  currentState.isPlayingAudio = true;
-                  try {
-                    dispatcher = createDispatcher(
-                      message,
-                      voiceChannel,
-                      youtubeStream,
-                      volume,
-                      info.length_seconds,
-                      {
-                        command: "!stop",
-                        function: (dispatcher, collector) => {
-                          collector.stop();
-                          youtubeStream.destroy();
-                          return () => dispatcher.end();
-                        }
+                  setState({ isPlayingAudio: true })
+                    .then(() => {
+                      try {
+                        dispatcher = createDispatcher(
+                          message,
+                          voiceChannel,
+                          youtubeStream,
+                          volume,
+                          info.length_seconds,
+                          {
+                            command: "!stop",
+                            function: (dispatcher, collector) => {
+                              collector.stop();
+                              youtubeStream.destroy();
+                              return () =>
+                                setState({ isPlayingAudio: false }).then(() => dispatcher.end());
+                            }
+                          }
+                        ).dispatcher.on("end", () => resolve());
+                      } catch (error) {
+                        setState({ isPlayingAudio: false }).then(() => reject("test3"));
                       }
-                    ).dispatcher.on("end", () => resolve());
-                  } catch (error) {
-                    return reject(console.log(error));
-                  }
+                    })
+                    .catch(error =>
+                      setState({ isPlayingAudio: false }).then(() => reject("test4"))
+                    );
                 })
-                .catch(error => reject(console.log(error)));
+                .catch(error => setState({ isPlayingAudio: false }).then(() => reject("test5")));
             }
           });
           if (youtubeStream === undefined) {
-            console.log("test");
-            return;
+            console.log("youtubeStream is undefined");
+            setState({ isPlayingAudio: false }).then(() => reject("youtubeStream is undefined"));
           }
-          dispatcher && dispatcher.on("end", () => resolve(() => {}));
-          youtubeStream.on("error", error => reject(error));
+          dispatcher &&
+            dispatcher.on("end", () => setState({ isPlayingAudio: false }).then(() => resolve()));
+          youtubeStream.on("error", error =>
+            setState({ isPlayingAudio: false }).then(() => reject("test6"))
+          );
         } else {
           try {
-            const voiceChannel = message.member.voiceChannel;
-            voiceChannel.join().then(
-              connection =>
-                (dispatcher = createDispatcher(
-                  message,
-                  voiceChannel,
-                  audioObject.stream,
-                  volume,
-                  audioObject.length,
-                  {
-                    command: "!stop",
-                    function: (dispatcher: StreamDispatcher, collector) => {
-                      collector.stop();
-                      return () => dispatcher.end();
-                    }
-                  }
-                ).dispatcher.on("end", () => resolve()))
-            );
+            setState({ isPlayingAudio: true })
+              .then(() => {
+                const voiceChannel = message.member.voiceChannel;
+                voiceChannel
+                  .join()
+                  .then(
+                    connection =>
+                      (dispatcher = createDispatcher(
+                        message,
+                        voiceChannel,
+                        audioObject.stream,
+                        volume,
+                        audioObject.length,
+                        {
+                          command: "!stop",
+                          function: (dispatcher: StreamDispatcher, collector) => {
+                            collector.stop();
+                            return () =>
+                              setState({ isPlayingAudio: false }).then(() => dispatcher.end());
+                          }
+                        }
+                      ).dispatcher.on("end", () => {
+                        setState({ isPlayingAudio: false }).then(() => resolve());
+                      }))
+                  )
+                  .catch(error => console.log(error));
+              })
+              .catch(error => console.log(error));
           } catch (error) {
-            (error: any) => reject(console.log(error));
+            (error: any) => {
+              setState({ isPlayingAudio: false }).then(() => reject("test7"));
+            };
           }
         }
       } catch (error) {
-        console.log(error);
-        setStateProp("isPlayingAudio", false);
-        message.channel
-          .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
-          .then(msg => {
-            message.delete();
-            return resolve((msg as Message).delete(8000));
+        console.log("test8");
+        setState({ isPlayingAudio: false })
+          .then(() => {
+            message.channel
+              .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
+              .then(msg => {
+                message.delete();
+                return resolve((msg as Message).delete(8000));
+              })
+              .catch(error => {
+                console.error("test9");
+              });
           })
-          .catch(error => reject(console.log(error)));
+          .catch(error => console.log("test10"));
       }
     } else {
-      return reject(console.log("Already playing Audio"));
+      console.log("Already playing Audio");
+      setState({ isPlayingAudio: false }).then(() => reject("Already playing Audio"));
     }
   });
 

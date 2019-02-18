@@ -35,6 +35,8 @@ export const setState = (newState: State) =>
       currentState = { ...currentState, ...newState };
       return resolve(currentState);
     } catch (error) {
+      console.log("state error");
+
       return reject(error);
     }
   }) as Promise<State>;
