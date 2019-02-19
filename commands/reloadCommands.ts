@@ -17,6 +17,7 @@ const reloadCommand = ({ discord: { message, client }, custom }: commandProps) =
     loadCommands()
       .then(commands => {
         setState({ commands: commands }).then(newState => {
+          console.log(getDifference(newState, oldState));
           message.author.createDM().then(channel => {
             channel.send("Folgende Befehle sind geladen:");
             channel.send("------------------------------------");
@@ -34,4 +35,15 @@ const reloadCommand = ({ discord: { message, client }, custom }: commandProps) =
       });
   });
   message.delete(250);
+};
+
+const getDifference = (newState: State, oldState: State) => {
+  return newState.commands
+    .filter(cmd => {
+      let oldCommand = oldState.commands.filter(entry => entry.name == cmd.name);
+      if (oldCommand.first() !== undefined)
+        return Object.keys(cmd).some(key => (cmd as any)[key] !== (oldCommand.first() as any)[key]);
+      return true;
+    })
+    .map(entry => entry.name);
 };
