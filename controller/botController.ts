@@ -13,22 +13,13 @@ import {
   Collection,
   DMChannel
 } from "discord.js";
-import {
-  audioQueue,
-  roleIds,
-  channelIds,
-  UserIds,
-  RoleNames,
-  commandProps,
-  config,
-  userIds
-} from "../bot";
+import { audioQueue, roleIds, channelIds, UserIds, RoleNames, config, userIds } from "../bot";
 import * as ytdl from "ytdl-core";
-import { EventEmitter } from "events";
 import { userToRename } from "../commands/renameUser";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import * as path from "path";
 import { setStateProp, getStateProp, getState, setState } from "./stateController";
+import { audioQueueElement } from "./audioQueue";
 const fs = require("fs");
 
 export interface commandBlock {
@@ -98,14 +89,6 @@ export interface lovooUserEntry {
   images: Image[];
   isVerified: number;
   verifications: Verifications;
-}
-
-export interface audioQueueElement {
-  message: Message;
-  youtube: boolean;
-  url?: string;
-  audioObject?: { stream: ReadableStream; length: number };
-  volume?: number | undefined;
 }
 
 export const repeatMessageWithLenny = (message: Message) => {
@@ -236,61 +219,6 @@ export const getStreamFromYouTubeLink = (message: Message) =>
       (error: any) => reject(error);
     }
   });
-
-export class AudioQueue extends EventEmitter {
-  currentQueue: audioQueueElement[];
-  isPlaying: boolean;
-
-  constructor() {
-    super();
-    this.currentQueue = [];
-    this.isPlaying = false;
-  }
-
-  add = ({ youtube, url, audioObject, message, volume }: audioQueueElement) => {
-    this.currentQueue = [
-      ...this.currentQueue,
-      { message: message, volume: volume, audioObject: audioObject, url: url, youtube: youtube }
-    ];
-    this.emit("add", this.currentQueue);
-    return this.currentQueue;
-  };
-
-  shift = () => {
-    if (this.currentQueue.length > 0) {
-      this.isPlaying = false;
-      let shiftedElement = this.currentQueue.shift();
-      return shiftedElement;
-    }
-    return undefined;
-  };
-
-  play = (audioToBePlayed: audioQueueElement) => {
-    if (audioToBePlayed === undefined) return;
-    try {
-      this.isPlaying = true;
-      this.emit("play", audioToBePlayed);
-      let { audioObject, message, url, volume, youtube } = audioToBePlayed;
-      playAudio(message, youtube, url, audioObject, volume)
-        .then(() => {
-          this.isPlaying = false;
-          this.emit("finish", this.currentQueue);
-          this.play(this.shift());
-        })
-        .catch(error => {
-          this.isPlaying = false;
-          this.emit("error", error);
-          this.emit("finish", this.currentQueue);
-          this.play(this.shift());
-        });
-    } catch (error) {
-      (error: any) => {
-        this.emit("error", error);
-        this.shift();
-      };
-    }
-  };
-}
 
 export const handleNameChange = (userToChange: GuildMember) => {
   let renameUser = getStateProp("renameUser") as userToRename[];

@@ -3,7 +3,7 @@ import { lovooUserEntry } from "./botController";
 import { Collection } from "discord.js";
 import { messageHandleFunction } from "../legacy/messageHandler";
 
-interface State {
+export interface State {
   [key: string]: any;
   renameUser?: userToRename[];
   isPlayingAudio?: boolean;

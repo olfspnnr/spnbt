@@ -12,4 +12,6 @@ export const mist = {
 } as messageHandleFunction;
 
 const playMistSound = (message: Message) =>
-  playAudio(message, true, "https://www.youtube.com/watch?v=6OVS77TN3yE");
+  playAudio(message, true, "https://www.youtube.com/watch?v=6OVS77TN3yE").catch(error =>
+    console.log(error)
+  );

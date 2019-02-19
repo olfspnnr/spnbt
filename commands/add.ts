@@ -2,11 +2,11 @@ import { commandProps, RoleNames, config, roleIds } from "../bot";
 import {
   writeHelpMessage,
   getStreamFromYouTubeLink,
-  audioQueueElement,
   addToQueue
 } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
+import { audioQueueElement } from "../controller/audioQueue";
 
 export const add = {
   name: "add",

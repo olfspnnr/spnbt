@@ -1,7 +1,7 @@
 import { commandProps, RoleNames, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
-import { Message, Client, RichEmbed } from "discord.js";
-import { getStateProp, getState, setStateProp } from "../controller/stateController";
+import { Message, Client, RichEmbed, MessageEmbed } from "discord.js";
+import { getStateProp, getState, setStateProp, setState } from "../controller/stateController";
 
 export const wisdom = {
   name: "wisdom",
@@ -21,58 +21,67 @@ const spitLovooWisdom = (message: Message, numberToRepeat?: number) => {
   }
   if (currentState.lovooArray && currentState.lovooArray.length > 0) {
     const currentElement = currentState.lovooArray.pop();
-    setStateProp("lovooArray", currentState.lovooArray);
-    message.channel
-      .sendEmbed({
-        color: 0xff6633,
-        title: "Wisdom of Lovoo~",
-        author: {
-          name: `${currentElement.name}${currentElement.verifications.verified ? " - ✔" : ""}`,
-          url: `https://www.lovoo.com/profile/${currentElement.id}`
-        },
-        image: {
-          ...currentElement.images[0]
-        },
-        thumbnail: {
-          url:
-            "https://cdn.discordapp.com/attachments/542410380757041173/543170245221941348/ezgif-5-2f5180a04e62.png"
-        },
-        description: currentElement.freetext,
-        fields: [
-          {
-            name: "Info:",
-            value: `${currentElement.age} Jahre - ${(currentElement.flirtInterests &&
-              currentElement.flirtInterests
-                .map(intrest => (intrest === "frie" ? "friends" : intrest))
-                .join(" - ")) ||
-              "Keine Angabe"} - ${currentElement.isOnline > 0 ? "Online" : "Offline"}`
-          }
-        ],
-        footer: {
-          text: `🏡${currentElement.locations.home.city} 📍${
-            currentElement.locations.current.city
-          } 🕵️‍${currentState.lovooArray.length}`
-        }
-      } as RichEmbed)
-      .then((msg: Message) => {
-        msg.deletable &&
-          msg.delete(45000).then(deletedMessage => {
-            if (toRepeat) {
-              if (typeof toRepeat === "number") {
-                toRepeat -= 1;
-              } else {
-                toRepeat = parseInt(toRepeat);
+    setState({ lovooArray: currentState.lovooArray })
+      .then(newState => {
+        message.channel
+          .send({
+            embed: {
+              color: 0xff6633,
+              title: "Wisdom of Lovoo~",
+              author: {
+                name: `${currentElement.name}${
+                  currentElement.verifications.verified ? " - ✔" : ""
+                }`,
+                url: `https://www.lovoo.com/profile/${currentElement.id}`
+              },
+              image: {
+                ...currentElement.images[0]
+              },
+              thumbnail: {
+                height: 200,
+                width: 200,
+                url:
+                  "https://cdn.discordapp.com/attachments/542410380757041173/543170245221941348/ezgif-5-2f5180a04e62.png"
+              },
+              description: currentElement.freetext,
+              fields: [
+                {
+                  name: "Info:",
+                  value: `${currentElement.age} Jahre - ${(currentElement.flirtInterests &&
+                    currentElement.flirtInterests
+                      .map(intrest => (intrest === "frie" ? "friends" : intrest))
+                      .join(" - ")) ||
+                    "Keine Angabe"} - ${currentElement.isOnline > 0 ? "Online" : "Offline"}`
+                }
+              ],
+              footer: {
+                text: `🏡${currentElement.locations.home.city} 📍${
+                  currentElement.locations.current.city
+                } 🕵️‍${newState.lovooArray.length}`
               }
-            }
-            if (toRepeat > 0) spitLovooWisdom(deletedMessage, toRepeat as number);
+            } as RichEmbed
+          })
+          .then((msg: Message) => {
+            msg.deletable &&
+              msg.delete(45000).then(deletedMessage => {
+                if (toRepeat) {
+                  if (typeof toRepeat === "number") {
+                    toRepeat -= 1;
+                  } else {
+                    toRepeat = parseInt(toRepeat);
+                  }
+                }
+                if (toRepeat > 0) spitLovooWisdom(deletedMessage, toRepeat as number);
+              });
+          })
+          .catch(error => {
+            message.channel
+              .send("Da ist was fehlgelaufen - Ups")
+              .then((catchedMsg: Message) => catchedMsg.deletable && catchedMsg.delete(10000));
+            console.log(error);
           });
       })
-      .catch(error => {
-        message.channel
-          .send("Da ist was fehlgelaufen - Ups")
-          .then((catchedMsg: Message) => catchedMsg.deletable && catchedMsg.delete(10000));
-        console.log(error);
-      });
+      .catch(error => console.log(error));
   } else {
     message.channel
       .send("Sorry, keine LovooUser geladen ;(")

@@ -2,7 +2,6 @@
 import { Client, DMChannel, TextChannel, Message, GuildMember, Collection } from "discord.js";
 import "isomorphic-fetch";
 import {
-  AudioQueue,
   handleNameChange,
   handleWebSocketMessage,
   handleVoiceStateUpdate,
@@ -15,6 +14,7 @@ import { Clock } from "./controller/clock";
 import "node-opus";
 import { messageHandleFunction } from "./legacy/messageHandler";
 import { setStateProp, setState } from "./controller/stateController";
+import { AudioQueue } from "./controller/audioQueue";
 
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
