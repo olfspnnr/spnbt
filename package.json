@@ -6,7 +6,9 @@
   "author": "Olaf",
   "scripts": {
     "build": "tsc --project ./tsconfig.json",
-    "watch": "tsc --project ./tsconfig.json --watch"
+    "watch": "tsc --project ./tsconfig.json --watch",
+    "inspect": "node --inspect ./dist/bot.js",
+    "run": "node ./dist/bot.js"
   },
   "dependencies": {
     "@types/node": "^10.12.1",

@@ -8,8 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "program": "${workspaceFolder}\\dist\\bot.js",
-      "preLaunchTask": "tsc: build - tsconfig.json",
+      "program": "${workspaceFolder}\\bot.ts",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }
   ]

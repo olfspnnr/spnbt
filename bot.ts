@@ -7,7 +7,8 @@ import {
   handleVoiceStateUpdate,
   checkIfMemberHasntRolesAndAssignRoles,
   loadCommands,
-  handleMessageCall
+  handleMessageCall,
+  getUserDifferences
 } from "./controller/botController";
 import { websocketServer } from "./controller/server";
 import { Clock } from "./controller/clock";
@@ -149,7 +150,10 @@ loadCommands().then(loadedCommands => {
     );
 
     client.on("guildMemberUpdate", (oldUser, newUser) => {
-      console.log(`${oldUser.nickname} => ${newUser.nickname}`);
+      if (oldUser.nickname !== newUser.nickname) {
+        console.log(`${oldUser.nickname} => ${newUser.nickname}`);
+      }
+      getUserDifferences(oldUser, newUser);
       handleNameChange(newUser);
     });
 

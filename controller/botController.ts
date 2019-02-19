@@ -169,7 +169,7 @@ export const assignRolesToMember = (
         (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
           `<@${newMember.user.id}> you were assigned role "${roleNames[role]}". ${
             roleNames[role] === RoleNames.uninitiert
-              ? "Reconnect may be necessary to be able to talk."
+              ? "Welcome! - Reconnect may be necessary to be able to talk."
               : ""
           }`
         )
@@ -285,6 +285,25 @@ export const addReactionToMessage = (
   }
 };
 
+export const getUserDifferences = (oldMember: GuildMember, newMember: GuildMember) => {
+  console.log(`Something changed with [${oldMember.user.username}/${oldMember.displayName}]`);
+  let differences = {};
+  Object.keys(oldMember).map(key => {
+    Object.keys(newMember).map(newKey => {
+      if ((oldMember as any)[newKey] !== (newMember as any)[newKey]) {
+        (differences as any)[newKey] = `${(oldMember as any)[newKey]} => ${
+          (newMember as any)[newKey]
+        }`;
+      }
+    });
+  });
+  let different = Object.keys(differences)
+    .map(key => `${key}: ${(differences as any)[key]}`)
+    .join(";\n");
+  console.log(different);
+  return different;
+};
+
 export const handleVoiceStateUpdate = (
   oldMember: GuildMember,
   newMember: GuildMember,
@@ -299,21 +318,7 @@ export const handleVoiceStateUpdate = (
       `${oldMember.user.username}/${oldMember.displayName} left.`
     );
   } else if (newMember.voiceChannel !== undefined && oldMember.voiceChannel !== undefined) {
-    console.log(`Something changed with [${oldMember.user.username}/${oldMember.displayName}]`);
-    let differences = {};
-    Object.keys(oldMember).map(key => {
-      Object.keys(newMember).map(newKey => {
-        if ((oldMember as any)[newKey] !== (newMember as any)[newKey]) {
-          (differences as any)[newKey] = `${(oldMember as any)[newKey]} => ${
-            (newMember as any)[newKey]
-          }`;
-        }
-      });
-    });
-    let different = Object.keys(differences)
-      .map(key => `${key}: ${(differences as any)[key]}`)
-      .join(";\n");
-    console.log(different);
+    return getUserDifferences(oldMember, newMember);
   } else {
     return console.log("Konnte nicht entscheiden was passiert ist");
   }
