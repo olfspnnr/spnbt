@@ -124,10 +124,14 @@ loadCommands().then(loadedCommands => {
     client.once("ready", () => {
       console.log("I am ready!");
       client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
-      let server = new websocketServer({
-        port: 8080,
-        onMessage: (message: any) => handleWebSocketMessage(message)
-      });
+      try {
+        let server = new websocketServer({
+          port: 8080,
+          onMessage: (message: any) => handleWebSocketMessage(message)
+        });
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     client.on("guildMemberAdd", member => {
@@ -150,9 +154,6 @@ loadCommands().then(loadedCommands => {
     );
 
     client.on("guildMemberUpdate", (oldUser, newUser) => {
-      if (oldUser.nickname !== newUser.nickname) {
-        console.log(`${oldUser.nickname} => ${newUser.nickname}`);
-      }
       getUserDifferences(oldUser, newUser);
       handleNameChange(newUser);
     });
