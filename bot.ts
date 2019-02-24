@@ -16,6 +16,7 @@ import "node-opus";
 import { messageHandleFunction } from "./legacy/messageHandler";
 import { setStateProp, setState } from "./controller/stateController";
 import { AudioQueue } from "./controller/audioQueue";
+import { joke } from "./commands/joke";
 
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
@@ -84,6 +85,7 @@ export interface commandProps {
   custom?: {
     twitterClient?: Twitter;
     loadedCommands?: messageHandleFunction[];
+    jokes: { jokePosition: number; jokes: joke[] };
   };
 }
 

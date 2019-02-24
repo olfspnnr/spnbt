@@ -1,8 +1,7 @@
 import { commandProps, RoleNames, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, MessageEmbed } from "discord.js";
-
-let parser = require("html-dom-parser");
+import { DomElement, Parser } from "../controller/parser";
 
 export const pinnwand = {
   name: "pinnwand",
@@ -12,28 +11,8 @@ export const pinnwand = {
   execute: ({ discord: { message, client }, custom }: commandProps) => getPinnwandEintrag(message)
 } as messageHandleFunction;
 
-interface DomElement {
-  [key: string]: string | DomElement | DomAttributes | DomElement[];
-  data: string;
-  type: string;
-  next: DomElement;
-  prev: DomElement;
-  parent: DomElement;
-  attribs: DomAttributes;
-  children: DomElement[];
-}
-
-interface DomAttributes {
-  [key: string]: string;
-  class?: string;
-  id?: string;
-  href?: string;
-  target?: string;
-  rel?: string;
-  src?: string;
-}
-
 const getPinnwandEintrag = (message: Message) => {
+  let domParser = new Parser();
   let steamProfileOrId = message.content.split(" ")[1];
   let steamId = message.content.split(" ")[2];
   let domAsText: string = undefined;
@@ -41,10 +20,10 @@ const getPinnwandEintrag = (message: Message) => {
     .then(response => response.text())
     .then(text => {
       domAsText = text;
-      let dom = parser(domAsText);
+      let dom = domParser.parse(domAsText);
       let foundDomElements: DomElement[] = [] as DomElement[];
       console.log(
-        findInDomElements(
+        domParser.findInDomElements(
           dom[0].next.next.children,
           "class",
           "commentthread_comments",
@@ -52,10 +31,10 @@ const getPinnwandEintrag = (message: Message) => {
         )
       );
       try {
-        let comments = getComments(foundDomElements[0].children);
+        let comments = getComments(foundDomElements[0].children, domParser);
         let lastComment = comments[0];
         let textElements: DomElement[] = [];
-        findInDomElements(
+        domParser.findInDomElements(
           lastComment.children,
           "class",
           "commentthread_comment_text",
@@ -63,14 +42,14 @@ const getPinnwandEintrag = (message: Message) => {
         );
         let pinnwandText = textElements[0].children[0].data;
         let images: DomElement[] = [];
-        findInDomElements(lastComment.children, "src", "https://steamcdn-a", images);
+        domParser.findInDomElements(lastComment.children, "src", "https://steamcdn-a", images);
         let imageLink = images[0].attribs.src;
         let authorNames = [] as DomElement[];
-        findInDomElements(lastComment.children, "name", "bdi", authorNames);
+        domParser.findInDomElements(lastComment.children, "name", "bdi", authorNames);
         let authorName = authorNames[0].children[0].data;
         let authorLink = authorNames[0].parent.attribs.href;
         let imgColor = [] as DomElement[];
-        findInDomElements(lastComment.children, "class", "playerAvatar", imgColor);
+        domParser.findInDomElements(lastComment.children, "class", "playerAvatar", imgColor);
         let imageColor = imgColor[0].attribs.class;
         let color = undefined;
         if (~imageColor.toLocaleLowerCase().indexOf("online")) {
@@ -116,50 +95,13 @@ const getPinnwandEintrag = (message: Message) => {
   message.deletable && message.delete(240);
 };
 
-const findInDomElements = (
-  arrayOfChildren: DomElement[],
-  attribName: string,
-  stringToFind: string,
-  foundElements: DomElement[]
-) => {
-  arrayOfChildren.map((element, idx) => {
-    if (element.attribs && element.attribs[attribName] !== undefined) {
-      if (
-        !!~element.attribs[attribName].toLocaleLowerCase().indexOf(stringToFind.toLocaleLowerCase())
-      ) {
-        console.log("success");
-        foundElements.push(element);
-        return element;
-      } else if (
-        element.children &&
-        element.children.length !== undefined &&
-        element.children.length > 0
-      ) {
-        findInDomElements(element.children, attribName, stringToFind, foundElements);
-      }
-    } else if (
-      element[attribName] !== undefined &&
-      typeof element[attribName] === "string" &&
-      !!~(element[attribName] as string)
-        .toLocaleLowerCase()
-        .indexOf(stringToFind.toLocaleLowerCase())
-    ) {
-      foundElements.push(element);
-      return element;
-    } else {
-      if (
-        element.children &&
-        element.children.length !== undefined &&
-        element.children.length > 0
-      ) {
-        findInDomElements(element.children, attribName, stringToFind, foundElements);
-      }
-    }
-  });
-};
-
-const getComments = (commentContainerChildren: DomElement[]) => {
+const getComments = (commentContainerChildren: DomElement[], domParser: Parser) => {
   let foundElements: DomElement[] = [];
-  findInDomElements(commentContainerChildren, "class", "commentthread_comment", foundElements);
+  domParser.findInDomElements(
+    commentContainerChildren,
+    "class",
+    "commentthread_comment",
+    foundElements
+  );
   return foundElements;
 };
