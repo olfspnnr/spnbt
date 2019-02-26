@@ -1,7 +1,7 @@
 import { commandProps, RoleNames, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, MessageEmbed } from "discord.js";
-import { DomElement, Parser } from "../controller/parser";
+import { DomElement, Parser, DomAttributeNames } from "../controller/parser";
 
 export const pinnwand = {
   name: "pinnwand",
@@ -25,7 +25,7 @@ const getPinnwandEintrag = (message: Message) => {
       console.log(
         domParser.findInDomElements(
           dom[0].next.next.children,
-          "class",
+          DomAttributeNames.class,
           "commentthread_comments",
           foundDomElements
         )
@@ -36,20 +36,35 @@ const getPinnwandEintrag = (message: Message) => {
         let textElements: DomElement[] = [];
         domParser.findInDomElements(
           lastComment.children,
-          "class",
+          DomAttributeNames.class,
           "commentthread_comment_text",
           textElements
         );
         let pinnwandText = textElements[0].children[0].data;
         let images: DomElement[] = [];
-        domParser.findInDomElements(lastComment.children, "src", "https://steamcdn-a", images);
+        domParser.findInDomElements(
+          lastComment.children,
+          DomAttributeNames.src,
+          "https://steamcdn-a",
+          images
+        );
         let imageLink = images[0].attribs.src;
         let authorNames = [] as DomElement[];
-        domParser.findInDomElements(lastComment.children, "name", "bdi", authorNames);
+        domParser.findInDomElements(
+          lastComment.children,
+          DomAttributeNames.name,
+          "bdi",
+          authorNames
+        );
         let authorName = authorNames[0].children[0].data;
         let authorLink = authorNames[0].parent.attribs.href;
         let imgColor = [] as DomElement[];
-        domParser.findInDomElements(lastComment.children, "class", "playerAvatar", imgColor);
+        domParser.findInDomElements(
+          lastComment.children,
+          DomAttributeNames.class,
+          "playerAvatar",
+          imgColor
+        );
         let imageColor = imgColor[0].attribs.class;
         let color = undefined;
         if (~imageColor.toLocaleLowerCase().indexOf("online")) {
@@ -99,7 +114,7 @@ const getComments = (commentContainerChildren: DomElement[], domParser: Parser) 
   let foundElements: DomElement[] = [];
   domParser.findInDomElements(
     commentContainerChildren,
-    "class",
+    DomAttributeNames.class,
     "commentthread_comment",
     foundElements
   );

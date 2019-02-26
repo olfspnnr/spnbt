@@ -9,6 +9,7 @@ export interface DomElement {
   parent: DomElement;
   attribs: DomAttributes;
   children: DomElement[];
+  name?: string;
 }
 
 interface DomAttributes {
@@ -19,6 +20,27 @@ interface DomAttributes {
   target?: string;
   rel?: string;
   src?: string;
+  datetime?: string;
+  title?: string;
+}
+
+export enum DomAttributeNames {
+  class = "class",
+  id = "id",
+  href = "href",
+  target = "target",
+  rel = "rel",
+  src = "src",
+  datetime = "datetime",
+  title = "title",
+  data = "data",
+  type = "type",
+  next = "next",
+  prev = "prev",
+  parent = "parent",
+  attribs = "attribs",
+  children = "children",
+  name = "name"
 }
 
 export class Parser {
@@ -28,9 +50,60 @@ export class Parser {
     return domParser(inputText);
   }
 
+  public getElementAsObject = (Element: DomElement, filterBy: "class") => {
+    try {
+      const getDeep = (domElement: DomElement) => {
+        let newElement: any = {};
+        if (
+          domElement[DomAttributeNames.attribs] &&
+          domElement[DomAttributeNames.attribs][filterBy]
+        ) {
+          newElement = {
+            [[domElement[DomAttributeNames.attribs][filterBy] as string][0]]: domElement
+          };
+        } else {
+          newElement = {
+            [domElement[DomAttributeNames.name]]: domElement || undefined
+          };
+        }
+        if (domElement.children) {
+          domElement.children.map(element => {
+            if (
+              element[DomAttributeNames.attribs] !== undefined &&
+              element[DomAttributeNames.attribs][filterBy] !== undefined &&
+              element[DomAttributeNames.attribs][filterBy][0] !== undefined &&
+              element[DomAttributeNames.attribs][filterBy][0] !== ""
+            ) {
+              newElement[[element[DomAttributeNames.attribs][filterBy] as string][0]] = undefined;
+              if (element) {
+                newElement[[element[DomAttributeNames.attribs][filterBy] as string][0]] = element;
+              }
+              if (element.children) {
+                element.children.map(child => {
+                  newElement = { ...newElement, ...getDeep(child) };
+                });
+              }
+            }
+          });
+        }
+        return newElement;
+      };
+      let returnElement = { [Element[filterBy] as string]: Element || undefined } as any;
+      if (Element.children) {
+        Element.children.map(child => {
+          returnElement = { ...returnElement, ...getDeep(child) };
+        });
+      }
+
+      return returnElement;
+    } catch (error) {
+      console.log({ caller: "getElementAsObject", error: error });
+    }
+  };
+
   public findInDomElements(
     arrayOfChildren: DomElement[],
-    attribName: string,
+    attribName: DomAttributeNames,
     stringToFind: string,
     foundElements: DomElement[]
   ) {

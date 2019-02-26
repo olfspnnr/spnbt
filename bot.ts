@@ -85,7 +85,7 @@ export interface commandProps {
   custom?: {
     twitterClient?: Twitter;
     loadedCommands?: messageHandleFunction[];
-    jokes: { jokePosition: number; jokes: joke[] };
+    jokes?: { jokePosition: number; jokes: joke[] };
   };
 }
 

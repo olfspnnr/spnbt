@@ -13,7 +13,16 @@ import {
   Collection,
   DMChannel
 } from "discord.js";
-import { audioQueue, roleIds, channelIds, UserIds, RoleNames, config, userIds } from "../bot";
+import {
+  audioQueue,
+  roleIds,
+  channelIds,
+  UserIds,
+  RoleNames,
+  config,
+  userIds,
+  commandProps
+} from "../bot";
 import * as ytdl from "ytdl-core";
 import { userToRename } from "../commands/renameUser";
 import { messageHandleFunction } from "../legacy/messageHandler";
@@ -257,7 +266,7 @@ export const addReactionToMessage = (
       let emoji: Emoji | string = undefined;
       ruleSet.map(({ user, reactionToAdd }) => {
         if (userIds[user] === message.member.id) {
-          emoji = client.emojis.find(emoji => emoji.identifier === reactionToAdd);
+          emoji = client.emojis.find(emoji => emoji.name === reactionToAdd);
           if (!emoji) {
             emoji = reactionToAdd;
           }
@@ -646,8 +655,11 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
         if (command.roles.some((role: RoleNames) => message.member.roles.has(roleIds[role]))) {
           command.execute({
             discord: { message: message, client: client },
-            custom: { twitterClient: twitterClient }
-          });
+            custom: {
+              twitterClient: twitterClient,
+              jokes: { jokePosition: undefined, jokes: currentState.jokes }
+            }
+          } as commandProps);
         } else throw "Unzureichende Berechtigung";
       } catch (error) {
         console.log(error);

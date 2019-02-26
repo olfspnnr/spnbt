@@ -2,6 +2,7 @@ import { userToRename } from "../commands/renameUser";
 import { lovooUserEntry } from "./botController";
 import { Collection } from "discord.js";
 import { messageHandleFunction } from "../legacy/messageHandler";
+import { joke } from "../commands/joke";
 
 export interface State {
   [key: string]: any;
@@ -11,6 +12,7 @@ export interface State {
   lovooArray?: lovooUserEntry[];
   commands?: Collection<string, messageHandleFunction>;
   reloadCommands?: () => void;
+  jokes?: joke[];
 }
 
 export const setStateProp = (propName: string, valueToSet: any) =>
@@ -51,5 +53,6 @@ let currentState = {
   isInspiring: false,
   lovooArray: [],
   commands: new Collection(),
-  reloadCommands: undefined
+  reloadCommands: undefined,
+  jokes: undefined
 } as State;
