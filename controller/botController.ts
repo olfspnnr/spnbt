@@ -176,9 +176,9 @@ export const assignRolesToMember = (
       .addRole(role)
       .then(() =>
         (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-          `<@${newMember.user.id}> you were assigned role "${roleNames[role]}". ${
+          `<@${newMember.user.id}> dir wurde folgende Rolle zugewiesen: "${roleNames[role]}". ${
             roleNames[role] === RoleNames.uninitiert
-              ? "Welcome! - Reconnect may be necessary to be able to talk."
+              ? "Willkommen! Schnapp dir einen Medizinball und gesell dich dazu"
               : ""
           }`
         )
