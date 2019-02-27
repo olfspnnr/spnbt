@@ -657,7 +657,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
             discord: { message: message, client: client },
             custom: {
               twitterClient: twitterClient,
-              jokes: { jokePosition: undefined, jokes: currentState.jokes }
+              jokes: currentState.jokes
             }
           } as commandProps);
         } else throw "Unzureichende Berechtigung";

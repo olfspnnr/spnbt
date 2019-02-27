@@ -12,7 +12,7 @@ export interface State {
   lovooArray?: lovooUserEntry[];
   commands?: Collection<string, messageHandleFunction>;
   reloadCommands?: () => void;
-  jokes?: joke[];
+  jokes?: { jokePosition: number; jokes: joke[] };
 }
 
 export const setStateProp = (propName: string, valueToSet: any) =>
@@ -54,5 +54,5 @@ let currentState = {
   lovooArray: [],
   commands: new Collection(),
   reloadCommands: undefined,
-  jokes: undefined
+  jokes: { jokePosition: 0, jokes: [] }
 } as State;

@@ -114,7 +114,6 @@ export class Parser {
             .toLocaleLowerCase()
             .indexOf(stringToFind.toLocaleLowerCase())
         ) {
-          console.log("success");
           foundElements.push(element);
           return element;
         } else if (
