@@ -9,5 +9,5 @@ export const fault = {
   usage: `[${config.prefix}fault]`,
   roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    playAudio(message, true, "https://www.youtube.com/watch?v=wklDd8o8HFQ")
+    playAudio(message, true, "https://www.youtube.com/watch?v=wklDd8o8HFQ", undefined, 1)
 } as messageHandleFunction;

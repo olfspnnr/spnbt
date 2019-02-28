@@ -192,7 +192,7 @@ export const reactionDeletionHandler = (
   userIdOfMessage: string
 ) => {
   const collector = new MessageCollector(message.channel, m => m.author.id === message.author.id, {
-    time: 600 * 1000
+    time: 60 * 1000
   });
   collector.on("collect", (followUpMessage: Message) => {
     if (followUpMessage.member.user.id === userIdOfMessage) reaction.remove();
@@ -241,17 +241,17 @@ export const handleNameChange = (userToChange: GuildMember) => {
 };
 
 export const ruleSet = [
-  { user: "olaf", reactionToAdd: "💕" },
-  { user: "nils", reactionToAdd: "katze1" },
-  { user: "justus", reactionToAdd: "pill~1" },
-  { user: "marcel", reactionToAdd: "daddy" },
-  { user: "franny", reactionToAdd: "🔥" },
-  { user: "adrian", reactionToAdd: "💩" }
+  { user: "olaf", reactionsToAdd: ["💕", "🌚"] },
+  { user: "nils", reactionsToAdd: ["katze1"] },
+  { user: "justus", reactionsToAdd: ["pill~1"] },
+  { user: "marcel", reactionsToAdd: ["daddy"] },
+  { user: "franny", reactionsToAdd: ["🔥"] },
+  { user: "adrian", reactionsToAdd: ["💩"] }
 ] as reactionRuleSet[];
 
 export interface reactionRuleSet {
   user: string;
-  reactionToAdd: string;
+  reactionsToAdd: string[];
 }
 
 export const addReactionToMessage = (
@@ -264,22 +264,22 @@ export const addReactionToMessage = (
   if (ruleSet && userIds) {
     rulesets.map(ruleset => {
       let emoji: Emoji | string = undefined;
-      ruleSet.map(({ user, reactionToAdd }) => {
+      ruleSet.map(({ user, reactionsToAdd }) => {
         if (userIds[user] === message.member.id) {
-          emoji = client.emojis.find(emoji => emoji.name === reactionToAdd);
-          if (!emoji) {
-            emoji = reactionToAdd;
-          }
+          reactionsToAdd.map((reactionToAdd: string) => {
+            emoji = client.emojis.find(emoji => emoji.name === reactionToAdd);
+            if (!emoji) {
+              emoji = reactionToAdd;
+            }
+            if (message.member.user.id === userIds[ruleset.user]) {
+              message
+                .react(emoji)
+                .then(reaction => reactionDeletionHandler(message, reaction, userIds[ruleset.user]))
+                .catch(error => console.log(error));
+            }
+          });
         }
       });
-      if (message.member.user.id === (userIds as any)[ruleset.user]) {
-        message
-          .react(emoji)
-          .then(reaction =>
-            reactionDeletionHandler(message, reaction, (userIds as any)[ruleset.user])
-          )
-          .catch(error => console.log(error));
-      }
     });
   } else {
     let emoji: Emoji | string = undefined;
