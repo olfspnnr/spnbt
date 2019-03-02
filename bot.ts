@@ -56,7 +56,7 @@ export interface Roles {
 export enum RoleNames {
   spinner = "spinner",
   trusted = "trusted",
-  uninitiert = "unintiert",
+  uninitiert = "uninitiert",
   poop = "poop"
 }
 
