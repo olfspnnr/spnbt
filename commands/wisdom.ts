@@ -1,7 +1,7 @@
 import { commandProps, RoleNames, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, RichEmbed, MessageEmbed } from "discord.js";
-import { getStateProp, getState, setStateProp, setState } from "../controller/stateController";
+import { getState, fillStateProp, setState } from "../controller/stateController";
 
 export const wisdom = {
   name: "wisdom",

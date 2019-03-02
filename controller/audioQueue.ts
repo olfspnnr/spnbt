@@ -21,11 +21,15 @@ export class AudioQueue extends EventEmitter {
   }
 
   add = ({ youtube, url, audioObject, message, volume }: audioQueueElement) => {
-    this.currentQueue = [
-      ...this.currentQueue,
-      { message: message, volume: volume, audioObject: audioObject, url: url, youtube: youtube }
-    ];
-    this.emit("add", this.currentQueue);
+    let newAudioElement = {
+      message: message,
+      volume: volume,
+      audioObject: audioObject,
+      url: url,
+      youtube: youtube
+    };
+    this.currentQueue = [...this.currentQueue, newAudioElement];
+    this.emit("add", newAudioElement);
     return this.currentQueue;
   };
 
@@ -35,11 +39,12 @@ export class AudioQueue extends EventEmitter {
       let shiftedElement = this.currentQueue.shift();
       return shiftedElement;
     }
+    this.emit("error", "Kein Element zum shiften vorhanden");
     return undefined;
   };
 
   play = (audioToBePlayed: audioQueueElement) => {
-    if (audioToBePlayed === undefined) return;
+    if (audioToBePlayed === undefined) this.emit("error", "Kein Audio zum abspielen vorhanden");
     try {
       this.isPlaying = true;
       this.emit("play", audioToBePlayed);

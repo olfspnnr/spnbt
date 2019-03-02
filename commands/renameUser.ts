@@ -1,7 +1,7 @@
 import { commandProps, RoleNames, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message } from "discord.js";
-import { getState, setStateProp } from "../controller/stateController";
+import { getState, fillStateProp } from "../controller/stateController";
 
 export interface userToRename {
   id: string;
@@ -33,7 +33,7 @@ const renameUserFunc = (message: Message) => {
           return { ...userRe, isBeingRenamed: !userRe.isBeingRenamed };
         } else return userRe;
       });
-      setStateProp("renameUser", currentState.renameUser);
+      fillStateProp("renameUser", currentState.renameUser);
     } else
       currentState.renameUser.push({
         id: userId,

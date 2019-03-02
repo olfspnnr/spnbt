@@ -14,7 +14,7 @@ import { websocketServer } from "./controller/server";
 import { Clock } from "./controller/clock";
 import "node-opus";
 import { messageHandleFunction } from "./legacy/messageHandler";
-import { setStateProp, setState } from "./controller/stateController";
+import { fillStateProp, setState } from "./controller/stateController";
 import { AudioQueue } from "./controller/audioQueue";
 import { joke } from "./commands/joke";
 
@@ -114,8 +114,8 @@ export const twitterClient = new Twitter({
 
 // Create an instance of a Discord client
 const client = new Client();
-setStateProp("reloadCommands", () => {
-  loadCommands().then(commands => setStateProp("commands", commands));
+fillStateProp("reloadCommands", () => {
+  loadCommands().then(commands => setState({ commands: commands }));
 });
 loadCommands().then(loadedCommands => {
   setState({ commands: loadedCommands }).then(state => {

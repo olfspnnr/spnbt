@@ -27,7 +27,7 @@ import * as ytdl from "ytdl-core";
 import { userToRename } from "../commands/renameUser";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import * as path from "path";
-import { setStateProp, getStateProp, getState, setState } from "./stateController";
+import { fillStateProp, getStateProp, getState, setState } from "./stateController";
 import { audioQueueElement } from "./audioQueue";
 const fs = require("fs");
 
@@ -136,7 +136,7 @@ export const handleWebSocketMessage = (wsMessage: any) => {
 
 const handlePayloadType = {
   loadLovoo: (payload: any) =>
-    setStateProp("lovooArray", payload)
+    fillStateProp("lovooArray", payload)
       .then(newState => {
         console.log(newState);
       })
@@ -581,7 +581,7 @@ const createDispatcher = (
     .on("end", end => {
       message.delete();
       // voiceChannel.leave();
-      setStateProp("isPlayingAudio", false);
+      setState({ isPlayingAudio: false });
     });
   return {
     collector: createCollector(message, length * 1000, dispatcher, ...blocks),

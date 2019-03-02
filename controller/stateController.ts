@@ -15,7 +15,7 @@ export interface State {
   jokes?: { jokePosition: number; jokes: joke[] };
 }
 
-export const setStateProp = (propName: string, valueToSet: any) =>
+export const fillStateProp = (propName: string, valueToSet: any) =>
   new Promise((resolve, reject) => {
     if (currentState[propName] === undefined) {
       currentState = { ...currentState, [propName]: valueToSet };
