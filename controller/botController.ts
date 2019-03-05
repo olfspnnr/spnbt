@@ -345,34 +345,6 @@ export const chunk = (arr: string[], len: number) => {
   return chunks;
 };
 
-export const writeHelpMessage = async (message: Message) => {
-  let commands = getStateProp("commands") as Collection<string, messageHandleFunction>;
-  let helpMessages = commands.map((command: messageHandleFunction) => {
-    if (command.roles.some(role => message.member.roles.has(roleIds[role])))
-      return `**${command.usage}** ${command.description}`;
-    else return undefined;
-  });
-  if (helpMessages) helpMessages = helpMessages.filter(entry => entry);
-  let helpMessageChunks = chunk(helpMessages, 10);
-  try {
-    message.author.createDM().then(channel => {
-      channel.send("Mit folgenden Befehlen kann ich zu eurem Chillout beitragen:");
-      channel.send("------------------------");
-      helpMessageChunks.map((part, idx) => {
-        if (idx === 0) channel.send([...part]);
-        else {
-          channel.send(["-", ...part]);
-        }
-      });
-      channel.send("------------------------");
-      channel.send(`Habe einen schönen Tag ${message.author.username}!`);
-    });
-    message.delete();
-  } catch (error) {
-    return console.log(error);
-  }
-};
-
 export const playAudio = (
   message: Message,
   youtube: boolean,

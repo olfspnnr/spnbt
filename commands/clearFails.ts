@@ -1,5 +1,4 @@
 import { commandProps, RoleNames, config } from "../bot";
-import { writeHelpMessage } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, ChannelLogsQueryOptions } from "discord.js";
 

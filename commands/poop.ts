@@ -1,5 +1,5 @@
 import { commandProps, RoleNames, config, roleIds } from "../bot";
-import { writeHelpMessage, stripMemberOfAllRoles } from "../controller/botController";
+import { stripMemberOfAllRoles } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, GuildMember } from "discord.js";
 

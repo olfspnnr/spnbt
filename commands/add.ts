@@ -1,9 +1,5 @@
 import { commandProps, RoleNames, config, roleIds } from "../bot";
-import {
-  writeHelpMessage,
-  getStreamFromYouTubeLink,
-  addToQueue
-} from "../controller/botController";
+import { getStreamFromYouTubeLink, addToQueue } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
 import { audioQueueElement } from "../controller/audioQueue";

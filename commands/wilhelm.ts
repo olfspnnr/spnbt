@@ -1,7 +1,6 @@
 import { commandProps, RoleNames, config, roleIds } from "../bot";
-import { writeHelpMessage, playAudio } from "../controller/botController";
+import { playAudio } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
-import { Message, Client } from "discord.js";
 
 export const wilhelm = {
   name: "wilhelm",
