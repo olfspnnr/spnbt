@@ -54,5 +54,5 @@ let currentState = {
   lovooArray: [],
   commands: new Collection(),
   reloadCommands: undefined,
-  jokes: { jokePosition: 0, jokes: [] }
+  jokes: { jokePosition: Math.floor(Math.random() * 51), jokes: [] }
 } as State;
