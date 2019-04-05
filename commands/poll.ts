@@ -12,7 +12,7 @@ import {
 export const poll = {
   name: "poll",
   description: "Erstellt eine Umfrage",
-  usage: `[${config.prefix}poll "Titel der Umfrage:Beschreibungstext"`,
+  usage: `[${config.prefix}poll "Titel der Umfrage:Beschreibungstext" Zeit`,
   roles: [RoleNames.spinner, RoleNames.trusted],
   execute: ({ discord: { message, client }, custom }) => handlePollRequest(message)
 } as messageHandleFunction;
@@ -22,10 +22,11 @@ export const poll = {
 
 const handlePollRequest = (message: Message) =>
   new Promise((resolve, reject) => {
-    let [empty, titleAndDescription, ...args] = message.content
+    let [empty, titleAndDescription, time] = message.content
       .slice(`${poll.name} `.length)
       .split('"');
-    sendPoll(titleAndDescription, message, ["✅", "❌"], 5000);
+    (time as any) = parseInt(time) || 1000 * 60 * 1;
+    sendPoll(titleAndDescription, message, ["✅", "❌"], time as any);
     return resolve();
   }) as Promise<Message>;
 
@@ -37,6 +38,7 @@ const sendPoll = (
 ) => {
   let [title, description] = titleAndDescription.split(":");
   emojisToFilterBy = emojisToFilterBy || ["✅", "❌"];
+  console.log({ title: title, description: description, time: time });
   message.channel
     .send([`**${title}**`, description])
     .then((msg: Message) => {
