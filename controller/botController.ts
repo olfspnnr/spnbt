@@ -102,17 +102,22 @@ export interface lovooUserEntry {
 
 export const repeatMessageWithLenny = (message: Message) => {
   if (message.content.includes("lenny") || message.content.includes("Lenny")) {
-    message.channel
-      .send(
+    if (
+      message.content.toLowerCase().includes("ich ") ||
+      message.content.toLowerCase().includes(" ich")
+    ) {
+      message.channel.send("*hust*").then((msg: Message) => msg.deletable && msg.delete(15000));
+    } else {
+      message.channel.send(
         message.content
           .split("lenny")
           .join("( ͡° ͜ʖ ͡°)")
           .split("Lenny")
           .join("(͡° ͜ʖ ͡°)")
-      )
-      .then(() => {
-        message.deletable && message.delete(250);
-      });
+      );
+    }
+
+    message.deletable && message.delete(250);
   }
 };
 
