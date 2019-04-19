@@ -100,8 +100,23 @@ export interface lovooUserEntry {
   verifications: Verifications;
 }
 
+export const replyToMessageWithLenny = (message: Message) => {
+  if (message.content.toLowerCase().includes("lenny")) {
+    if (message.content.toLowerCase().includes("lenny")) {
+      if (
+        message.content.toLowerCase().includes("ich ") ||
+        message.content.toLowerCase().includes(" ich")
+      ) {
+        message.channel.send("*hust*").then((msg: Message) => msg.deletable && msg.delete(15000));
+      } else {
+        message.channel.send("(͡° ͜ʖ ͡°)").then((msg: Message) => msg.deletable && msg.delete(15000));
+      }
+    }
+  }
+};
+
 export const repeatMessageWithLenny = (message: Message) => {
-  if (message.content.includes("lenny") || message.content.includes("Lenny")) {
+  if (message.content.toLowerCase().includes("lenny")) {
     if (
       message.content.toLowerCase().includes("ich ") ||
       message.content.toLowerCase().includes(" ich")
@@ -644,7 +659,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
     } else console.log(`${functionCall} nicht gefunden`);
   } else if (!message.author.bot) {
     if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
-      repeatMessageWithLenny(message);
+      replyToMessageWithLenny(message);
       addReactionToMessage(message, client, userIds, ruleSet);
     }
   } else console.log("Nachricht von Bot");
