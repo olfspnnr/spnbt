@@ -107,9 +107,21 @@ export const replyToMessageWithLenny = (message: Message) => {
         message.content.toLowerCase().includes("ich ") ||
         message.content.toLowerCase().includes(" ich")
       ) {
-        message.channel.send("*hust*").then((msg: Message) => msg.deletable && msg.delete(15000));
+        message.channel.send("*hust*").then((msg: Message) => msg.deletable && msg.delete(150000));
+      } else if (
+        message.content.toLowerCase().includes("bernd ") ||
+        message.content.toLowerCase().includes(" bernd")
+      ) {
+        message.channel.send("frech").then((msg: Message) => msg.deletable && msg.delete(150000));
       } else {
-        message.channel.send("(͡° ͜ʖ ͡°)").then((msg: Message) => msg.deletable && msg.delete(15000));
+        let messageWithLenny = message.content
+          .toLowerCase()
+          .split("lenny")
+          .join("(͡° ͜ʖ ͡°)");
+        message.channel.send(messageWithLenny).then((msg: Message) => {
+          msg.deletable && msg.delete(15000);
+          message.deletable && message.delete(240);
+        });
       }
     }
   }
@@ -261,9 +273,9 @@ export const handleNameChange = (userToChange: GuildMember) => {
 };
 
 export const ruleSet = [
-  { user: "olaf", reactionsToAdd: ["💕", "🌚"] },
+  { user: "olaf", reactionsToAdd: ["💕"] },
   { user: "nils", reactionsToAdd: ["katze1"] },
-  { user: "justus", reactionsToAdd: ["pill~1"] },
+  { user: "justus", reactionsToAdd: ["pille"] },
   { user: "marcel", reactionsToAdd: ["daddy"] },
   { user: "franny", reactionsToAdd: ["🔥"] },
   { user: "adrian", reactionsToAdd: ["💩"] }
@@ -679,7 +691,7 @@ export const loadCommands = () =>
           .then((command: any) => {
             let innerObject = command[commandFiles[file].split(".")[0]];
             commandCollection.set(innerObject.name, innerObject);
-            return;
+            return fs.closeSync(0);
           })
           .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
       );

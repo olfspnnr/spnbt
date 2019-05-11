@@ -41,9 +41,10 @@ const writeHelpMessage = async (message: Message) => {
     message.author.createDM().then(channel => {
       channel.send("Mit folgenden Befehlen kann ich zu eurem Chillout beitragen:");
       channel.send("------------------------");
-      channel.send(helpMessages, { split: true });
-      channel.send("------------------------");
-      channel.send(`Habe einen schönen Tag ${message.author.username}!`);
+      channel.send(helpMessages, { split: true }).then(() => {
+        channel.send("------------------------");
+        channel.send(`Habe einen schönen Tag ${message.author.username}!`);
+      });
     });
     message.delete();
   } catch (error) {
