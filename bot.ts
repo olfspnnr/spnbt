@@ -25,6 +25,7 @@ export const { roleIds, userIds, channelIds }: idObject = require("../configs/ro
 
 export interface config {
   prefix: string;
+  helpPrefix: string;
 }
 
 export interface auth {

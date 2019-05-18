@@ -650,9 +650,12 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
   console.log(`${message.member.displayName}/${message.member.user.username}: ${message.content}
       `);
   console.log(`${message.content.split(" ").shift()}`);
+  let functionCall = message.content.split(" ")[0].slice(1);
+  let currentState = getState();
+  if (currentState.commands === undefined) {
+    console.log({ caller: "handleMessageCall", error: "no commands were loaded" });
+  }
   if (message.content.startsWith(config.prefix) && !message.author.bot) {
-    let functionCall = message.content.split(" ")[0].slice(1);
-    let currentState = getState();
     if (currentState.commands.has(functionCall)) {
       let command = currentState.commands.get(functionCall) as messageHandleFunction;
       try {
@@ -669,6 +672,23 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
         console.log(error);
       }
     } else console.log(`${functionCall} nicht gefunden`);
+  } else if (message.content.startsWith(config.helpPrefix) && !message.author.bot) {
+    if (currentState.commands.has(functionCall)) {
+      let command = currentState.commands.get(functionCall) as messageHandleFunction;
+      try {
+        if (command.roles.some((role: RoleNames) => message.member.roles.has(roleIds[role]))) {
+          message.author
+            .createDM()
+            .then(channel =>
+              channel.send(
+                command.detailedInformation || "Keine detailierte Beschreibung vorhanden."
+              )
+            );
+        } else throw "Unzureichende Berechtigung";
+      } catch (error) {
+        console.log(error);
+      }
+    }
   } else if (!message.author.bot) {
     if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
       replyToMessageWithLenny(message);

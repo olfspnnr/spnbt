@@ -1,15 +1,35 @@
 import { commandProps, RoleNames, config, roleIds } from "../bot";
-import { messageHandleFunction } from "../legacy/messageHandler";
+import { messageHandleFunction, messageHandleProps } from "../legacy/messageHandler";
 import { getStateProp } from "../controller/stateController";
-import { Message, Collection } from "discord.js";
-import { chunk } from "../controller/botController";
+import { Message, Collection, RichEmbed } from "discord.js";
 
-export const help = {
-  name: "help",
-  description: "Übersicht",
+let props = {
   usage: `[${config.prefix}help]`,
   roles: [RoleNames.spinner, RoleNames.trusted, RoleNames.uninitiert, RoleNames.poop],
-  execute: ({ discord: { message, client }, custom }: commandProps) => writeHelpMessage(message)
+  description: "Übersicht über die Befehle",
+  name: "help"
+} as messageHandleProps;
+
+export const help = {
+  ...props,
+  execute: ({ discord: { message, client }, custom }: commandProps) => writeHelpList(message),
+  detailedInformation: {
+    embed: {
+      color: 0x3abeff,
+      title: `${props.name}`,
+      fields: [
+        { name: "Nutzung", value: props.usage },
+        {
+          name: "Kurzbeschreibung",
+          value: props.description
+        },
+        {
+          name: "Beschreibung",
+          value: `Liefert eine Übersicht über die Befehle, die für den User freigeschaltet sind, als Direktnachricht an den User`
+        }
+      ]
+    } as RichEmbed
+  }
 } as messageHandleFunction;
 
 const handleHelpRequest = (message: Message) => {
@@ -29,7 +49,7 @@ const rejectRequest = (message: Message, reason: string) => {
   message.deletable && message.delete(600);
 };
 
-const writeHelpMessage = async (message: Message) => {
+const writeHelpList = async (message: Message) => {
   let commands = getStateProp("commands") as Collection<string, messageHandleFunction>;
   let helpMessages = commands.map((command: messageHandleFunction) => {
     if (command.roles.some(role => message.member.roles.has(roleIds[role])))
