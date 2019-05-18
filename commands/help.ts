@@ -59,12 +59,33 @@ const writeHelpList = async (message: Message) => {
   if (helpMessages) helpMessages = helpMessages.filter(entry => entry);
   try {
     message.author.createDM().then(channel => {
-      channel.send("Mit folgenden Befehlen kann ich zu eurem Chillout beitragen:");
-      channel.send("------------------------");
-      channel.send(helpMessages, { split: true }).then(() => {
-        channel.send("------------------------");
-        channel.send(`Habe einen schönen Tag ${message.author.username}!`);
+      channel.send({
+        embed: {
+          color: 0x3abeff,
+          author: {
+            name: "Übersicht"
+          },
+          description:
+            "Mit ?[Befehlname] kannst du dir genauere Informationen(falls vorhanden) zu einem Befehl holen",
+          fields: [
+            ...commands.map(
+              command =>
+                ({
+                  name: command.name,
+                  value: `${command.usage}\n${command.description}`
+                } as { name: string; value: string; inline?: boolean })
+            )
+          ],
+          footer: {
+            text: `Geladene Befehle: ${commands.size} ✔ - Einen schönen Tag ${
+              message.author.username
+            }!`
+          }
+        } as RichEmbed
       });
+      // channel.send(helpMessages, { split: true }).then(() => {
+
+      // });
     });
     message.delete();
   } catch (error) {
