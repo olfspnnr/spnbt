@@ -15,6 +15,7 @@ export class Clock {
     return setInterval(() => {
       this.setTime();
       this.checkForLeet();
+      this.checkForRaffleTime();
     }, 10000);
   }
 
@@ -29,6 +30,10 @@ export class Clock {
   private checkForRaffleTime() {
     if (this.time.getHours() === 20 && this.time.getMinutes() === 15) {
       this.eventEmitter.emit("raffleTime", () => {
+        return { time: this.time };
+      });
+    } else if (this.time.getHours() % 8 === 0 && this.time.getMinutes() === 30) {
+      this.eventEmitter.emit("raffleReminder", () => {
         return { time: this.time };
       });
     }
