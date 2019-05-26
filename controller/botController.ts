@@ -718,8 +718,11 @@ export const loadCommands = () =>
       );
     }
 
-    Promise.all(PromiseArr).then(() => {
-      console.log("Alle Module erfolgreich geladen");
+    Promise.all(PromiseArr).then(arr => {
+      if (arr.some(entry => !entry)) {
+        console.log("Module mit Fehler geladen");
+      } else console.log("Alle Module erfolgreich geladen");
+
       return resolve(commandCollection);
     });
   }) as Promise<Collection<string, messageHandleFunction>>;

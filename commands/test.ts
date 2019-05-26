@@ -1,6 +1,8 @@
 import { commandProps, RoleNames, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, MessageOptions, TextChannel } from "discord.js";
+import { getState } from "../controller/stateController";
+import { Clock } from "../controller/clock";
 
 export const test = {
   name: "test",
@@ -13,17 +15,8 @@ export const test = {
 
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
-  message.channel.send(
-    message.guild.members
-      .filter(member => member.roles.has(roleIds.spinner) || member.roles.has(roleIds.trusted))
-      .map(member => member.displayName),
-    {
-      split: true
-    }
-  );
-  message.guild.members
-    .filter(member => member.roles.has(roleIds.spinner) || member.roles.has(roleIds.trusted))
-    .map(member => member.addRole(roleIds.raffleTeilnehmer));
-
+  let state = getState();
+  message.channel.send("test", { code: true } as MessageOptions);
+  ((state as any)["clock"] as Clock).eventEmitter.emit("raffleTime");
   message.deletable && message.delete(250);
 };

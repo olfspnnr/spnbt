@@ -1,5 +1,13 @@
 // Import the discord.js module
-import { Client, DMChannel, TextChannel, Message, GuildMember, Collection } from "discord.js";
+import {
+  Client,
+  DMChannel,
+  TextChannel,
+  Message,
+  GuildMember,
+  Collection,
+  MessageOptions
+} from "discord.js";
 import "isomorphic-fetch";
 import {
   handleNameChange,
@@ -17,6 +25,7 @@ import { messageHandleFunction } from "./legacy/messageHandler";
 import { fillStateProp, setState } from "./controller/stateController";
 import { AudioQueue } from "./controller/audioQueue";
 import { joke } from "./commands/joke";
+import { getRandomWinner } from "./commands/getRaffleWinner";
 
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
@@ -108,6 +117,38 @@ clock.initialise();
 clock.getEmitter().on("lenny", () => {
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(`( ͡° ͜ʖ ͡°)`);
 });
+clock.getEmitter().on("raffleTime", () => {
+  return getRandomWinner(client.channels.get(channelIds.kikaloungeText) as TextChannel).then(
+    pckg => {
+      (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
+        " du wurdest im Raffle gezogen und damit gewonnen! Glückwunsch!",
+        { reply: pckg.winner }
+      );
+      pckg.winner
+        .createDM()
+        .then(dmchannel =>
+          dmchannel
+            .send("Glückwunsch!!! 🍀 Hier dein Gewinn, du Gewinnerkönig du! 👑🎁🎉")
+            .then((msg: Message) =>
+              msg.channel
+                .send("Hier könnte ein Gewinn stehen.", { code: true })
+                .then(() =>
+                  (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
+                    `🎉 <@&${roleIds.raffleTeilnehmer}> höret und frohlocket! ✨\n🎊 ${
+                      pckg.winner.displayName
+                    }${
+                      pckg.winner.nickname !== pckg.winner.displayName
+                        ? "alias " + pckg.winner.nickname
+                        : ""
+                    } 🎈\n🎁 nahm soeben sein Gewinn entgegen! 🍀\n🔥 😎 🔥`
+                  )
+                )
+            )
+        );
+    }
+  );
+});
+fillStateProp("clock", clock);
 
 export const twitterClient = new Twitter({
   consumer_key: auth.consumer_key,
@@ -130,6 +171,7 @@ loadCommands().then(loadedCommands => {
     client.once("ready", () => {
       console.log("I am ready!");
       client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
+
       try {
         let server = new websocketServer({
           port: 8080,
