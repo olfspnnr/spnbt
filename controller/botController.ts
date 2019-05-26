@@ -680,10 +680,11 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
           message.author
             .createDM()
             .then(channel =>
-              channel
-                .send(command.detailedInformation || "Keine detailierte Beschreibung vorhanden.")
-                .then(() => message.deletable && message.delete(250))
+              channel.send(
+                command.detailedInformation || "Keine detailierte Beschreibung vorhanden."
+              )
             );
+          message.deletable && message.delete(250);
         } else throw "Unzureichende Berechtigung";
       } catch (error) {
         console.log(error);

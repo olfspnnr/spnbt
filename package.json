@@ -11,7 +11,7 @@
     "run": "node ./dist/bot.js"
   },
   "dependencies": {
-    "@types/node": "^10.12.1",
+    "@types/node": "^10.14.7",
     "@types/twitter": "0.0.28",
     "@types/websocket": "0.0.40",
     "@types/ws": "^6.0.1",
