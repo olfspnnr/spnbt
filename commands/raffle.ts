@@ -14,6 +14,7 @@ import {
 import { writeJsonFile, readJsonFile, checkIfFileExists } from "../controller/JSONController";
 import { getState } from "../controller/stateController";
 import * as fs from "fs";
+import { sliceMessageFromCommand } from "../controller/helpController";
 
 export interface raffleItem {
   clientname: string;
@@ -134,8 +135,11 @@ const addUserToRaffle = (userOfRequest: User, users: raffleItem[]) => {
 };
 
 const handleRaffleRequest = (message: Message, client: Client) => {
-  const userOfRequest = message.author;
+  let userOfRequest = message.author;
   const messageChannel = message.channel;
+  if (message.member.roles.has(roleIds.spinner)) {
+    userOfRequest = message.mentions.users.first();
+  }
 
   message.deletable && message.delete(250).catch(err => console.log(err));
 
