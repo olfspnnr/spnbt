@@ -139,6 +139,23 @@ const handleRaffleRequest = (message: Message, client: Client) => {
   const messageChannel = message.channel;
   if (message.member.roles.has(roleIds.spinner)) {
     userOfRequest = message.mentions.users.first();
+    if (
+      !message.guild.members
+        .get(message.mentions.users.first().id)
+        .roles.has(roleIds.raffleTeilnehmer)
+    ) {
+      message.guild.members
+        .get(message.mentions.users.first().id)
+        .addRole(roleIds.raffleTeilnehmer)
+        .then(member => {
+          message.channel.send(
+            `${message.author} hat dich soeben zum Raffle hinzugefügt und dir die neue Rolle ${
+              message.guild.roles.get(roleIds.raffleTeilnehmer).name
+            } zugewiesen. Viel Glück! 🍀`,
+            { reply: member } as MessageOptions
+          );
+        });
+    }
   }
 
   message.deletable && message.delete(250).catch(err => console.log(err));
