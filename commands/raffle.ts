@@ -137,7 +137,7 @@ const addUserToRaffle = (userOfRequest: User, users: raffleItem[]) => {
 const handleRaffleRequest = (message: Message, client: Client) => {
   let userOfRequest = message.author;
   const messageChannel = message.channel;
-  if (message.member.roles.has(roleIds.spinner)) {
+  if (message.member.roles.has(roleIds.spinner) && message.mentions.users.size > 0) {
     userOfRequest = message.mentions.users.first();
     if (
       !message.guild.members
