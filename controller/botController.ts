@@ -100,6 +100,25 @@ export interface lovooUserEntry {
   verifications: Verifications;
 }
 
+export interface wsMessage {
+  type: string;
+  payload: any;
+}
+
+export const ruleSet = [
+  { user: "olaf", reactionsToAdd: ["💕"] },
+  { user: "nils", reactionsToAdd: ["katze1"] },
+  { user: "justus", reactionsToAdd: ["pille"] },
+  { user: "marcel", reactionsToAdd: ["daddy"] },
+  { user: "franny", reactionsToAdd: ["🔥"] },
+  { user: "adrian", reactionsToAdd: ["💩"] }
+] as reactionRuleSet[];
+
+export interface reactionRuleSet {
+  user: string;
+  reactionsToAdd: string[];
+}
+
 export const replyToMessageWithLenny = (message: Message) => {
   if (message.content.toLowerCase().includes("lenny")) {
     if (message.content.toLowerCase().includes("lenny")) {
@@ -147,11 +166,6 @@ export const repeatMessageWithLenny = (message: Message) => {
     message.deletable && message.delete(250);
   }
 };
-
-export interface wsMessage {
-  type: string;
-  payload: any;
-}
 
 export const handleWebSocketMessage = (wsMessage: any) => {
   try {
@@ -271,20 +285,6 @@ export const handleNameChange = (userToChange: GuildMember) => {
     });
   }
 };
-
-export const ruleSet = [
-  { user: "olaf", reactionsToAdd: ["💕"] },
-  { user: "nils", reactionsToAdd: ["katze1"] },
-  { user: "justus", reactionsToAdd: ["pille"] },
-  { user: "marcel", reactionsToAdd: ["daddy"] },
-  { user: "franny", reactionsToAdd: ["🔥"] },
-  { user: "adrian", reactionsToAdd: ["💩"] }
-] as reactionRuleSet[];
-
-export interface reactionRuleSet {
-  user: string;
-  reactionsToAdd: string[];
-}
 
 export const addReactionToMessage = (
   message: Message,
