@@ -16,7 +16,7 @@ export const test = {
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
   let state = getState();
-  message.channel.send("test", { code: true } as MessageOptions);
-  ((state as any)["clock"] as Clock).eventEmitter.emit("raffleTime");
+  // message.channel.send("test", { code: true } as MessageOptions);
+  // ((state as any)["clock"] as Clock).eventEmitter.emit("raffleTime");
   message.deletable && message.delete(250);
 };
