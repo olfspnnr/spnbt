@@ -18,7 +18,7 @@ import * as fs from "fs";
 let props = {
   description: "Trägt den Nutzer ins Raffle ein",
   name: "raffle",
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [RoleNames.spinner, RoleNames.trusted, RoleNames.raffleTeilnehmer],
   usage: `[${config.prefix}raffle]`
 } as messageHandleProps;
 
@@ -80,7 +80,7 @@ const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupDMChanne
           } else {
             const winner = winnerArray[0];
             return resolve({
-              name: `${winner.nickname !== null && winner.nickname + " /"} ${
+              name: `${winner.nickname !== null ? winner.nickname + " /" : ""} ${
                 winner.displayName
               } / ${winner.user.username}`,
               winner: winner
@@ -100,13 +100,15 @@ const writeEntryAndSendMessages = (
     writeEntryForUser(userOfRequest)
       .then(() => {
         messageChannel
-          .send("User wurde dem Raffle hinzugefügt")
+          .send(" du wurdest dem Raffle hinzugefügt! Viel Glück!", {
+            reply: userOfRequest
+          } as MessageOptions)
           .then((msg: Message) => msg.deletable && msg.delete(5000).catch(err => console.log(err)));
       })
       .catch(err => {
         if (typeof err === "string") {
           messageChannel
-            .send(err)
+            .send(err, { reply: userOfRequest } as MessageOptions)
             .then(
               (msg: Message) => msg.deletable && msg.delete(5000).catch(err => console.log(err))
             )
@@ -137,7 +139,7 @@ const addUserToRaffle = (userOfRequest: User, users: raffleItem[]) => {
       (userList as any).empty === undefined &&
       userList.some(usr => usr.id === userOfRequest.id && usr.hasEnteredRaffle)
     ) {
-      return reject("User ist bereits in der Liste und nimmt teil");
+      return reject(" du bist bereits in der Liste! Bald wird ein Sieger bekanntgegeben!");
     } else {
       let newUserList =
         (userList as any).empty !== undefined
@@ -190,7 +192,7 @@ const handleRaffleRequest = (message: Message, client: Client) => {
   }
   setTimeout(() => {
     getRandomWinner(messageChannel).then(winner => {
-      (messageChannel as TextChannel).send(winner.name, { reply: winner.winner } as MessageOptions);
+      (messageChannel as TextChannel).send(winner.name, { tts: true } as MessageOptions);
     });
   }, 5000);
 };

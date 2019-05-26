@@ -54,12 +54,14 @@ export interface Roles {
   trusted: string;
   uninitiert: string;
   poop: string;
+  raffleTeilnehmer: string;
 }
 export enum RoleNames {
   spinner = "spinner",
   trusted = "trusted",
   uninitiert = "uninitiert",
-  poop = "poop"
+  poop = "poop",
+  raffleTeilnehmer = "raffleTeilnehmer"
 }
 
 export interface UserIds {
