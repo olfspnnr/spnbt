@@ -8,7 +8,8 @@ import {
   User,
   TextChannel,
   DMChannel,
-  GroupDMChannel
+  GroupDMChannel,
+  GuildMember
 } from "discord.js";
 import { writeJsonFile, readJsonFile, checkIfFileExists } from "../controller/JSONController";
 import { getState } from "../controller/stateController";
@@ -53,21 +54,42 @@ interface raffleItem {
   enteringDate: Date;
 }
 
-const getRandomWinner = () => {
+const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupDMChannel) => {
   function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+  console.log("test");
   return new Promise((resolve, reject) => {
     if (fs.existsSync(config.raffleFileName)) {
+      console.log("test");
+
       readJsonFile(config.raffleFileName).then(data => {
-        if ((data as any).empty !== undefined) {
-          const userList = data;
+        if ((data as any).empty === undefined) {
+          const userList: raffleItem[] = data as any;
+          const winningNumber = getRandomInt(0, userList.length - 1);
+          const winningId = userList[winningNumber].id;
+          const winnerArray = (messageChannel as TextChannel).guild.members
+            .filter(usr => usr.id === winningId)
+            .array();
+          if (winnerArray.length > 1) {
+            return reject("Es scheint, als gäbe es mehr als einen User mit der GewinnerID?");
+          } else if (winnerArray.length === 0) {
+            return reject("Es scheint, als würde es keinen mit der GewinnerId geben");
+          } else {
+            const winner = winnerArray[0];
+            return resolve({
+              name: `${winner.nickname !== null && winner.nickname + " /"} ${
+                winner.displayName
+              } / ${winner.user.username}`,
+              winner: winner
+            });
+          }
         } else reject("Es scheint, als hätte keiner hat am Raffle teilgenommen :(");
       });
     } else reject({ caller: "getRandomWinner", error: "Raffle Datei existiert nicht." });
-  }) as Promise<string>;
+  }) as Promise<{ name: string; winner: GuildMember }>;
 };
 
 const writeEntryAndSendMessages = (
@@ -166,4 +188,9 @@ const handleRaffleRequest = (message: Message, client: Client) => {
       )
       .catch(err => console.log(err));
   }
+  setTimeout(() => {
+    getRandomWinner(messageChannel).then(winner => {
+      (messageChannel as TextChannel).send(winner.name, { reply: winner.winner } as MessageOptions);
+    });
+  }, 5000);
 };
