@@ -182,19 +182,18 @@ clock.getEmitter().on("raffleTime", () => {
     })
     .catch(error => console.log({ caller: "raffleWin", error: error }));
 });
-clock
-  .getEmitter()
-  .on("raffleReminder", () =>
-    (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
-      `Vergesst nicht, euch ins Raffle einzutragen, mit ${
-        config.prefix
-      }raffle \n(Vorrausgesetzt ihr habt die Rolle - falls nicht, einen ${
-        (client.channels.get(channelIds.kikaloungeText) as TextChannel).guild.roles.get(
-          roleIds.spinner
-        ).name
-      } fragen) \nWeitere Infos: ${config.helpPrefix}raffle`
-    )
-  );
+clock.getEmitter().on("raffleReminder", () =>
+  (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
+    `Vergesst nicht, euch ins Raffle einzutragen, mit ${
+      config.prefix
+    }raffle \n(Vorrausgesetzt ihr habt die Rolle - falls nicht, einen ${
+      (client.channels.get(channelIds.kikaloungeText) as TextChannel).guild.roles.get(
+        roleIds.spinner
+      ).name
+    } fragen) \nZu Gewinnen gibt es: ${config.raffleWinDescription}
+      \nWeitere Infos: ${config.helpPrefix}raffle`
+  )
+);
 
 fillStateProp("clock", clock);
 
