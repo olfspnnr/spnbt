@@ -12,10 +12,12 @@ export class Clock {
   }
 
   public initialise() {
+    setInterval(() => {
+      this.checkForRaffleTime();
+    }, 50000);
     return setInterval(() => {
       this.setTime();
       this.checkForLeet();
-      this.checkForRaffleTime();
     }, 10000);
   }
 

@@ -62,11 +62,9 @@ const writeEntryAndSendMessages = (
   new Promise((resolve, reject) => {
     writeEntryForUser(userOfRequest)
       .then(() => {
-        messageChannel
-          .send(" du wurdest dem Raffle hinzugefügt! Viel Glück!", {
-            reply: userOfRequest
-          } as MessageOptions)
-          .then((msg: Message) => msg.deletable && msg.delete(5000).catch(err => console.log(err)));
+        messageChannel.send(" du wurdest dem Raffle hinzugefügt! Viel Glück!", {
+          reply: userOfRequest
+        } as MessageOptions);
       })
       .catch(err => {
         if (typeof err === "string") {

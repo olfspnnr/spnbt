@@ -44,6 +44,7 @@ export interface auth {
   consumer_secret: string;
   access_token_key: string;
   access_token_secret: string;
+  raffleWin: string;
 }
 
 export interface ChannelIds {
@@ -131,7 +132,12 @@ clock.getEmitter().on("raffleTime", () => {
             .send("Glückwunsch!!! 🍀 Hier dein Gewinn, du Gewinnerkönig du! 👑🎁🎉")
             .then((msg: Message) =>
               msg.channel
-                .send("Hier könnte ein Gewinn stehen.", { code: true })
+                .send(
+                  auth.raffleWin && auth.raffleWin !== "undefined"
+                    ? auth.raffleWin
+                    : "Hier könnte ein Gewinn stehen.",
+                  { code: true }
+                )
                 .then(() =>
                   (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
                     `🎉 <@&${roleIds.raffleTeilnehmer}> höret und frohlocket! ✨\n🎊 ${
