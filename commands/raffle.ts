@@ -49,6 +49,10 @@ export const raffle = {
           value: `Mit ${config.prefix}${
             props.name
           } wird der Nutzer in die Liste der Rafflenamen eingetragen. Nach einem Zeitraum wird daraus der Gewinner gezogen und bekanntgegeben.`
+        },
+        {
+          name: "Derzeitiger Gewinn",
+          value: `Folgendes gibt es derzeit zu gewinnen:\n${config.raffleWinDescription}`
         }
       ]
     } as RichEmbed

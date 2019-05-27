@@ -26,6 +26,7 @@ import { fillStateProp, setState } from "./controller/stateController";
 import { AudioQueue } from "./controller/audioQueue";
 import { joke } from "./commands/joke";
 import { getRandomWinner } from "./commands/getRaffleWinner";
+import { readJsonFile, writeJsonFile } from "./controller/JSONController";
 
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
@@ -36,6 +37,7 @@ export interface config {
   prefix: string;
   helpPrefix: string;
   raffleFileName: string;
+  raffleWinDescription: string;
 }
 
 export interface auth {
@@ -119,8 +121,8 @@ clock.getEmitter().on("lenny", () => {
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(`( ͡° ͜ʖ ͡°)`);
 });
 clock.getEmitter().on("raffleTime", () => {
-  return getRandomWinner(client.channels.get(channelIds.kikaloungeText) as TextChannel).then(
-    pckg => {
+  return getRandomWinner(client.channels.get(channelIds.kikaloungeText) as TextChannel)
+    .then(pckg => {
       (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
         " du wurdest im Raffle gezogen und damit gewonnen! Glückwunsch!",
         { reply: pckg.winner }
@@ -139,20 +141,46 @@ clock.getEmitter().on("raffleTime", () => {
                   { code: true }
                 )
                 .then(() =>
-                  (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
-                    `🎉 <@&${roleIds.raffleTeilnehmer}> höret und frohlocket! ✨\n🎊 ${
-                      pckg.winner.displayName
-                    }${
-                      pckg.winner.nickname !== pckg.winner.displayName
-                        ? "alias " + pckg.winner.nickname
-                        : ""
-                    } 🎈\n🎁 nahm soeben sein Gewinn entgegen! 🍀\n🔥 😎 🔥`
-                  )
+                  (client.channels.get(channelIds.kikaloungeText) as TextChannel)
+                    .send(
+                      `🎉 <@&${roleIds.raffleTeilnehmer}> höret und frohlocket! ✨\n🎊 ${
+                        pckg.winner.displayName
+                      }${
+                        pckg.winner.nickname !== pckg.winner.displayName
+                          ? "alias " + pckg.winner.nickname
+                          : ""
+                      } 🎈\n🎁 nahm soeben sein Gewinn entgegen! 🍀\n🔥 😎 🔥`
+                    )
+                    .then(() => {
+                      readJsonFile("auth.json").then((authJson: auth) => {
+                        let authJsonTemp: auth = { ...authJson, raffleWin: undefined };
+                        writeJsonFile("auth.json", JSON.stringify(authJsonTemp))
+                          .then(() => {
+                            console.log("Cleaned auth");
+                          })
+                          .catch(error => console.log({ caller: "raffleWin", error: error }));
+                      });
+                      readJsonFile("config.json").then((configJson: config) => {
+                        let configJsonTemp: config = {
+                          ...configJson,
+                          raffleWinDescription: undefined
+                        };
+                        writeJsonFile("config.json", JSON.stringify(configJsonTemp))
+                          .then(() => {
+                            console.log("Cleaned config");
+                          })
+                          .catch(error => console.log({ caller: "raffleWin", error: error }));
+                      });
+                    })
+                    .catch(error => console.log({ caller: "raffleWin", error: error }))
                 )
+                .catch(error => console.log({ caller: "raffleWin", error: error }))
             )
-        );
-    }
-  );
+            .catch(error => console.log({ caller: "raffleWin", error: error }))
+        )
+        .catch(error => console.log({ caller: "raffleWin", error: error }));
+    })
+    .catch(error => console.log({ caller: "raffleWin", error: error }));
 });
 clock
   .getEmitter()
@@ -160,11 +188,11 @@ clock
     (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
       `Vergesst nicht, euch ins Raffle einzutragen, mit ${
         config.prefix
-      }raffle! (Vorrausgesetzt ihr habt die Rolle - falls nicht, einen ${
+      }raffle \n(Vorrausgesetzt ihr habt die Rolle - falls nicht, einen ${
         (client.channels.get(channelIds.kikaloungeText) as TextChannel).guild.roles.get(
           roleIds.spinner
         ).name
-      } fragen)`
+      } fragen) \nWeitere Infos: ${config.helpPrefix}raffle`
     )
   );
 
