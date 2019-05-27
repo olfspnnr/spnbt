@@ -19,9 +19,10 @@ export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupD
 
       readJsonFile(config.raffleFileName).then(data => {
         if ((data as any).empty === undefined) {
-          const userList: raffleItem[] = data as any;
-          const winningNumber = getRandomInt(0, userList.length - 1);
-          const winningId = userList[winningNumber].id;
+          let userList: raffleItem[] = data as any;
+          const finalList = userList.filter(usr => usr.hasEnteredRaffle);
+          const winningNumber = getRandomInt(0, finalList.length - 1);
+          const winningId = finalList[winningNumber].id;
           const winnerArray = (messageChannel as TextChannel).guild.members
             .filter(usr => usr.id === winningId)
             .array();
