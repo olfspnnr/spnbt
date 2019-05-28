@@ -11,9 +11,9 @@ export const checkIfFileExists = (fileName: string) =>
 export const readJsonFile = (fileName: string) =>
   new Promise((resolve, reject) => {
     try {
-      fs.access(`./${fileName}`, err => {
+      fs.access(fileName.startsWith(".") ? fileName : `./${fileName}`, err => {
         if (err) throw err;
-        return fs.readFile(`./${fileName}`, (err, data) => {
+        return fs.readFile(fileName.startsWith(".") ? fileName : `./${fileName}`, (err, data) => {
           if (err) {
             throw err;
           } else {
@@ -31,11 +31,15 @@ export const writeJsonFile = (fileName: string, content: string) =>
   new Promise((resolve, reject) => {
     let tempContent = content;
     try {
-      return fs.writeFile(`./${fileName}`, tempContent, (error: string | object | boolean) => {
-        if (error) {
-          throw error;
-        } else return resolve();
-      });
+      return fs.writeFile(
+        fileName.startsWith(".") ? fileName : `./${fileName}`,
+        tempContent,
+        (error: string | object | boolean) => {
+          if (error) {
+            throw error;
+          } else return resolve();
+        }
+      );
     } catch (error) {
       return reject({ caller: "writeJsonFile", error: error });
     }

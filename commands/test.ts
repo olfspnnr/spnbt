@@ -1,8 +1,9 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, RoleNames, config, roleIds, auth } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, MessageOptions, TextChannel } from "discord.js";
 import { getState } from "../controller/stateController";
 import { Clock } from "../controller/clock";
+import { readJsonFile, writeJsonFile } from "../controller/JSONController";
 
 export const test = {
   name: "test",
@@ -16,7 +17,5 @@ export const test = {
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
   let state = getState();
-  // message.channel.send("test", { code: true } as MessageOptions);
-  // ((state as any)["clock"] as Clock).eventEmitter.emit("raffleTime");
   message.deletable && message.delete(250);
 };

@@ -37,7 +37,7 @@ export interface config {
   prefix: string;
   helpPrefix: string;
   raffleFileName: string;
-  raffleWinDescription: string;
+  raffleWinDescription: string | -1;
 }
 
 export interface auth {
@@ -46,7 +46,7 @@ export interface auth {
   consumer_secret: string;
   access_token_key: string;
   access_token_secret: string;
-  raffleWin: string;
+  raffleWin: string | -1;
 }
 
 export interface ChannelIds {
@@ -135,7 +135,7 @@ clock.getEmitter().on("raffleTime", () => {
             .then((msg: Message) =>
               msg.channel
                 .send(
-                  auth.raffleWin && auth.raffleWin !== "undefined"
+                  auth.raffleWin && auth.raffleWin !== -1
                     ? auth.raffleWin
                     : "Hier könnte ein Gewinn stehen.",
                   { code: true }
@@ -152,20 +152,20 @@ clock.getEmitter().on("raffleTime", () => {
                       } 🎈\n🎁 nahm soeben sein Gewinn entgegen! 🍀\n🔥 😎 🔥`
                     )
                     .then(() => {
-                      readJsonFile("auth.json").then((authJson: auth) => {
-                        let authJsonTemp: auth = { ...authJson, raffleWin: undefined };
-                        writeJsonFile("auth.json", JSON.stringify(authJsonTemp))
+                      readJsonFile("./configs/auth.json").then((authJson: auth) => {
+                        let authJsonTemp: auth = { ...authJson, raffleWin: -1 };
+                        writeJsonFile("./configs/auth.json", JSON.stringify(authJsonTemp))
                           .then(() => {
                             console.log("Cleaned auth");
                           })
                           .catch(error => console.log({ caller: "raffleWin", error: error }));
                       });
-                      readJsonFile("config.json").then((configJson: config) => {
+                      readJsonFile("./configs/config.json").then((configJson: config) => {
                         let configJsonTemp: config = {
                           ...configJson,
-                          raffleWinDescription: undefined
+                          raffleWinDescription: -1
                         };
-                        writeJsonFile("config.json", JSON.stringify(configJsonTemp))
+                        writeJsonFile("./configs/config.json", JSON.stringify(configJsonTemp))
                           .then(() => {
                             console.log("Cleaned config");
                           })
@@ -190,7 +190,7 @@ clock.getEmitter().on("raffleReminder", () =>
       (client.channels.get(channelIds.kikaloungeText) as TextChannel).guild.roles.get(
         roleIds.spinner
       ).name
-    } fragen) \nZu Gewinnen gibt es: ${config.raffleWinDescription}
+    } fragen) \n${config.raffleWinDescription !== -1 ? "Zu Gewinnen gibt es: " : ""}
       \nWeitere Infos: ${config.helpPrefix}raffle`
   )
 );

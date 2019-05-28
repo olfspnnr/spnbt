@@ -12,9 +12,7 @@ import {
   GuildMember
 } from "discord.js";
 import { writeJsonFile, readJsonFile, checkIfFileExists } from "../controller/JSONController";
-import { getState } from "../controller/stateController";
 import * as fs from "fs";
-import { sliceMessageFromCommand } from "../controller/helpController";
 
 export interface raffleItem {
   clientname: string;
@@ -52,7 +50,9 @@ export const raffle = {
         },
         {
           name: "Derzeitiger Gewinn",
-          value: `Folgendes gibt es derzeit zu gewinnen:\n${config.raffleWinDescription}`
+          value: `Folgendes gibt es derzeit zu gewinnen:\n${
+            config.raffleWinDescription !== -1 ? config.raffleWinDescription : "Nichts :("
+          }`
         }
       ]
     } as RichEmbed
