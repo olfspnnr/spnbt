@@ -163,9 +163,12 @@ const handleRaffleRequest = (message: Message, client: Client) => {
     } else {
       const { args } = sliceMessageFromCommand(message);
       if (args.some(entry => entry === "win")) {
-        return message.channel.send(
-          `md\n# Neuer Rafflewin!\nFolgendes gibt es zu Gewinnen:\n${config.raffleWinDescription}`,
-          { code: true } as MessageOptions
+        message.deletable && message.delete();
+        return messageChannel.send(
+          `# Neuer Rafflewin!\n\nFolgendes gibt es zu Gewinnen:\n< ${
+            config.raffleWinDescription
+          } >`,
+          { code: "md" } as MessageOptions
         );
       }
     }
