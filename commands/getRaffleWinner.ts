@@ -45,7 +45,7 @@ export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupD
               winner: winner
             });
           }
-        } else reject("Es scheint, als hätte keiner hat am Raffle teilgenommen :(");
+        } else reject("Es scheint, als hätte keiner hat am Raffle teilgenommen 😭😭😭😭😭");
       });
     } else reject({ caller: "getRandomWinner", error: "Raffle Datei existiert nicht." });
   }) as Promise<{ name: string; winner: GuildMember }>;

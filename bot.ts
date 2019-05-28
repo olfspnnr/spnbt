@@ -124,7 +124,7 @@ clock.getEmitter().on("raffleTime", () => {
   return getRandomWinner(client.channels.get(channelIds.kikaloungeText) as TextChannel)
     .then(pckg => {
       (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
-        " du wurdest im Raffle gezogen und damit gewonnen! Glückwunsch!",
+        " du wurdest im Raffle gezogen und hast damit gewonnen! Glückwunsch!",
         { reply: pckg.winner }
       );
       pckg.winner
@@ -180,7 +180,9 @@ clock.getEmitter().on("raffleTime", () => {
         )
         .catch(error => console.log({ caller: "raffleWin", error: error }));
     })
-    .catch(error => console.log({ caller: "raffleWin", error: error }));
+    .catch(error => (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
+      error
+    ));
 });
 clock.getEmitter().on("raffleReminder", () =>
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
