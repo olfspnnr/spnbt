@@ -13,6 +13,7 @@ import {
 } from "discord.js";
 import { writeJsonFile, readJsonFile, checkIfFileExists } from "../controller/JSONController";
 import * as fs from "fs";
+import { sliceMessageFromCommand } from "../controller/helpController";
 
 export interface raffleItem {
   clientname: string;
@@ -139,24 +140,34 @@ const addUserToRaffle = (userOfRequest: User, users: raffleItem[]) => {
 const handleRaffleRequest = (message: Message, client: Client) => {
   let userOfRequest = message.author;
   const messageChannel = message.channel;
-  if (message.member.roles.has(roleIds.spinner) && message.mentions.users.size > 0) {
-    userOfRequest = message.mentions.users.first();
-    if (
-      !message.guild.members
-        .get(message.mentions.users.first().id)
-        .roles.has(roleIds.raffleTeilnehmer)
-    ) {
-      message.guild.members
-        .get(message.mentions.users.first().id)
-        .addRole(roleIds.raffleTeilnehmer)
-        .then(member => {
-          message.channel.send(
-            `${message.author} hat dich soeben zum Raffle hinzugefügt und dir die neue Rolle ${
-              message.guild.roles.get(roleIds.raffleTeilnehmer).name
-            } zugewiesen. Viel Glück! 🍀`,
-            { reply: member } as MessageOptions
-          );
-        });
+  if (message.member.roles.has(roleIds.spinner)) {
+    if (message.mentions.users.size > 0) {
+      userOfRequest = message.mentions.users.first();
+      if (
+        !message.guild.members
+          .get(message.mentions.users.first().id)
+          .roles.has(roleIds.raffleTeilnehmer)
+      ) {
+        message.guild.members
+          .get(message.mentions.users.first().id)
+          .addRole(roleIds.raffleTeilnehmer)
+          .then(member => {
+            message.channel.send(
+              `${message.author} hat dich soeben zum Raffle hinzugefügt und dir die neue Rolle ${
+                message.guild.roles.get(roleIds.raffleTeilnehmer).name
+              } zugewiesen. Viel Glück! 🍀`,
+              { reply: member } as MessageOptions
+            );
+          });
+      }
+    } else {
+      const { args } = sliceMessageFromCommand(message);
+      if (args.some(entry => entry === "win")) {
+        return message.channel.send(
+          `md\n# Neuer Rafflewin!\nFolgendes gibt es zu Gewinnen:\n${config.raffleWinDescription}`,
+          { code: true } as MessageOptions
+        );
+      }
     }
   }
 
