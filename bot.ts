@@ -118,7 +118,12 @@ audioQueue.on("finish", queue => console.log("current queuelength: " + queue.len
 export let clock = new Clock();
 clock.initialise();
 clock.getEmitter().on("lenny", () => {
-  (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(`( ͡° ͜ʖ ͡°)`);
+  if (
+    (client.channels.get(channelIds.kikaloungeText) as TextChannel).lastMessage.author.id ===
+    userIds.justus
+  ) {
+    (client.channels.get(channelIds.kikaloungeText) as TextChannel).send("Hallo Justus ( ͡° ͜ʖ ͡°)");
+  } else (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(`( ͡° ͜ʖ ͡°)`);
 });
 clock.getEmitter().on("raffleTime", () => {
   return getRandomWinner(client.channels.get(channelIds.kikaloungeText) as TextChannel)
@@ -180,9 +185,7 @@ clock.getEmitter().on("raffleTime", () => {
         )
         .catch(error => console.log({ caller: "raffleWin", error: error }));
     })
-    .catch(error => (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
-      error
-    ));
+    .catch(error => (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(error));
 });
 clock.getEmitter().on("raffleReminder", () =>
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(

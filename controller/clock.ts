@@ -34,7 +34,7 @@ export class Clock {
       this.eventEmitter.emit("raffleTime", () => {
         return { time: this.time };
       });
-    } else if (this.time.getHours() % 8 === 0 && this.time.getMinutes() === 30) {
+    } else if (this.time.getHours() % 12 === 0 && this.time.getMinutes() === 30) {
       this.eventEmitter.emit("raffleReminder", () => {
         return { time: this.time };
       });

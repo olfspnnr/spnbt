@@ -17,6 +17,6 @@ export const test = {
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
   let state = getState();
-  message.channel.send("md\n# Test\n", { code: true });
+  message.channel.send("# Test\n", { code: "md" });
   message.deletable && message.delete(250);
 };
