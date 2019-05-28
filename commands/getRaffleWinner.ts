@@ -18,7 +18,10 @@ export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupD
       console.log("test");
 
       readJsonFile(config.raffleFileName).then(data => {
-        if ((data as any).empty === undefined) {
+        if (
+          (data as any).empty === undefined &&
+          (data as raffleItem[]).some(usr => usr.hasEnteredRaffle)
+        ) {
           let userList: raffleItem[] = data as any;
           const finalList = userList.filter(usr => usr.hasEnteredRaffle);
           const winningNumber = getRandomInt(0, finalList.length - 1);
