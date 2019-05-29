@@ -2,8 +2,6 @@ import { commandProps, RoleNames, config, roleIds, auth, userIds } from "../bot"
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, MessageOptions, TextChannel } from "discord.js";
 import { getState } from "../controller/stateController";
-import { Clock } from "../controller/clock";
-import { readJsonFile, writeJsonFile } from "../controller/JSONController";
 
 export const test = {
   name: "test",
