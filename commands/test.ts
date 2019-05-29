@@ -17,8 +17,6 @@ export const test = {
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
   let state = getState();
-  message.author.createDM().then(dmchannel => {});
-
   message.channel.send("# Test\n", { code: "md" });
   message.deletable && message.delete(250);
 };
