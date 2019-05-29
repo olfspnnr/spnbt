@@ -25,7 +25,7 @@ import { messageHandleFunction } from "./legacy/messageHandler";
 import { fillStateProp, setState } from "./controller/stateController";
 import { AudioQueue } from "./controller/audioQueue";
 import { joke } from "./commands/joke";
-import { getRandomWinner } from "./commands/getRaffleWinner";
+import { getRandomWinner, handleRaffleTime } from "./commands/getRaffleWinner";
 import { readJsonFile, writeJsonFile } from "./controller/JSONController";
 
 const Twitter = require("twitter");
@@ -126,66 +126,7 @@ clock.getEmitter().on("lenny", () => {
   } else (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(`( ͡° ͜ʖ ͡°)`);
 });
 clock.getEmitter().on("raffleTime", () => {
-  return getRandomWinner(client.channels.get(channelIds.kikaloungeText) as TextChannel)
-    .then(pckg => {
-      (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
-        " du wurdest im Raffle gezogen und hast damit gewonnen! Glückwunsch!",
-        { reply: pckg.winner }
-      );
-      pckg.winner
-        .createDM()
-        .then(dmchannel =>
-          dmchannel
-            .send("Glückwunsch!!! 🍀 Hier dein Gewinn, du Gewinnerkönig du! 👑🎁🎉")
-            .then((msg: Message) =>
-              msg.channel
-                .send(
-                  auth.raffleWin && auth.raffleWin !== -1
-                    ? auth.raffleWin
-                    : "Hier könnte ein Gewinn stehen.",
-                  { code: true }
-                )
-                .then(() =>
-                  (client.channels.get(channelIds.kikaloungeText) as TextChannel)
-                    .send(
-                      `🎉 <@&${roleIds.raffleTeilnehmer}> höret und frohlocket! ✨\n🎊 ${
-                        pckg.winner.displayName
-                      }${
-                        pckg.winner.nickname !== pckg.winner.displayName
-                          ? "alias " + pckg.winner.nickname
-                          : ""
-                      } 🎈\n🎁 nahm soeben sein Gewinn entgegen! 🍀\n🔥 😎 🔥`
-                    )
-                    .then(() => {
-                      readJsonFile("./configs/auth.json").then((authJson: auth) => {
-                        let authJsonTemp: auth = { ...authJson, raffleWin: -1 };
-                        writeJsonFile("./configs/auth.json", JSON.stringify(authJsonTemp))
-                          .then(() => {
-                            console.log("Cleaned auth");
-                          })
-                          .catch(error => console.log({ caller: "raffleWin", error: error }));
-                      });
-                      readJsonFile("./configs/config.json").then((configJson: config) => {
-                        let configJsonTemp: config = {
-                          ...configJson,
-                          raffleWinDescription: -1
-                        };
-                        writeJsonFile("./configs/config.json", JSON.stringify(configJsonTemp))
-                          .then(() => {
-                            console.log("Cleaned config");
-                          })
-                          .catch(error => console.log({ caller: "raffleWin", error: error }));
-                      });
-                    })
-                    .catch(error => console.log({ caller: "raffleWin", error: error }))
-                )
-                .catch(error => console.log({ caller: "raffleWin", error: error }))
-            )
-            .catch(error => console.log({ caller: "raffleWin", error: error }))
-        )
-        .catch(error => console.log({ caller: "raffleWin", error: error }));
-    })
-    .catch(error => (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(error));
+  return handleRaffleTime(client);
 });
 clock.getEmitter().on("raffleReminder", () =>
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
@@ -195,7 +136,11 @@ clock.getEmitter().on("raffleReminder", () =>
       (client.channels.get(channelIds.kikaloungeText) as TextChannel).guild.roles.get(
         roleIds.spinner
       ).name
-    } fragen) \n${config.raffleWinDescription !== -1 ? "Zu Gewinnen gibt es: " : ""}
+    } fragen) \n${
+      config.raffleWinDescription !== -1
+        ? "Zu Gewinnen gibt es: " + config.raffleWinDescription
+        : ""
+    }
       \nWeitere Infos: ${config.helpPrefix}raffle`
   )
 );

@@ -30,48 +30,58 @@ const handlePollRequest = (message: Message) =>
     return resolve();
   }) as Promise<Message>;
 
-const sendPoll = (
+export const sendPoll = (
   titleAndDescription: string,
   message: Message,
-  emojisToFilterBy: string[],
-  time: number
+  emojisToFilterBy: string[] | undefined,
+  time: number,
+  winnigMessage?: string,
+  losingMessage?: string
 ) => {
-  let [title, description] = titleAndDescription.split(":");
-  emojisToFilterBy = emojisToFilterBy || ["✅", "❌"];
-  console.log({ title: title, description: description, time: time });
-  message.channel
-    .send([`**${title}**`, description])
-    .then((msg: Message) => {
-      const filter = (reaction: MessageReaction, user: User) => {
-        return emojisToFilterBy.some(emoji => emoji === reaction.emoji.name);
-      };
-      emojisToFilterBy.map(emoji => msg.react(emoji));
-      msg
-        .awaitReactions(filter, { time: time, errors: ["time"] } as AwaitReactionsOptions)
-        .catch(collected => {
-          let sortedCollected = collected.sort(
-            (emojiA: MessageReaction, emojiB: MessageReaction) => emojiB.count - emojiA.count
-          ) as Collection<string, MessageReaction>;
-          let [winner, second, ...rest] = sortedCollected.array();
-          if (winner.count === second.count) {
-            winner = undefined;
-          }
-          msg.reactions.clear();
-          msg
-            .edit(
-              `${
-                winner
-                  ? `**${title}**\n${description}\nGewonnen hat Option: ${winner.emoji.name} mit ${
-                      winner.count
-                    } Stimmen`
-                  : "Es gab keinen Gewinner"
-              }`
-            )
-            .then((finalMsg: Message) => {});
-        });
-    })
-    .catch(error => console.log({ caller: "standardPoll send", error: error }));
-  message.deletable && message.delete(250);
+  return new Promise((resolve, reject) => {
+    let [title, description] = titleAndDescription.split(":");
+    emojisToFilterBy = emojisToFilterBy || ["✅", "❌"];
+    console.log({ title: title, description: description, time: time });
+    message.channel
+      .send([`**${title}**`, description])
+      .then((msg: Message) => {
+        const filter = (reaction: MessageReaction, user: User) => {
+          return emojisToFilterBy.some(emoji => emoji === reaction.emoji.name);
+        };
+        emojisToFilterBy.map(emoji => msg.react(emoji));
+        msg
+          .awaitReactions(filter, { time: time, errors: ["time"] } as AwaitReactionsOptions)
+          .catch(collected => {
+            let sortedCollected = collected.sort(
+              (emojiA: MessageReaction, emojiB: MessageReaction) => emojiB.count - emojiA.count
+            ) as Collection<string, MessageReaction>;
+            let [winner, second, ...rest] = sortedCollected.array();
+            if (winner.count === second.count) {
+              winner = undefined;
+            }
+            msg.reactions.clear();
+            msg
+              .edit(
+                `${
+                  winner
+                    ? winnigMessage ||
+                      `**${title}**\n${description}\nGewonnen hat Option: ${
+                        winner.emoji.name
+                      } mit ${winner.count} Stimmen`
+                    : losingMessage || "Es gab keinen Gewinner"
+                }`
+              )
+              .then((finalMsg: Message) => {
+                return resolve(winner !== undefined);
+              });
+          });
+      })
+      .catch(error => {
+        console.log({ caller: "standardPoll send", error: error });
+        return reject({ caller: "standardPoll send", error: error });
+      });
+    message.deletable && message.delete(250);
+  }) as Promise<boolean>;
 };
 
 const findGreatestProp = (object: { [key: string]: number }) =>

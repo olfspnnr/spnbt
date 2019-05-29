@@ -6,7 +6,7 @@ export const bulkDelete = {
   name: "bulkDelete",
   description:
     "filtert die letzten 25(oder angegebene Anzahl) Nachrichten nach der ID und löscht diese (Außer gepinnte Nachrichten)",
-  usage: `[${config.prefix}bulkDelete userId anzahl(optional)]`,
+  usage: `[${config.prefix}bulkDelete @user anzahl(optional)]`,
   roles: [RoleNames.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) => bulkDeleteFunc(message)
 } as messageHandleFunction;
