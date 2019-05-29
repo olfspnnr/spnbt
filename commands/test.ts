@@ -4,7 +4,6 @@ import { Message, Client, MessageOptions, TextChannel } from "discord.js";
 import { getState } from "../controller/stateController";
 import { Clock } from "../controller/clock";
 import { readJsonFile, writeJsonFile } from "../controller/JSONController";
-import { askIfWinnerWantsHisPrize } from "./getRaffleWinner";
 
 export const test = {
   name: "test",
@@ -18,11 +17,7 @@ export const test = {
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
   let state = getState();
-  message.author.createDM().then(dmchannel => {
-    askIfWinnerWantsHisPrize(message.guild.member(userIds.olaf), dmchannel)
-      .then(() => message.channel.send("JA"))
-      .catch(() => message.channel.send("NEIN"));
-  });
+  message.author.createDM().then(dmchannel => {});
 
   message.channel.send("# Test\n", { code: "md" });
   message.deletable && message.delete(250);
