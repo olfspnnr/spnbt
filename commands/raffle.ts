@@ -47,7 +47,11 @@ export const raffle = {
           name: "Beschreibung",
           value: `Mit ${config.prefix}${
             props.name
-          } wird der Nutzer in die Liste der Rafflenamen eingetragen. Nach einem Zeitraum wird daraus der Gewinner gezogen und bekanntgegeben.`
+          } wird der Nutzer in die Liste der Rafflenamen eingetragen.\nBisher Täglich um 20:15 wird daraus der Gewinner gezogen und bekanntgegeben.\n`
+        },
+        {
+          name: "Im Falle dass du gewinnst",
+          value: `Solltest du gewinnen, wirst du 5 Minuten Zeit haben, deinen Gewinn zu akzeptieren.\nDies tust du, indem du auf die DM von Bernd mit einem "j" antwortest\n(ohne die Anführungszeichen)\nDu kannst den Gewinn auch ablehnen, dann wird dieser am nächsten Tag erneut verlost.`
         },
         {
           name: "Derzeitiger Gewinn",
