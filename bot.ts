@@ -1,17 +1,8 @@
 // Import the discord.js module
-import {
-  Client,
-  DMChannel,
-  TextChannel,
-  Message,
-  GuildMember,
-  Collection,
-  MessageOptions
-} from "discord.js";
+import { Client, TextChannel, Message } from "discord.js";
 import "isomorphic-fetch";
 import {
   handleNameChange,
-  handleWebSocketMessage,
   handleVoiceStateUpdate,
   checkIfMemberHasntRolesAndAssignRoles,
   loadCommands,
@@ -26,7 +17,7 @@ import { fillStateProp, setState } from "./controller/stateController";
 import { AudioQueue } from "./controller/audioQueue";
 import { joke } from "./commands/joke";
 import { getRandomWinner, handleRaffleTime } from "./commands/getRaffleWinner";
-import { readJsonFile, writeJsonFile } from "./controller/JSONController";
+import { handleWebSocketMessage } from "./controller/webSocketController";
 
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
@@ -154,6 +145,8 @@ export const twitterClient = new Twitter({
   access_token_secret: auth.access_token_secret
 });
 
+let wsServer = undefined;
+
 // Create an instance of a Discord client
 const client = new Client();
 fillStateProp("reloadCommands", () => {
@@ -161,16 +154,12 @@ fillStateProp("reloadCommands", () => {
 });
 loadCommands().then(loadedCommands => {
   setState({ commands: loadedCommands }).then(state => {
-    /**
-     * The ready event is vital, it means that only _after_ this will your bot start reacting to information
-     * received from Discord
-     */
     client.once("ready", () => {
       console.log("I am ready!");
       client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
 
       try {
-        let server = new websocketServer({
+        wsServer = new websocketServer({
           port: 8080,
           onMessage: (message: any) => handleWebSocketMessage(message)
         });
