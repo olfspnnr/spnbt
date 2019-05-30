@@ -96,7 +96,14 @@ export interface commandProps {
   };
 }
 
-export let audioQueue = new AudioQueue();
+export const twitterClient = new Twitter({
+  consumer_key: auth.consumer_key,
+  consumer_secret: auth.consumer_secret,
+  access_token_key: auth.access_token_key,
+  access_token_secret: auth.access_token_secret
+});
+
+export const audioQueue = new AudioQueue();
 audioQueue.on("add", queue => {
   console.log("added something to the audioQueue");
   console.log("current queuelength: " + queue.length);
@@ -106,7 +113,7 @@ audioQueue.on("play", song => console.log("now playing: " + song.message));
 audioQueue.on("error", error => console.log(error));
 audioQueue.on("finish", queue => console.log("current queuelength: " + queue.length));
 
-export let clock = new Clock();
+export const clock = new Clock();
 clock.initialise();
 clock.getEmitter().on("lenny", () => {
   if (
@@ -137,13 +144,6 @@ clock.getEmitter().on("raffleReminder", () =>
 );
 
 fillStateProp("clock", clock);
-
-export const twitterClient = new Twitter({
-  consumer_key: auth.consumer_key,
-  consumer_secret: auth.consumer_secret,
-  access_token_key: auth.access_token_key,
-  access_token_secret: auth.access_token_secret
-});
 
 let wsServer = undefined;
 
