@@ -18,6 +18,8 @@ import { AudioQueue } from "./controller/audioQueue";
 import { joke } from "./commands/joke";
 import { getRandomWinner, handleRaffleTime } from "./commands/getRaffleWinner";
 import { handleWebSocketMessage } from "./controller/webSocketController";
+import * as path from "path";
+import { Berndsite } from "./controller/websiteController";
 
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
@@ -142,10 +144,10 @@ clock.getEmitter().on("raffleReminder", () =>
       \nWeitere Infos: ${config.helpPrefix}raffle`
   )
 );
-
 fillStateProp("clock", clock);
 
 let wsServer = undefined;
+const website = new Berndsite();
 
 // Create an instance of a Discord client
 const client = new Client();
@@ -163,6 +165,7 @@ loadCommands().then(loadedCommands => {
           port: 8080,
           onMessage: (message: any) => handleWebSocketMessage(message)
         });
+        website.start();
       } catch (error) {
         console.log(error);
       }
