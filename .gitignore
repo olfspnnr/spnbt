@@ -6,6 +6,4 @@ package.json
 rolesanduser.json
 dist
 # Ignores compiled TypeScript files
-/**/*.js.map
-/**/*.map
-/**/*.js
+./dist
