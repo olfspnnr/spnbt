@@ -212,6 +212,10 @@ loadCommands().then(loadedCommands => {
         return console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
       }
     });
+
+    client.on("disconnect", () => {
+      console.log("Disconnect");
+    });
   });
 });
 

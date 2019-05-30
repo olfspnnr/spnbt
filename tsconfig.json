@@ -8,5 +8,6 @@
     "lib": ["es5", "es6", "dom"],
     "outDir": "./dist"
   },
-  "include": ["./"]
+  "include": ["./"],
+  "exclude": ["./berndsite"]
 }
