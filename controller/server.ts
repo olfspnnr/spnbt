@@ -24,7 +24,9 @@ export class websocketServer {
   }
   public initialise = () => {
     this.Servers.httpServer.listen(this.webSocketsServerPort, () => {
-      console.log(new Date() + " Server is listening on port " + this.webSocketsServerPort);
+      console.log(
+        new Date() + " WebSocketServer is listening on port " + this.webSocketsServerPort
+      );
     });
     this.Servers = {
       ...this.Servers,

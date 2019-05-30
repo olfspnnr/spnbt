@@ -18,7 +18,7 @@ export class Berndsite {
       response.sendFile(path.resolve(__dirname, this.pathName, "index.html"));
     });
     this.app.listen(port);
-    console.log("server started on port " + port);
+    console.log("Website Server started on port " + port);
   };
 
   public getApp = () => this.app;
