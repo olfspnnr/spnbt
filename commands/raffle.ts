@@ -174,6 +174,20 @@ const handleRaffleRequest = (message: Message, client: Client) => {
           } >`,
           { code: "md" } as MessageOptions
         );
+      } else if (args.some(entry => entry === "list")) {
+        message.deletable && message.delete();
+        let messageToSend: string | string[] = "Datei nicht gefunden";
+        if (fs.existsSync(config.raffleFileName)) {
+          readJsonFile(config.raffleFileName).then((userlist: raffleItem[]) => {
+            messageToSend = userlist
+              .filter(usr => usr.hasEnteredRaffle)
+              .map(entry => `${entry.clientname}: ${entry.enteringDate}`);
+          });
+          messageChannel.send(
+            ["Folgende Personen haben sich im Raffle eingetragen:", ...messageToSend],
+            { split: true }
+          );
+        } else return messageChannel.send(messageToSend);
       }
     }
   }
