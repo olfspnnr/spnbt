@@ -166,28 +166,30 @@ const handleRaffleRequest = (message: Message, client: Client) => {
       }
     } else {
       const { args } = sliceMessageFromCommand(message);
-      if (args.some(entry => entry === "win")) {
-        message.deletable && message.delete();
-        return messageChannel.send(
-          `# Neuer Rafflewin!\n\nFolgendes gibt es zu Gewinnen:\n< ${
-            config.raffleWinDescription
-          } >`,
-          { code: "md" } as MessageOptions
-        );
-      } else if (args.some(entry => entry === "list")) {
-        message.deletable && message.delete();
-        let messageToSend: string | string[] = "Datei nicht gefunden";
-        if (fs.existsSync(config.raffleFileName)) {
-          readJsonFile(config.raffleFileName).then((userlist: raffleItem[]) => {
-            messageToSend = userlist
-              .filter(usr => usr.hasEnteredRaffle)
-              .map(entry => `${entry.clientname}: ${entry.enteringDate}`);
-            return messageChannel.send(
-              ["Folgende Personen haben sich im Raffle eingetragen:", ...messageToSend],
-              { split: true }
-            );
-          });
-        } else return messageChannel.send(messageToSend);
+      if (args.length > 0) {
+        if (args.some(entry => entry === "win")) {
+          message.deletable && message.delete();
+          return messageChannel.send(
+            `# Neuer Rafflewin!\n\nFolgendes gibt es zu Gewinnen:\n< ${
+              config.raffleWinDescription
+            } >`,
+            { code: "md" } as MessageOptions
+          );
+        } else if (args.some(entry => entry === "list")) {
+          message.deletable && message.delete();
+          let messageToSend: string | string[] = "Datei nicht gefunden";
+          if (fs.existsSync(config.raffleFileName)) {
+            readJsonFile(config.raffleFileName).then((userlist: raffleItem[]) => {
+              messageToSend = userlist
+                .filter(usr => usr.hasEnteredRaffle)
+                .map(entry => `${entry.clientname}: ${entry.enteringDate}`);
+              return messageChannel.send(
+                ["Folgende Personen haben sich im Raffle eingetragen:", ...messageToSend],
+                { split: true }
+              );
+            });
+          } else return messageChannel.send(messageToSend);
+        } else return;
       }
     }
   }
