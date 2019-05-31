@@ -182,11 +182,11 @@ const handleRaffleRequest = (message: Message, client: Client) => {
             messageToSend = userlist
               .filter(usr => usr.hasEnteredRaffle)
               .map(entry => `${entry.clientname}: ${entry.enteringDate}`);
+            return messageChannel.send(
+              ["Folgende Personen haben sich im Raffle eingetragen:", ...messageToSend],
+              { split: true }
+            );
           });
-          messageChannel.send(
-            ["Folgende Personen haben sich im Raffle eingetragen:", ...messageToSend],
-            { split: true }
-          );
         } else return messageChannel.send(messageToSend);
       }
     }
