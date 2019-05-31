@@ -179,7 +179,7 @@ const handleRaffleRequest = (message: Message, client: Client) => {
           message.deletable && message.delete();
           let messageToSend: string | string[] = "Datei nicht gefunden";
           if (fs.existsSync(config.raffleFileName)) {
-            readJsonFile(config.raffleFileName).then((userlist: raffleItem[]) => {
+            return readJsonFile(config.raffleFileName).then((userlist: raffleItem[]) => {
               messageToSend = userlist
                 .filter(usr => usr.hasEnteredRaffle)
                 .map(entry => `${entry.clientname}: ${entry.enteringDate}`);
