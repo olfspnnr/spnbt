@@ -1,5 +1,7 @@
 import React from "react";
 import "./output.css";
+import { Route } from "react-router";
+import { Portal } from "./views/Portal";
 
 export interface AppProps {}
 
@@ -51,7 +53,7 @@ export class App extends React.Component<AppProps, AppState> {
             {this.state.loadingMessage}
           </div>
         ) : (
-          <div>Test</div>
+          <Route render={props => <Portal RouteProps={props} />} />
         )}
       </div>
     );
