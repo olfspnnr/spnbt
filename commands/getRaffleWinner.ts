@@ -60,23 +60,37 @@ export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupD
   }) as Promise<{ name: string; winner: GuildMember }>;
 };
 
-const askIfWinnerWantsHisPrize = (winner: GuildMember, channel: DMChannel) =>
+export const askIfWinnerWantsHisPrize = (channel: DMChannel) =>
   new Promise((resolve, reject) => {
     channel
-      .send(`Möchtest du deinen Preis entgegen nehmen?\n(${config.raffleWinDescription})\nJ/N?`)
-      .then(() => {
+      .send(
+        `Möchtest du deinen Preis entgegen nehmen?\n(${
+          config.raffleWinDescription
+        })\nDu hast 5 Minuten Zeit\nJ/N?`
+      )
+      .then((msg: Message) => {
         let messageCollector = new MessageCollector(
           channel,
           (message: Message) => message.author === channel.recipient,
           { max: 1, time: 60000 * 5 }
         );
         messageCollector.on("end", (collected, reason) => {
-          if (
-            collected.first().content.toLowerCase() === "j" ||
-            collected.first().content.toLowerCase() === "ja"
-          ) {
-            return resolve();
-          } else return reject();
+          if (collected.first() !== undefined) {
+            let answer = collected.first().content.toLowerCase();
+            if (answer === "j" || answer === "ja") {
+              msg.edit("Yay!");
+              return resolve();
+            } else if (answer === "n" || answer === "nein") {
+              msg.edit("Okay :(");
+              return reject();
+            } else {
+              msg.edit("Das habe ich nicht verstanden - also möchtest du wohl nicht :(");
+              return reject();
+            }
+          } else {
+            msg.edit("Leider hast du nicht reagiert :(");
+            return reject();
+          }
         });
       });
   }) as Promise<void>;
@@ -166,7 +180,7 @@ export const handleRaffleTime = (client: Client) => {
       pckg.winner
         .createDM()
         .then(dmchannel =>
-          askIfWinnerWantsHisPrize(pckg.winner, dmchannel)
+          askIfWinnerWantsHisPrize(dmchannel)
             .then(() => winnerAcceptsPrize(client, dmchannel, pckg.winner))
             .catch(() => winnerRejectsPrize(client, dmchannel, pckg.winner))
         )
