@@ -44,9 +44,7 @@ export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupD
             return reject("Es scheint, als würde es keinen mit der GewinnerId geben");
           } else {
             const winner = winnerArray[0];
-            writeJsonFile(config.raffleFileName, JSON.stringify({ empty: true })).catch(err =>
-              console.log({ caller: "getRandomWinner => writeJsonFile", error: err })
-            );
+
             return resolve({
               name: `${winner.nickname !== null ? winner.nickname + " /" : ""} ${
                 winner.displayName
@@ -115,6 +113,9 @@ const cleanUpJsonFiles = () => {
       })
       .catch(error => console.log({ caller: "raffleWin", error: error }));
   });
+  writeJsonFile(config.raffleFileName, JSON.stringify({ empty: true })).catch(err =>
+    console.log({ caller: "getRandomWinner => writeJsonFile", error: err })
+  );
 };
 
 const winnerAcceptsPrize = (client: Client, channel: DMChannel, winner: GuildMember) => {
