@@ -25,7 +25,7 @@ const handlePollRequest = (message: Message) =>
     let [empty, titleAndDescription, time] = message.content
       .slice(`${poll.name} `.length)
       .split('"');
-    (time as any) = parseInt(time) || 1000 * 60 * 1;
+    (time as any) = 1000 * 60 * parseInt(time) || 1000 * 60 * 1;
     sendPoll(titleAndDescription, message, ["✅", "❌"], time as any);
     return resolve();
   }) as Promise<Message>;
