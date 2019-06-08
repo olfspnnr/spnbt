@@ -43,7 +43,11 @@ export const sendPoll = (
     emojisToFilterBy = emojisToFilterBy || ["✅", "❌"];
     console.log({ title: title, description: description, time: time });
     message.channel
-      .send([message.member.displayName || message.author.username, `**${title}**`, description])
+      .send([
+        `${message.member.displayName || message.author.username} hat eine Umfrage erstellt:`,
+        `**${title}**`,
+        description
+      ])
       .then((msg: Message) => {
         const filter = (reaction: MessageReaction, user: User) => {
           return emojisToFilterBy.some(emoji => emoji === reaction.emoji.name);
@@ -65,7 +69,9 @@ export const sendPoll = (
                 `${
                   winner
                     ? winnigMessage ||
-                      `**${title}**\n${description}\nGewonnen hat Option: ${
+                      `${message.member.displayName ||
+                        message.author
+                          .username}s Umfrage ist geendet.\n**${title}**\n${description}\nGewonnen hat Option: ${
                         winner.emoji.name
                       } mit ${winner.count} Stimmen`
                     : losingMessage || "Es gab keinen Gewinner"
