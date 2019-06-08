@@ -43,7 +43,7 @@ export const sendPoll = (
     emojisToFilterBy = emojisToFilterBy || ["✅", "❌"];
     console.log({ title: title, description: description, time: time });
     message.channel
-      .send([`**${title}**`, description])
+      .send([message.member.displayName || message.author.username, `**${title}**`, description])
       .then((msg: Message) => {
         const filter = (reaction: MessageReaction, user: User) => {
           return emojisToFilterBy.some(emoji => emoji === reaction.emoji.name);
