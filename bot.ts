@@ -132,11 +132,7 @@ clock.getEmitter().on("raffleReminder", () =>
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
     `Vergesst nicht, euch ins Raffle einzutragen, mit ${
       config.prefix
-    }raffle \n(Vorausgesetzt ihr habt die Rolle - falls nicht, einen ${
-      (client.channels.get(channelIds.kikaloungeText) as TextChannel).guild.roles.get(
-        roleIds.spinner
-      ).name
-    } fragen) \n${
+    }raffle \n(Vorausgesetzt ihr habt die Rolle - Blauer Name) \n${
       config.raffleWinDescription !== -1
         ? "Zu Gewinnen gibt es: " + config.raffleWinDescription
         : ""
