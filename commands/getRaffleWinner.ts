@@ -1,5 +1,4 @@
-import { commandProps, RoleNames, config, roleIds, channelIds, auth } from "../bot";
-import { messageHandleFunction } from "../legacy/messageHandler";
+import { config, roleIds, channelIds, auth } from "../bot";
 import {
   TextChannel,
   DMChannel,
@@ -12,7 +11,6 @@ import {
 import * as fs from "fs";
 import { readJsonFile, writeJsonFile } from "../controller/JSONController";
 import { raffleItem } from "./raffle";
-import { stringify } from "querystring";
 const auth: auth = require("../../configs/auth.json");
 
 export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupDMChannel) => {

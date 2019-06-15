@@ -132,7 +132,7 @@ clock.getEmitter().on("raffleReminder", () =>
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
     `Vergesst nicht, euch ins Raffle einzutragen, mit ${
       config.prefix
-    }raffle \n(Vorrausgesetzt ihr habt die Rolle - falls nicht, einen ${
+    }raffle \n(Vorausgesetzt ihr habt die Rolle - falls nicht, einen ${
       (client.channels.get(channelIds.kikaloungeText) as TextChannel).guild.roles.get(
         roleIds.spinner
       ).name
