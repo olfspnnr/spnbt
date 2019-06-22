@@ -18,14 +18,7 @@ const reloadCommand = ({ discord: { message, client }, custom }: commandProps) =
       .then(commands => {
         setState({ commands: commands }).then(newState => {
           console.log(getDifference(newState, oldState));
-          message.author.createDM().then(channel => {
-            channel.send("Folgende Befehle sind geladen:");
-            channel.send("------------------------------------");
-            let commandNameList = chunk(newState.commands.map(cmd => cmd.name), 5);
-            commandNameList.map(chun => {
-              channel.send((chun.length > 0 && [...chun, "-"]) || "Keine?");
-            });
-          });
+          message.channel.send(`Loaded ${commands.size}`);
         });
       })
       .catch(error => {

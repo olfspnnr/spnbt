@@ -16,16 +16,6 @@ export const test = {
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
   let state = getState();
-  message.channel.send(
-    `<@${message.member.user.id}> dir wurde folgende Rolle zugewiesen: "${
-      message.member.guild.roles.get(roleIds.uninitiert).name
-    }". ${
-      roleIds.uninitiert === roleIds.uninitiert
-        ? "Willkommen! Schnapp dir einen Medizinball und gesell dich dazu"
-        : ""
-    }`
-  );
-
-  message.channel.send("# Test\n", { code: "md" });
+  message.channel.send("test3");
   message.deletable && message.delete(250);
 };

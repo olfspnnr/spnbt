@@ -202,7 +202,7 @@ export const assignRolesToMember = (
             newMember.guild.roles.get(roleIds[role]).name
           }". ${
             role === roleIds.uninitiert
-              ? "Willkommen! Schnapp dir einen Medizinball und gesell dich dazu"
+              ? "Willkommen! Schnapp dir einen Medizinball und gesell dich dazu\nSolltest du nicht in der Lage sein zu Sprechen, musst du einmal reconnecten\n(unten links den Hörer auflegen)"
               : ""
           }`
         )
@@ -679,28 +679,35 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
 export const loadCommands = () =>
   new Promise(resolve => {
     let commandCollection = new Collection<string, messageHandleFunction>();
-    const commandFiles = fs
-      .readdirSync("./dist/commands")
-      .filter((file: any) => file.endsWith(".js"));
-    let PromiseArr = [];
-    for (let file in commandFiles) {
-      console.log(commandFiles[file]);
-      PromiseArr.push(
-        import(path.resolve(__dirname, "..", "./commands", commandFiles[file]))
-          .then((command: any) => {
-            let innerObject = command[commandFiles[file].split(".")[0]];
-            commandCollection.set(innerObject.name, innerObject);
-            return fs.closeSync(0);
-          })
-          .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
-      );
+    try {
+      fs.readdir("./dist/commands", (err: NodeJS.ErrnoException, files: string[]) => {
+        if (err) {
+          throw err;
+        }
+        const commandFiles = files.filter((file: any) => file.endsWith(".js"));
+        let PromiseArr = [];
+        for (let file in commandFiles) {
+          console.log(commandFiles[file]);
+          delete require.cache[path.resolve(__dirname, "..", "./commands", commandFiles[file])];
+          PromiseArr.push(
+            import(path.resolve(__dirname, "..", "./commands", commandFiles[file]))
+              .then((command: any) => {
+                let innerObject = command[commandFiles[file].split(".")[0]];
+                commandCollection.set(innerObject.name, innerObject);
+                return fs.closeSync(0);
+              })
+              .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
+          );
+        }
+        Promise.all(PromiseArr).then(arr => {
+          if (arr.some(entry => !(entry as any))) {
+            console.log("Module mit Fehler geladen");
+          } else console.log("Alle Module erfolgreich geladen");
+
+          return resolve(commandCollection);
+        });
+      });
+    } catch (error) {
+      console.log(error);
     }
-
-    Promise.all(PromiseArr).then(arr => {
-      if (arr.some(entry => !(entry as any))) {
-        console.log("Module mit Fehler geladen");
-      } else console.log("Alle Module erfolgreich geladen");
-
-      return resolve(commandCollection);
-    });
   }) as Promise<Collection<string, messageHandleFunction>>;
