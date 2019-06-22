@@ -12,7 +12,7 @@ export const twitter = {
     listenToHashtag(message, client, custom.twitterClient)
 } as messageHandleFunction;
 
-const listenToHashtag = (message: Message, client: Client, twitterClient: Twitter) => {
+const listenToHashtag = (message: Message, client: Client, twitterClient: any) => {
   let hashtag = message.content.split('"')[1];
   const maxCount = 5;
   let currentCount = 0;

@@ -11,7 +11,7 @@ export const natalieneu = {
     getNatalieRosenke(message, custom.twitterClient)
 } as messageHandleFunction;
 
-const getNatalieRosenke = (message: Message, twitterClient: Twitter) =>
+const getNatalieRosenke = (message: Message, twitterClient: any) =>
   (twitterClient as any).get(
     "statuses/user_timeline",
     { user_id: "1053658318743441408", count: 3 },

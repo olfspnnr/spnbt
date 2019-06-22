@@ -16,9 +16,8 @@ import { messageHandleFunction } from "./legacy/messageHandler";
 import { fillStateProp, setState } from "./controller/stateController";
 import { AudioQueue } from "./controller/audioQueue";
 import { joke } from "./commands/joke";
-import { getRandomWinner, handleRaffleTime } from "./commands/getRaffleWinner";
+import { handleRaffleTime } from "./commands/getRaffleWinner";
 import { handleWebSocketMessage } from "./controller/webSocketController";
-import * as path from "path";
 import { Berndsite } from "./controller/websiteController";
 
 const Twitter = require("twitter");
@@ -42,16 +41,16 @@ export interface auth {
   raffleWin: string | -1;
 }
 
-export interface ChannelIds {
-  [key: string]: string;
-  halloweltkanalText: string;
-  kikaloungeText: string;
-  kikaloungeVoice: string;
-  donaulimesVoice: string;
-  wanderdorfVoice: string;
-  stilletreppeVoice: string;
-  inspirationText: string;
-}
+export type Channel =
+  | "halloweltkanalText"
+  | "kikaloungeText"
+  | "kikaloungeVoice"
+  | "donaulimesVoice"
+  | "wanderdorfVoice"
+  | "stilletreppeVoice"
+  | "inspirationText";
+
+export type ChannelIds = { [key in Channel]: string };
 
 export type RoleName = "spinner" | "trusted" | "uninitiert" | "poop" | "raffleTeilnehmer";
 
@@ -88,7 +87,7 @@ export interface commandProps {
     client?: Client;
   };
   custom?: {
-    twitterClient?: Twitter;
+    twitterClient?: any;
     loadedCommands?: messageHandleFunction[];
     jokes?: { jokePosition: number; jokes: joke[] };
   };

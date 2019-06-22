@@ -621,7 +621,7 @@ export const sendInspiringMessage = (message: Message, client: Client) =>
       });
   });
 
-export const handleMessageCall = (message: Message, client: Client, twitterClient: Twitter) => {
+export const handleMessageCall = (message: Message, client: Client, twitterClient: any) => {
   if (message.guild === null && message.channel instanceof DMChannel) {
     return console.log(`directMessage => ${message.author.username}: ${message.content}`);
   }
