@@ -688,7 +688,7 @@ export const loadCommands = () =>
         let PromiseArr = [];
         for (let file in commandFiles) {
           console.log(commandFiles[file]);
-          if (file !== "reloadCommands.js")
+          if (file !== "reloadCommands.js" && file !== "botController.js")
             delete require.cache[path.resolve(__dirname, "..", "./commands", commandFiles[file])];
 
           PromiseArr.push(
