@@ -14,8 +14,6 @@ export const test = {
 } as messageHandleFunction;
 
 const executeTestFunction = (message: Message, client: Client) => {
-  console.log("TEST2");
-  let state = getState();
-  message.channel.send("test5");
-  message.deletable && message.delete(250);
+  console.log("TEST3");
+  message.channel.send("test6");
 };
