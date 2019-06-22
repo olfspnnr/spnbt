@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
 
@@ -6,7 +6,7 @@ export const pin = {
   name: "pin",
   description: "Pinnt die Nachricht mit dem Aktuellen Datum an",
   usage: `[${config.prefix}pin "Nachricht" name]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => pinMessage(message)
 } as messageHandleFunction;
 

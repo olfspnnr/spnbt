@@ -1,8 +1,8 @@
-import { commandProps, RoleNames } from "../bot";
+import { commandProps, RoleName } from "../bot";
 import { RichEmbed } from "discord.js";
 
 export interface messageHandleProps {
-  roles: RoleNames[];
+  roles: RoleName[];
   name: string;
   description: string;
   usage: string;

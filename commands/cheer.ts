@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config } from "../bot";
+import { commandProps, mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message } from "discord.js";
 import { playAudio } from "../controller/botController";
@@ -7,7 +7,7 @@ export const cheer = {
   name: "cheer",
   description: "Spielt weiblichen Jubel ab",
   usage: `[${config.prefix}cheer]`,
-  roles: [RoleNames.spinner],
+  roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) => playCheer(message)
 } as messageHandleFunction;
 

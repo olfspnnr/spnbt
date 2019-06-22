@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, Guild, GuildMember } from "discord.js";
 
@@ -6,7 +6,7 @@ export const collect = {
   name: "collect",
   description: "zum collecten von Userdaten - speichert diese in einer Lokalen JSON",
   usage: `[${config.prefix}collect]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     collectUserData(message, client)
 } as messageHandleFunction;

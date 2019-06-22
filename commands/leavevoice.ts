@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config } from "../bot";
+import { commandProps, mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message } from "discord.js";
 
@@ -6,7 +6,7 @@ export const leavevoice = {
   name: "leavevoice",
   description: "Lässt Bernd den Voice Channel verlassen",
   usage: `[${config.prefix}leavevoice]`,
-  roles: [RoleNames.spinner],
+  roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) => leaveVoiceChannel(message)
 } as messageHandleFunction;
 

@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds, auth, userIds } from "../bot";
+import { commandProps, config, roleIds, auth, userIds, channelIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, MessageOptions, TextChannel } from "discord.js";
 import { getState } from "../controller/stateController";
@@ -8,7 +8,7 @@ export const test = {
   name: "test",
   description: "zum testen von Funktionen; wechselt stetig; bitte vorsichtig benutzen",
   usage: `[${config.prefix}test]`,
-  roles: [RoleNames.spinner],
+  roles: ["spinner"],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     executeTestFunction(message, client)
 } as messageHandleFunction;
@@ -16,12 +16,14 @@ export const test = {
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST");
   let state = getState();
-  message.author.createDM().then(channel =>
-    askIfWinnerWantsHisPrize(channel)
-      .then(() => message.channel.send("ja"))
-      .catch(() => {
-        return message.channel.send("nein");
-      })
+  message.channel.send(
+    `<@${message.member.user.id}> dir wurde folgende Rolle zugewiesen: "${
+      message.member.guild.roles.get(roleIds.uninitiert).name
+    }". ${
+      roleIds.uninitiert === roleIds.uninitiert
+        ? "Willkommen! Schnapp dir einen Medizinball und gesell dich dazu"
+        : ""
+    }`
   );
 
   message.channel.send("# Test\n", { code: "md" });

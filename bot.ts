@@ -53,21 +53,17 @@ export interface ChannelIds {
   inspirationText: string;
 }
 
-export interface Roles {
-  [key: string]: string;
-  spinner: string;
-  trusted: string;
-  uninitiert: string;
-  poop: string;
-  raffleTeilnehmer: string;
-}
-export enum RoleNames {
-  spinner = "spinner",
-  trusted = "trusted",
-  uninitiert = "uninitiert",
-  poop = "poop",
-  raffleTeilnehmer = "raffleTeilnehmer"
-}
+export type RoleName = "spinner" | "trusted" | "uninitiert" | "poop" | "raffleTeilnehmer";
+
+export type RoleId = { [key in RoleName]: string };
+
+export const mappedRoles = {
+  spinner: "spinner",
+  poop: "poop",
+  raffleTeilnehmer: "raffleTeilnehmer",
+  trusted: "trusted",
+  uninitiert: "uninitiert"
+} as Readonly<{ [key in RoleName]: RoleName }>;
 
 export interface UserIds {
   [key: string]: string;
@@ -81,7 +77,7 @@ export interface UserIds {
 }
 
 export interface idObject {
-  roleIds: Roles;
+  roleIds: RoleId;
   userIds: UserIds;
   channelIds: ChannelIds;
 }
@@ -173,7 +169,7 @@ loadCommands().then(loadedCommands => {
           client,
           member,
           [roleIds.uninitiert, roleIds.poop],
-          [roleIds.uninitiert]
+          ["uninitiert"]
         );
       } catch (error) {
         console.log(error);

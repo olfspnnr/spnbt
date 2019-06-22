@@ -18,10 +18,10 @@ import {
   roleIds,
   channelIds,
   UserIds,
-  RoleNames,
   config,
   userIds,
-  commandProps
+  commandProps,
+  RoleName
 } from "../bot";
 import * as ytdl from "ytdl-core";
 import { userToRename } from "../commands/renameUser";
@@ -29,7 +29,7 @@ import { messageHandleFunction } from "../legacy/messageHandler";
 import * as path from "path";
 import { fillStateProp, getStateProp, getState, setState } from "./stateController";
 import { audioQueueElement } from "./audioQueue";
-const fs = require("fs");
+import * as fs from "fs";
 
 export interface commandBlock {
   command: string;
@@ -179,7 +179,7 @@ export const checkIfMemberHasntRolesAndAssignRoles = (
   client: Client,
   newMember: GuildMember,
   rolesToCheck: string[],
-  rolesToAdd: string[]
+  rolesToAdd: RoleName[]
 ) => {
   let checkRoles = rolesToCheck.some(role => newMember.roles.has(role));
   console.log({ checkRole: checkRoles });
@@ -191,17 +191,17 @@ export const checkIfMemberHasntRolesAndAssignRoles = (
 export const assignRolesToMember = (
   client: Client,
   newMember: GuildMember,
-  rolesToAdd: string[]
+  rolesToAdd: RoleName[]
 ) => {
-  let roleNames: any = {};
-  Object.keys(roleIds).map(prop => (roleNames[roleIds[prop]] = prop));
   rolesToAdd.map(role => {
     newMember
-      .addRole(role)
+      .addRole(roleIds[role])
       .then(() =>
         (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-          `<@${newMember.user.id}> dir wurde folgende Rolle zugewiesen: "${roleNames[role]}". ${
-            roleNames[role] === RoleNames.uninitiert
+          `<@${newMember.user.id}> dir wurde folgende Rolle zugewiesen: "${
+            newMember.guild.roles.get(roleIds[role]).name
+          }". ${
+            role === roleIds.uninitiert
               ? "Willkommen! Schnapp dir einen Medizinball und gesell dich dazu"
               : ""
           }`
@@ -637,7 +637,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
     if (currentState.commands.has(functionCall)) {
       let command = currentState.commands.get(functionCall) as messageHandleFunction;
       try {
-        if (command.roles.some((role: RoleNames) => message.member.roles.has(roleIds[role]))) {
+        if (command.roles.some((role: RoleName) => message.member.roles.has(roleIds[role]))) {
           command.execute({
             discord: { message: message, client: client },
             custom: {
@@ -654,7 +654,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
     if (currentState.commands.has(functionCall)) {
       let command = currentState.commands.get(functionCall) as messageHandleFunction;
       try {
-        if (command.roles.some((role: RoleNames) => message.member.roles.has(roleIds[role]))) {
+        if (command.roles.some((role: RoleName) => message.member.roles.has(roleIds[role]))) {
           message.author
             .createDM()
             .then(channel =>
@@ -697,7 +697,7 @@ export const loadCommands = () =>
     }
 
     Promise.all(PromiseArr).then(arr => {
-      if (arr.some(entry => !entry)) {
+      if (arr.some(entry => !(entry as any))) {
         console.log("Module mit Fehler geladen");
       } else console.log("Alle Module erfolgreich geladen");
 

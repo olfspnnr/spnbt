@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config } from "../bot";
+import { commandProps, mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, MessageEmbed } from "discord.js";
 import { DomElement, Parser, DomAttributeNames } from "../controller/parser";
@@ -7,7 +7,7 @@ export const pinnwand = {
   name: "pinnwand",
   description: "Holt den letzten Eintrag von der Steam Pinnwand",
   usage: `[${config.prefix}pinnwand profile/id(/profiles/ oder /id/) steamid]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => getPinnwandEintrag(message)
 } as messageHandleFunction;
 

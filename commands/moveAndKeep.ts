@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, channelIds } from "../bot";
+import { commandProps, mappedRoles, config, channelIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, GuildMember, DMChannel } from "discord.js";
 
@@ -6,7 +6,7 @@ export const moveAndKeep = {
   name: "moveAndKeep",
   description: `Moved einen User in die Stille Treppe und behält ihn dort`,
   usage: `[${config.prefix}moveAndKeep userId]`,
-  roles: [RoleNames.spinner],
+  roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     moveAndKeepUserInChannel(message, client)
 } as messageHandleFunction;

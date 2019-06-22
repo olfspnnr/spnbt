@@ -1,11 +1,11 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction, messageHandleProps } from "../legacy/messageHandler";
 import { getStateProp } from "../controller/stateController";
 import { Message, Collection, RichEmbed } from "discord.js";
 
 let props = {
   usage: `[${config.prefix}help]`,
-  roles: [RoleNames.spinner, RoleNames.trusted, RoleNames.uninitiert, RoleNames.poop],
+  roles: [mappedRoles.spinner, mappedRoles.trusted, mappedRoles.uninitiert, mappedRoles.poop],
   description: "Übersicht über die Befehle",
   name: "help"
 } as messageHandleProps;

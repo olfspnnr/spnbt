@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { playAudio } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
@@ -7,7 +7,7 @@ export const mist = {
   name: "mist",
   description: "spielt Mist Sound ab",
   usage: `[${config.prefix}mist]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => playMistSound(message)
 } as messageHandleFunction;
 

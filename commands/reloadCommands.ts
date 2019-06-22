@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config } from "../bot";
+import { commandProps, mappedRoles, config } from "../bot";
 import { loadCommands, chunk } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { getState, setState, State } from "../controller/stateController";
@@ -7,7 +7,7 @@ export const reloadCommands = {
   name: "reloadCommands",
   description: "Stößt einen Reload der Funktionsmodule an.",
   usage: `[${config.prefix}reloadCommands]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: (props: commandProps) => reloadCommand(props)
 } as messageHandleFunction;
 const reloadCommand = ({ discord: { message, client }, custom }: commandProps) => {

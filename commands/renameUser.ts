@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config } from "../bot";
+import { commandProps, mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message } from "discord.js";
 import { getState, fillStateProp } from "../controller/stateController";
@@ -13,7 +13,7 @@ export const renameUser = {
   name: "renameUser",
   description: "nennt User um zu angegebenen Namen / toggle ob dies automatisch passieren soll",
   usage: `[${config.prefix}renameUser userId nickname]`,
-  roles: [RoleNames.spinner],
+  roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) => renameUserFunc(message)
 } as messageHandleFunction;
 

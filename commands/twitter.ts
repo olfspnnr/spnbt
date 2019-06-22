@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds, channelIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds, channelIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, TextChannel } from "discord.js";
 import { ReadStream } from "tty";
@@ -7,7 +7,7 @@ export const twitter = {
   name: "twitter",
   description: "holt sich die 5 neusten Tweets zum Hashtag",
   usage: `[${config.prefix}twitter "hashtag"]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     listenToHashtag(message, client, custom.twitterClient)
 } as messageHandleFunction;

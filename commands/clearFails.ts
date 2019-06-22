@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config } from "../bot";
+import { commandProps, mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, ChannelLogsQueryOptions } from "discord.js";
 
@@ -6,7 +6,7 @@ export const clearFails = {
   name: "clearFails",
   description: `Löscht alle Nachrichten mit ${config.prefix} am Anfang der Nachricht`,
   usage: `[${config.prefix}clearFails]`,
-  roles: [RoleNames.spinner],
+  roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     clearFailedCommands(message, client)
 } as messageHandleFunction;

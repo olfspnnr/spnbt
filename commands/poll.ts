@@ -1,4 +1,4 @@
-import { RoleNames, config } from "../bot";
+import { mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import {
   Message,
@@ -13,7 +13,7 @@ export const poll = {
   name: "poll",
   description: "Erstellt eine Umfrage",
   usage: `[${config.prefix}poll "Titel der Umfrage:Beschreibungstext" Zeit`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }) => handlePollRequest(message)
 } as messageHandleFunction;
 

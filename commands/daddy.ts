@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, Attachment, MessageOptions } from "discord.js";
 
@@ -6,7 +6,7 @@ export const daddy = {
   name: "daddy",
   description: "Bildniss der Daddygames",
   usage: `[${config.prefix}daddy]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => sendDaddyImage(message)
 } as messageHandleFunction;
 

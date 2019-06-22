@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, RichEmbed } from "discord.js";
 import { Parser, DomElement, DomAttributeNames } from "../controller/parser";
@@ -19,7 +19,7 @@ export const joke = {
   name: "joke",
   description: "holt einen Witz aus dem Web",
   usage: `[${config.prefix}joke]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     handleJokeRequest(message, custom.jokes)
 } as messageHandleFunction;

@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction, messageHandleProps } from "../legacy/messageHandler";
 import {
   Message,
@@ -25,7 +25,7 @@ export interface raffleItem {
 let props = {
   description: "Trägt den Nutzer ins Raffle ein",
   name: "raffle",
-  roles: [RoleNames.spinner, RoleNames.trusted, RoleNames.raffleTeilnehmer],
+  roles: [mappedRoles.spinner, mappedRoles.trusted, mappedRoles.raffleTeilnehmer],
   usage: `[${config.prefix}raffle]`
 } as messageHandleProps;
 

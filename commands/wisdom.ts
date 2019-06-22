@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config } from "../bot";
+import { commandProps, mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, RichEmbed, MessageEmbed } from "discord.js";
 import { getState, fillStateProp, setState } from "../controller/stateController";
@@ -7,7 +7,7 @@ export const wisdom = {
   name: "wisdom",
   description: "präsentiert eine Weisheit von einem LovooUser",
   usage: `[${config.prefix}wisdom]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) => spitLovooWisdom(message)
 } as messageHandleFunction;
 

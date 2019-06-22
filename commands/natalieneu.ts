@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
 
@@ -6,7 +6,7 @@ export const natalieneu = {
   name: "natalieneu",
   description: "neuste Tweets von Natalie Rosenke",
   usage: `[${config.prefix}natalieneu]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     getNatalieRosenke(message, custom.twitterClient)
 } as messageHandleFunction;

@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config } from "../bot";
+import { commandProps, mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
 import { getState } from "../controller/stateController";
@@ -7,7 +7,7 @@ export const getLovooAmount = {
   name: "getLovooAmount",
   description: "gibt die Anzahl der Lovoo-User im 'Speicher' zurück.",
   usage: `[${config.prefix}getLovooAmount]`,
-  roles: [RoleNames.spinner],
+  roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     getLovooAmountFunc(message, client)
 } as messageHandleFunction;

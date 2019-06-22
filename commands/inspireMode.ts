@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { sendInspiringMessage } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, MessageOptions } from "discord.js";
@@ -8,7 +8,7 @@ export const inspireMode = {
   name: "inspireMode",
   description: "Zufällige KI generierter Quote; alle 2 Minuten",
   usage: `[${config.prefix}inspireMode]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
     inspireModeFunc(message, client)
 } as messageHandleFunction;

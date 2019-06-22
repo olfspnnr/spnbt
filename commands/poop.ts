@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { stripMemberOfAllRoles } from "../controller/botController";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, GuildMember } from "discord.js";
@@ -7,7 +7,7 @@ export const poop = {
   name: "poop",
   description: "weist eine Person der Poopgruppe zu",
   usage: `[${config.prefix}poop userId]`,
-  roles: [RoleNames.spinner],
+  roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) => poopCommand(message)
 } as messageHandleFunction;
 

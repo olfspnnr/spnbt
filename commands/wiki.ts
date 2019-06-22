@@ -1,4 +1,4 @@
-import { commandProps, RoleNames, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client, MessageCollector } from "discord.js";
 
@@ -6,7 +6,7 @@ export const wiki = {
   name: "wiki",
   description: "Durchsucht Wikipedia nach dem Suchbegriff",
   usage: `[${config.prefix}wiki suchbegriff => Zahl aus der Auswahl => !link]`,
-  roles: [RoleNames.spinner, RoleNames.trusted],
+  roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }) => searchInWiki(message)
 } as messageHandleFunction;
 
