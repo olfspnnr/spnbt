@@ -688,7 +688,9 @@ export const loadCommands = () =>
         let PromiseArr = [];
         for (let file in commandFiles) {
           console.log(commandFiles[file]);
-          delete require.cache[path.resolve(__dirname, "..", "./commands", commandFiles[file])];
+          if (file !== "reloadCommands.js")
+            delete require.cache[path.resolve(__dirname, "..", "./commands", commandFiles[file])];
+
           PromiseArr.push(
             import(path.resolve(__dirname, "..", "./commands", commandFiles[file]))
               .then((command: any) => {
