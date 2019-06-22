@@ -696,9 +696,6 @@ export const loadCommands = () =>
               .then((command: any) => {
                 let innerObject = command[commandFiles[file].split(".")[0]];
                 commandCollection.set(innerObject.name, innerObject);
-                return fs.close(0, (err: NodeJS.ErrnoException) => {
-                  console.log(err);
-                });
               })
               .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
           );
