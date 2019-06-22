@@ -711,5 +711,6 @@ export const loadCommands = () =>
       });
     } catch (error) {
       console.log(error);
+      return resolve();
     }
   }) as Promise<Collection<string, messageHandleFunction>>;
