@@ -169,20 +169,21 @@ const handleRaffleRequest = (message: Message, client: Client) => {
       if (args.length > 0) {
         if (args.some(entry => entry === "win")) {
           message.deletable && message.delete();
-          return messageChannel.send(
-            `# Neuer Rafflewin!\n\nFolgendes gibt es zu Gewinnen:\n< ${
-              config.raffleWinDescription
-            } >`,
-            { code: "md" } as MessageOptions
-          );
+          return messageChannel
+            .send(`# Neuer Rafflewin!\n\nFolgendes gibt es zu Gewinnen:\n`, {
+              code: "md"
+            } as MessageOptions)
+            .then(msg => messageChannel.send(`${config.raffleWinDescription}`));
         } else if (args.some(entry => entry === "list")) {
           message.deletable && message.delete();
           let messageToSend: string | string[] = "Datei nicht gefunden";
           if (fs.existsSync(config.raffleFileName)) {
             return readJsonFile(config.raffleFileName).then((userlist: raffleItem[]) => {
-              messageToSend = userlist
-                .filter(usr => usr.hasEnteredRaffle)
-                .map(entry => `${entry.clientname}: ${entry.enteringDate}`);
+              messageToSend =
+                userlist &&
+                userlist
+                  .filter(usr => usr.hasEnteredRaffle)
+                  .map(entry => `${entry.clientname}: ${entry.enteringDate}`);
               return messageChannel.send(
                 ["Folgende Personen haben sich im Raffle eingetragen:", ...messageToSend],
                 { split: true }
