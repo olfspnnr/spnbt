@@ -30,7 +30,7 @@ export class Clock {
   }
 
   private checkForRaffleTime() {
-    if (this.time.getHours() === 20 && this.time.getMinutes() === 15) {
+    if (this.time.getDay() === 0 && this.time.getHours() === 20 && this.time.getMinutes() === 15) {
       this.eventEmitter.emit("raffleTime", () => {
         return { time: this.time };
       });
