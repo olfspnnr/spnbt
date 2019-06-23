@@ -43,11 +43,13 @@ const handleJokeRequest = (
       setState({
         jokes: { jokePosition: jokeState.jokePosition += 1, jokes: shiftJokes }
       }).then(newState => {
-        message.channel.send(
-          `~~Klaue neue Witze~~ Denke mir neue Witze aus. ~~Bin bei Seite ${
-            newState.jokes.jokePosition
-          }~~`
-        );
+        message.channel
+          .send(
+            `~~Klaue neue Witze~~ Denke mir neue Witze aus. ~~Bin bei Seite ${
+              newState.jokes.jokePosition
+            }~~`
+          )
+          .then((msg: Message) => msg.deletable && !msg.pinned && msg.delete(60000));
         sendJoke(message, nextJoke, newState.jokes.jokes.length + 1);
       });
     });
