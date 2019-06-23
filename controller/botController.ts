@@ -328,13 +328,18 @@ export const handleVoiceStateUpdate = (
   newMember: GuildMember,
   client: Client
 ) => {
+  const date = new Date();
+  const [hours, minutes] = [
+    date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
+    date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
+  ];
   if (oldMember.voiceChannel === undefined && newMember.voiceChannel !== undefined) {
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-      `${newMember.user.username}/${newMember.displayName} joined.`
+      `[${hours}:${minutes}] ${newMember.user.username}/${newMember.displayName} joined.`
     );
   } else if (newMember.voiceChannel === undefined) {
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
-      `${oldMember.user.username}/${oldMember.displayName} left.`
+      `[${hours}:${minutes}] ${oldMember.user.username}/${oldMember.displayName} left.`
     );
   } else if (newMember.voiceChannel !== undefined && oldMember.voiceChannel !== undefined) {
     return getUserDifferences(oldMember, newMember);
