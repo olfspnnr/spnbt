@@ -14,13 +14,7 @@ export const moveAndKeep = {
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {
   message.delete(250);
   let userToMoveId = message.content.slice("!moveAndKeep ".length);
-  userToMoveId = !!~userToMoveId.indexOf("<@")
-    ? userToMoveId
-        .replace(/<@/g, "")
-        .replace(/!/g, "")
-        .replace(/>/g, "")
-    : userToMoveId;
-  userToMoveId = userToMoveId.replace(/\\/g, "").replace(" ", "");
+  userToMoveId = message.mentions.users.first().id;
   console.log(userToMoveId);
   message.guild.fetchMember(userToMoveId).then(member => {
     member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
@@ -38,11 +32,6 @@ const moveAndKeepUserInChannel = (message: Message, client: Client) => {
           }
         }
       });
-      member
-        .createDM()
-        .then((channel: DMChannel) =>
-          channel.send("Du wurdest in den Stille Treppe Kanal verschoben")
-        );
     });
   });
 };
