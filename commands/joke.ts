@@ -58,14 +58,16 @@ const handleJokeRequest = (
 
 const sendJoke = (message: Message, joke: joke, jokeCount?: number) => {
   let date = [joke.date.getDate(), joke.date.getMonth() + 1, joke.date.getFullYear()].join(".");
-  message.channel.send({
-    embed: {
-      color: 0xff6633,
-      author: { name: joke.authorName, url: joke.url },
-      fields: [{ name: joke.title, value: `${joke.content}` }],
-      footer: { text: `👍${joke.likes} 👎${joke.dislikes} -- ${date}${" --  📁" + jokeCount}` }
-    } as RichEmbed
-  });
+  message.channel
+    .send({
+      embed: {
+        color: 0xff6633,
+        author: { name: joke.authorName, url: joke.url },
+        fields: [{ name: joke.title, value: `${joke.content}` }],
+        footer: { text: `👍${joke.likes} 👎${joke.dislikes} -- ${date}${" --  📁" + jokeCount}` }
+      } as RichEmbed
+    })
+    .then((msg: Message) => msg.deletable && !msg.pinned && msg.delete(60000));
 };
 
 const getJokes = (skip?: number) =>
