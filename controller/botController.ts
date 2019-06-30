@@ -201,7 +201,7 @@ export const assignRolesToMember = (
           `<@${newMember.user.id}> dir wurde folgende Rolle zugewiesen: "${
             newMember.guild.roles.get(roleIds[role]).name
           }". ${
-            role === roleIds.uninitiert
+            roleIds[role] === roleIds.uninitiert
               ? "Willkommen! Schnapp dir einen Medizinball und gesell dich dazu\nSolltest du nicht in der Lage sein zu Sprechen, musst du einmal reconnecten\n(unten links den Hörer auflegen)"
               : ""
           }`
