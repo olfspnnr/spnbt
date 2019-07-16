@@ -196,8 +196,15 @@ loadCommands().then(loadedCommands => {
 
     client.on("voiceStateUpdate", (oldMember, newMember) => {
       const difference = getUserDifferences(oldMember, newMember);
+      const date = new Date();
+      const [hours, minutes] = [
+        date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
+        date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
+      ];
       writeToLogChannel(
-        `**${oldMember.user.username}/${oldMember.displayName}** changed:\n${difference}`,
+        `[${hours}:${minutes}]\n**${oldMember.user.username}/${
+          oldMember.displayName
+        }** changed:\n${difference}`,
         client
       );
       return handleVoiceStateUpdate(oldMember, newMember, client);
@@ -205,8 +212,15 @@ loadCommands().then(loadedCommands => {
 
     client.on("guildMemberUpdate", (oldUser, newUser) => {
       const difference = getUserDifferences(oldUser, newUser);
+      const date = new Date();
+      const [hours, minutes] = [
+        date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
+        date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
+      ];
       writeToLogChannel(
-        `**${oldUser.user.username}/${oldUser.displayName}** changed:\n${difference}`,
+        `[${hours}:${minutes}]\n**${oldUser.user.username}/${
+          oldUser.displayName
+        }** changed:\n${difference}`,
         client
       );
       handleNameChange(newUser);
@@ -229,7 +243,10 @@ loadCommands().then(loadedCommands => {
           );
         });
         console.log(deletion);
-
+        const [hours, minutes] = [
+          now.getHours() > 9 ? now.getHours() : "0" + now.getHours(),
+          now.getMinutes() > 9 ? now.getMinutes() : "0" + now.getMinutes()
+        ];
         let executor = "Uncertain";
         if (deletion.size === 1) {
           executor = deletion.first().executor.username;
@@ -240,6 +257,7 @@ loadCommands().then(loadedCommands => {
         }
         writeToLogChannel(
           [
+            `[${hours}:${minutes}]`,
             `Executor: **${executor}**`,
             `User of message: **${message.member.user.username}/${message.member.displayName}**`,
             `_Deleted:_ \n${message.content}`
