@@ -1,6 +1,7 @@
 import { commandProps, mappedRoles, config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
 import { Message, Client } from "discord.js";
+import { writeToLogChannel } from "../controller/botController";
 
 export const bulkDelete = {
   name: "bulkDelete",
@@ -8,10 +9,11 @@ export const bulkDelete = {
     "filtert die letzten 25(oder angegebene Anzahl) Nachrichten nach der ID und löscht diese (Außer gepinnte Nachrichten)",
   usage: `[${config.prefix}bulkDelete @user anzahl(optional)]`,
   roles: [mappedRoles.spinner],
-  execute: ({ discord: { message, client }, custom }: commandProps) => bulkDeleteFunc(message)
+  execute: ({ discord: { message, client }, custom }: commandProps) =>
+    bulkDeleteFunc(message, client)
 } as messageHandleFunction;
 
-const bulkDeleteFunc = (message: Message) => {
+const bulkDeleteFunc = (message: Message, client: Client) => {
   let [userId, anzahl] = message.content.slice("!renameUser ".length).split(" ");
   userId = userId
     .replace(/<@/g, "")
@@ -24,6 +26,7 @@ const bulkDeleteFunc = (message: Message) => {
   console.log({ userid: userId });
   if (message.guild.members.some(member => member.id === userId)) {
     message.channel.fetchMessages({ limit: parsedAnzahl || 25 }).then(msgs => {
+      writeToLogChannel(`${message.author.username} called bulkDelete`, client);
       let messagesToBeDeleted = msgs.filter(
         message => message.author.id === userId && !message.pinned
       );

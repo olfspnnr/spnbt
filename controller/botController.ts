@@ -719,3 +719,29 @@ export const loadCommands = () =>
       return resolve();
     }
   }) as Promise<Collection<string, messageHandleFunction>>;
+
+export const writeToLogChannel = (
+  message: string | string[],
+  client: Client,
+  original?: Message
+) => {
+  const logChannel = client.channels.find((entry: TextChannel) =>
+    entry.name.toLowerCase().includes("bernd-log")
+  );
+  if (logChannel) {
+    (logChannel as TextChannel).send("---\n").then(() => {
+      if (original) {
+        (logChannel as TextChannel).send(message, {
+          attachment: original.attachments
+        } as MessageOptions);
+        (logChannel as TextChannel).send(original.attachments.map(entry => entry.proxyURL), {
+          split: true
+        });
+      } else {
+        (logChannel as TextChannel).send(message, {
+          split: true
+        });
+      }
+    });
+  }
+};

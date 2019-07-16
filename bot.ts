@@ -1,5 +1,5 @@
 // Import the discord.js module
-import { Client, TextChannel, Message } from "discord.js";
+import { Client, TextChannel, Message, ClientUser } from "discord.js";
 import "isomorphic-fetch";
 import {
   handleNameChange,
@@ -7,7 +7,8 @@ import {
   checkIfMemberHasntRolesAndAssignRoles,
   loadCommands,
   handleMessageCall,
-  getUserDifferences
+  getUserDifferences,
+  writeToLogChannel
 } from "./controller/botController";
 import { websocketServer } from "./controller/server";
 import { Clock } from "./controller/clock";
@@ -160,7 +161,13 @@ loadCommands().then(loadedCommands => {
     client.once("ready", () => {
       console.log("I am ready!");
       client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
-
+      client.channels.map(chan => {
+        if (chan instanceof TextChannel) {
+          if (chan.permissionsFor(client.user.id).has("READ_MESSAGES")) {
+            chan.fetchMessages().catch(error => console.error(error));
+          }
+        }
+      });
       try {
         wsServer = new websocketServer({
           port: 8080,
@@ -189,28 +196,78 @@ loadCommands().then(loadedCommands => {
 
     client.on("voiceStateUpdate", (oldMember, newMember) => {
       const difference = getUserDifferences(oldMember, newMember);
-      const logChannel = client.channels.find((entry: TextChannel) =>
-        entry.name.toLowerCase().includes("bernd-log")
+      writeToLogChannel(
+        `**${oldMember.user.username}/${oldMember.displayName}** changed:\n${difference}`,
+        client
       );
-      if (logChannel) {
-        (logChannel as TextChannel).send(`${oldMember.user.username} changed: ${difference}`, {
-          split: true
-        });
-      }
       return handleVoiceStateUpdate(oldMember, newMember, client);
     });
 
     client.on("guildMemberUpdate", (oldUser, newUser) => {
       const difference = getUserDifferences(oldUser, newUser);
-      const logChannel = client.channels.find((entry: TextChannel) =>
-        entry.name.toLowerCase().includes("bernd-log")
+      writeToLogChannel(
+        `**${oldUser.user.username}/${oldUser.displayName}** changed:\n${difference}`,
+        client
       );
-      if (logChannel) {
-        (logChannel as TextChannel).send(`${oldUser.user.username} changed: ${difference}`, {
-          split: true
-        });
-      }
       handleNameChange(newUser);
+    });
+
+    client.on("messageDelete", async message => {
+      try {
+        const now = new Date();
+        const auditLog = await message.guild.fetchAuditLogs();
+        const deletion = auditLog.entries.filter(entry => {
+          return (
+            entry.actionType === "DELETE" &&
+            entry.targetType === "MESSAGE" &&
+            (entry.target as ClientUser).id === message.client.user.id &&
+            (entry.createdAt.getHours() === now.getHours() &&
+              (entry.createdAt.getMinutes() === now.getMinutes() ||
+                entry.createdAt.getMinutes() === now.getMinutes() + 1 ||
+                entry.createdAt.getMinutes() - 1 === now.getMinutes() ||
+                entry.createdAt.getMinutes() + 1 === now.getMinutes()))
+          );
+        });
+        console.log(deletion);
+
+        let executor = "Uncertain";
+        if (deletion.size === 1) {
+          executor = deletion.first().executor.username;
+        } else if (deletion.size > 1) {
+          executor = "Uncertain // " + deletion.map(entry => entry.executor.username).join(" - ");
+        } else {
+          executor = "Uncertain // " + auditLog.entries.first().executor.username;
+        }
+        writeToLogChannel(
+          [
+            `Executor: **${executor}**`,
+            `User of message: **${message.member.user.username}/${message.member.displayName}**`,
+            `_Deleted:_ \n${message.content}`
+          ],
+          client,
+          message
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    client.on("messageDeleteBulk", messages => {
+      try {
+        console.log(messages);
+        const msgs = messages.map(msg => msg);
+        writeToLogChannel(
+          msgs.map(
+            entry =>
+              `User of message: **${entry.member.user.username}/${
+                entry.member.displayName
+              }**\nDeleted: ${entry.content}`
+          ),
+          client
+        );
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     // Create an event listener for messages
@@ -219,24 +276,7 @@ loadCommands().then(loadedCommands => {
         handleMessageCall(message, client, twitterClient);
       } catch (error) {
         console.log(error);
-        return console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
-      }
-    });
-
-    client.on("messageDelete", message => {
-      try {
-        console.log(message);
-        const logChannel = client.channels.find((entry: TextChannel) =>
-          entry.name.toLowerCase().includes("bernd-log")
-        );
-        if (logChannel) {
-          (logChannel as TextChannel).send(
-            [`User: ${message.member.user.username}`, `Gelöscht: ${message.content}`],
-            { split: true }
-          );
-        } else return;
-      } catch (error) {
-        console.log(error);
+        console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
       }
     });
 

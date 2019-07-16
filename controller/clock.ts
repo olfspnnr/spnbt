@@ -11,6 +11,10 @@ export class Clock {
     return this.eventEmitter;
   }
 
+  public getDate() {
+    return this.time;
+  }
+
   public initialise() {
     setInterval(() => {
       this.checkForRaffleTime();
