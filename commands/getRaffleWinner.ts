@@ -117,32 +117,36 @@ const cleanUpJsonFiles = () => {
 };
 
 const winnerAcceptsPrize = (client: Client, channel: DMChannel, winner: GuildMember) => {
-  channel
-    .send("Glückwunsch!!! 🍀 Hier dein Gewinn, du Gewinnerkönig du! 👑🎁🎉")
-    .then((msg: Message) =>
-      msg.channel
-        .send(
-          auth.raffleWin && auth.raffleWin !== -1
-            ? auth.raffleWin
-            : "Hier könnte ein Gewinn stehen.",
-          { code: true }
-        )
-        .then(() =>
-          (client.channels.get(channelIds.kikaloungeText) as TextChannel)
+  readJsonFile("./configs/auth.json")
+    .then((content: auth) => {
+      channel
+        .send("Glückwunsch!!! 🍀 Hier dein Gewinn, du Gewinnerkönig du! 👑🎁🎉")
+        .then((msg: Message) =>
+          msg.channel
             .send(
-              `🎉 <@&${roleIds.raffleTeilnehmer}> höret und frohlocket! ✨\n🎊 ${
-                winner.displayName
-              }${
-                winner.nickname !== winner.displayName && winner.nickname !== null
-                  ? "alias " + winner.nickname
-                  : ""
-              } 🎈\n🎁 nahm soeben sein Gewinn entgegen! 🍀\n🔥 😎 🔥`
+              content.raffleWin && content.raffleWin !== -1
+                ? content.raffleWin
+                : "Hier könnte ein Gewinn stehen.",
+              { code: true }
             )
-            .then(() => cleanUpJsonFiles())
+            .then(() =>
+              (client.channels.get(channelIds.kikaloungeText) as TextChannel)
+                .send(
+                  `🎉 <@&${roleIds.raffleTeilnehmer}> höret und frohlocket! ✨\n🎊 ${
+                    winner.displayName
+                  }${
+                    winner.nickname !== winner.displayName && winner.nickname !== null
+                      ? "alias " + winner.nickname
+                      : ""
+                  } 🎈\n🎁 nahm soeben sein Gewinn entgegen! 🍀\n🔥 😎 🔥`
+                )
+                .then(() => cleanUpJsonFiles())
+                .catch(error => console.log({ caller: "raffleWin", error: error }))
+            )
             .catch(error => console.log({ caller: "raffleWin", error: error }))
         )
-        .catch(error => console.log({ caller: "raffleWin", error: error }))
-    )
+        .catch(error => console.log({ caller: "raffleWin", error: error }));
+    })
     .catch(error => console.log({ caller: "raffleWin", error: error }));
 };
 

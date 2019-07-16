@@ -170,11 +170,14 @@ const handleRaffleRequest = (message: Message, client: Client) => {
       if (args.length > 0) {
         if (args.some(entry => entry === "win")) {
           message.deletable && message.delete();
-          return messageChannel
-            .send(`# Neuer Rafflewin!\n\nFolgendes gibt es zu Gewinnen:\n`, {
-              code: "md"
-            } as MessageOptions)
-            .then(msg => messageChannel.send(`${config.raffleWinDescription}`));
+          readJsonFile("./configs/config.json").then((content: config) => {
+            messageChannel
+              .send(`# Neuer Rafflewin!\n\nFolgendes gibt es zu Gewinnen:\n`, {
+                code: "md"
+              } as MessageOptions)
+              .then(msg => messageChannel.send(`${content.raffleWinDescription}`));
+          });
+          return;
         }
         if (args.some(entry => entry === "list")) {
           message.deletable && message.delete();
