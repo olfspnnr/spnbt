@@ -123,18 +123,18 @@ clock.getEmitter().on("lenny", () => {
 clock.getEmitter().on("raffleTime", () => {
   return handleRaffleTime(client);
 });
-clock.getEmitter().on("raffleReminder", () =>
-  (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
-    `Vergesst nicht, euch ins Raffle einzutragen, mit ${
-      config.prefix
-    }raffle \n(Vorausgesetzt ihr habt die Rolle - Blauer Name) \n${
-      config.raffleWinDescription !== -1
-        ? "Zu Gewinnen gibt es: " + config.raffleWinDescription
-        : ""
-    }
-      \nWeitere Infos: ${config.helpPrefix}raffle`
-  )
-);
+clock.getEmitter().on("raffleReminder", () => {
+  (client.channels.get(channelIds.kikaloungeText) as TextChannel).messages
+    .filter((message: Message) => message.content.toLowerCase().includes("rafflereminder"))
+    .map(entry => entry.deletable && entry.delete());
+  return (client.channels.get(channelIds.kikaloungeText) as TextChannel)
+    .send(`**Rafflereminder**\nVergesst nicht, euch ins Raffle einzutragen, mit ${
+    config.prefix
+  }raffle \n(Vorausgesetzt ihr habt die Rolle - Blauer Name) \n${
+    config.raffleWinDescription !== -1 ? "Zu Gewinnen gibt es: " + config.raffleWinDescription : ""
+  }
+      \nWeitere Infos: ${config.helpPrefix}raffle`);
+});
 fillStateProp("clock", clock);
 
 let wsServer = undefined;
