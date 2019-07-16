@@ -193,7 +193,9 @@ loadCommands().then(loadedCommands => {
         entry.name.toLowerCase().includes("bernd-log")
       );
       if (logChannel) {
-        (logChannel as TextChannel).send(difference, { split: true });
+        (logChannel as TextChannel).send(`${oldMember.user.username} changed: ${difference}`, {
+          split: true
+        });
       }
       return handleVoiceStateUpdate(oldMember, newMember, client);
     });
@@ -204,7 +206,9 @@ loadCommands().then(loadedCommands => {
         entry.name.toLowerCase().includes("bernd-log")
       );
       if (logChannel) {
-        (logChannel as TextChannel).send(difference, { split: true });
+        (logChannel as TextChannel).send(`${oldUser.user.username} changed: ${difference}`, {
+          split: true
+        });
       }
       handleNameChange(newUser);
     });
