@@ -225,6 +225,7 @@ loadCommands().then(loadedCommands => {
 
     client.on("messageDelete", message => {
       try {
+        console.log(message);
         const logChannel = client.channels.find((entry: TextChannel) =>
           entry.name.toLowerCase().includes("bernd-log")
         );
