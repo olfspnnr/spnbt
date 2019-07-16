@@ -164,7 +164,7 @@ loadCommands().then(loadedCommands => {
       client.channels.map(chan => {
         if (chan instanceof TextChannel) {
           if (chan.permissionsFor(client.user.id).has("READ_MESSAGES")) {
-            chan.fetchMessages().catch(error => console.error(error));
+            chan.fetchMessages({ limit: 100 }).catch(error => console.error(error));
           }
         }
       });
