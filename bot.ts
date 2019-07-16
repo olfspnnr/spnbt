@@ -192,7 +192,7 @@ loadCommands().then(loadedCommands => {
     );
 
     client.on("guildMemberUpdate", (oldUser, newUser) => {
-      getUserDifferences(oldUser, newUser);
+      getUserDifferences(oldUser, newUser, client);
       handleNameChange(newUser);
     });
 
@@ -203,6 +203,22 @@ loadCommands().then(loadedCommands => {
       } catch (error) {
         console.log(error);
         return console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
+      }
+    });
+
+    client.on("messageDelete", message => {
+      try {
+        const logChannel = client.channels.find((entry: TextChannel) =>
+          entry.name.toLowerCase().includes("bernd-log")
+        );
+        if (logChannel) {
+          (logChannel as TextChannel).send(
+            [`User: ${message.member.user.username}`, `Gelöscht: ${message.content}`],
+            { split: true }
+          );
+        } else return;
+      } catch (error) {
+        console.log(error);
       }
     });
 
