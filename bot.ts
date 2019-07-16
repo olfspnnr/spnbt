@@ -125,7 +125,10 @@ clock.getEmitter().on("raffleTime", () => {
 });
 clock.getEmitter().on("raffleReminder", () => {
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).messages
-    .filter((message: Message) => message.content.toLowerCase().includes("rafflereminder"))
+    .filter(
+      (message: Message) =>
+        message.content.toLowerCase().includes("rafflereminder") && message.author.bot
+    )
     .map(entry => entry.deletable && entry.delete());
   return (client.channels.get(channelIds.kikaloungeText) as TextChannel)
     .send(`**Rafflereminder**\nVergesst nicht, euch ins Raffle einzutragen, mit ${
