@@ -1,4 +1,4 @@
-import { commandProps, mappedRoles, config, roleIds } from "../bot";
+import { commandProps, mappedRoles, config, roleIds, auth, userIds } from "../bot";
 import { messageHandleFunction, messageHandleProps } from "../legacy/messageHandler";
 import {
   Message,
@@ -9,7 +9,8 @@ import {
   TextChannel,
   DMChannel,
   GroupDMChannel,
-  GuildMember
+  GuildMember,
+  MessageCollector
 } from "discord.js";
 import { writeJsonFile, readJsonFile, checkIfFileExists } from "../controller/JSONController";
 import * as fs from "fs";
@@ -174,7 +175,8 @@ const handleRaffleRequest = (message: Message, client: Client) => {
               code: "md"
             } as MessageOptions)
             .then(msg => messageChannel.send(`${config.raffleWinDescription}`));
-        } else if (args.some(entry => entry === "list")) {
+        }
+        if (args.some(entry => entry === "list")) {
           message.deletable && message.delete();
           let messageToSend: string | string[] = "Datei nicht gefunden";
           if (fs.existsSync(config.raffleFileName)) {
@@ -190,7 +192,122 @@ const handleRaffleRequest = (message: Message, client: Client) => {
               );
             });
           } else return messageChannel.send(messageToSend);
-        } else return;
+        }
+        if (args.some(entry => entry === "add")) {
+          const raffleWinToAdd: { desc: string; key: string } = { desc: "Empty", key: "Empty" };
+
+          userOfRequest.createDM().then((channel: DMChannel) => {
+            const getDescription = () =>
+              new Promise<void>((resolve, reject) => {
+                try {
+                  userOfRequest.send("Beschreibung des Gewinnes? **(Nicht der Key)**");
+                  const messageCollector = new MessageCollector(
+                    channel,
+                    (message: Message) => message.author === channel.recipient,
+                    { max: 1, time: 60000 * 5 }
+                  );
+                  messageCollector.on("collect", element => {
+                    channel.send(`Beschreibung: **${element.content}**`);
+                    raffleWinToAdd.desc = element.content;
+                    return resolve();
+                  });
+                } catch (error) {
+                  return reject({ caller: "raffle add", error: error });
+                }
+              });
+            const getKey = () =>
+              new Promise<void>((resolve, reject) => {
+                try {
+                  userOfRequest.send("Gewinn? **(Der Key)**");
+                  const keyCollector = new MessageCollector(
+                    channel,
+                    (message: Message) => message.author === channel.recipient,
+                    { max: 1, time: 60000 * 5 }
+                  );
+                  keyCollector.on("collect", element => {
+                    channel.send(`Key: **${element.content}**`);
+                    raffleWinToAdd.key = element.content;
+                    return resolve();
+                  });
+                } catch (error) {
+                  return reject({ caller: "raffle add", error: error });
+                }
+              });
+
+            getDescription().then(() =>
+              getKey().then(() => {
+                channel.send(
+                  [
+                    `---`,
+                    `Folgendes wird ins Raffle eingetragen: `,
+                    `Beschreibung: **${raffleWinToAdd.desc}**`,
+                    `Key: **${raffleWinToAdd.key}**`,
+                    `_Bitte warten..._`
+                  ],
+                  { split: true }
+                );
+                const writingFiles: Promise<any>[] = [
+                  new Promise((resolve, reject) => {
+                    readJsonFile("./configs/auth.json")
+                      .then((content: auth) => {
+                        const tempAuth: auth = { ...content, raffleWin: raffleWinToAdd.key };
+                        resolve(
+                          writeJsonFile("./configs/auth.json", JSON.stringify(tempAuth)).then(() =>
+                            channel.send("Key eingetragen")
+                          )
+                        );
+                      })
+                      .catch(error => {
+                        console.log({ caller: "raffle add key", error: error });
+                        return reject();
+                      });
+                  }) as Promise<Promise<any>>,
+                  new Promise((resolve, reject) => {
+                    readJsonFile("./configs/config.json").then((content: config) => {
+                      const tempConfig: config = {
+                        ...content,
+                        raffleWinDescription: raffleWinToAdd.desc
+                      };
+                      resolve(
+                        writeJsonFile("./configs/config.json", JSON.stringify(tempConfig))
+                          .then(() => channel.send("Beschreibung eingetragen"))
+                          .catch(error => {
+                            console.log({ caller: "raffle add desc", error: error });
+                            return reject(error);
+                          })
+                      );
+                    });
+                  }) as Promise<Promise<any>>
+                ];
+
+                Promise.all(writingFiles).then(() => {
+                  channel.send([`**Fertig**`, `Vielen Dank für die Nutzung vom Brot`], {
+                    split: true
+                  });
+                });
+              })
+            );
+
+            message.deletable && message.delete();
+          });
+        }
+        if (args.some(entry => entry === "key")) {
+          if (userOfRequest.id === userIds.olaf) {
+            message.deletable && message.delete();
+            readJsonFile("./configs/auth.json").then((content: auth) => {
+              userOfRequest.send(content.raffleWin);
+            });
+          } else {
+            userOfRequest.send("Dir fehlen die Rechte den Key einzusehen");
+          }
+        }
+        if (args.some(entry => entry === "desc")) {
+          message.deletable && message.delete();
+          readJsonFile("./configs/config.json").then((content: config) => {
+            userOfRequest.send(content.raffleWinDescription);
+          });
+        }
+        return;
       }
     }
   }

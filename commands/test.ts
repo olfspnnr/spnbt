@@ -15,14 +15,5 @@ export const test = {
 
 const executeTestFunction = (message: Message, client: Client) => {
   console.log("TEST7");
-  message.channel.messages
-    .filter((message: Message) => message.content.toLowerCase().includes("rafflereminder"))
-    .map(entry => entry.deletable && entry.delete());
-  return message.channel
-    .send(`**Rafflereminder**\nVergesst nicht, euch ins Raffle einzutragen, mit ${
-    config.prefix
-  }raffle \n(Vorausgesetzt ihr habt die Rolle - Blauer Name) \n${
-    config.raffleWinDescription !== -1 ? "Zu Gewinnen gibt es: " + config.raffleWinDescription : ""
-  }
-      \nWeitere Infos: ${config.helpPrefix}raffle`);
+  message.channel.send("Test1");
 };
