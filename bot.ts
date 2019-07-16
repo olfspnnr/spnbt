@@ -187,12 +187,25 @@ loadCommands().then(loadedCommands => {
 
     client.on("error", error => console.error(error));
 
-    client.on("voiceStateUpdate", (oldMember, newMember) =>
-      handleVoiceStateUpdate(oldMember, newMember, client)
-    );
+    client.on("voiceStateUpdate", (oldMember, newMember) => {
+      const difference = getUserDifferences(oldMember, newMember);
+      const logChannel = client.channels.find((entry: TextChannel) =>
+        entry.name.toLowerCase().includes("bernd-log")
+      );
+      if (logChannel) {
+        (logChannel as TextChannel).send(difference, { split: true });
+      }
+      return handleVoiceStateUpdate(oldMember, newMember, client);
+    });
 
     client.on("guildMemberUpdate", (oldUser, newUser) => {
-      getUserDifferences(oldUser, newUser, client);
+      const difference = getUserDifferences(oldUser, newUser);
+      const logChannel = client.channels.find((entry: TextChannel) =>
+        entry.name.toLowerCase().includes("bernd-log")
+      );
+      if (logChannel) {
+        (logChannel as TextChannel).send(difference, { split: true });
+      }
       handleNameChange(newUser);
     });
 

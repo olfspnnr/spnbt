@@ -304,11 +304,7 @@ export const addReactionToMessage = (
   }
 };
 
-export const getUserDifferences = (
-  oldMember: GuildMember,
-  newMember: GuildMember,
-  client: Client
-) => {
+export const getUserDifferences = (oldMember: GuildMember, newMember: GuildMember) => {
   console.log(`Something changed with [${oldMember.user.username}/${oldMember.displayName}]`);
   let differences = {};
   Object.keys(oldMember).map(key => {
@@ -324,12 +320,7 @@ export const getUserDifferences = (
     .map(key => `${key}: ${(differences as any)[key]}`)
     .join(";\n");
   console.log(different);
-  const logChannel = client.channels.find((entry: TextChannel) =>
-    entry.name.toLowerCase().includes("bernd-log")
-  );
-  if (logChannel) {
-    (logChannel as TextChannel).send(differences, { split: true });
-  }
+
   return different;
 };
 
@@ -352,7 +343,7 @@ export const handleVoiceStateUpdate = (
       `[${hours}:${minutes}] ${oldMember.user.username}/${oldMember.displayName} left.`
     );
   } else if (newMember.voiceChannel !== undefined && oldMember.voiceChannel !== undefined) {
-    return getUserDifferences(oldMember, newMember, client);
+    return getUserDifferences(oldMember, newMember);
   } else {
     return console.log("Konnte nicht entscheiden was passiert ist");
   }
