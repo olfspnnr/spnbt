@@ -19,6 +19,7 @@ import { joke } from "./commands/joke";
 import { handleRaffleTime } from "./commands/getRaffleWinner";
 import { handleWebSocketMessage } from "./controller/webSocketController";
 import { Berndsite } from "./controller/websiteController";
+import { readJsonFile } from "./controller/JSONController";
 
 const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
@@ -130,13 +131,19 @@ clock.getEmitter().on("raffleReminder", () => {
         message.content.toLowerCase().includes("rafflereminder") && message.author.bot
     )
     .map(entry => entry.deletable && entry.delete());
-  return (client.channels.get(channelIds.kikaloungeText) as TextChannel)
-    .send(`**Rafflereminder**\nVergesst nicht, euch ins Raffle einzutragen, mit ${
-    config.prefix
-  }raffle \n(Vorausgesetzt ihr habt die Rolle - Blauer Name) \n${
-    config.raffleWinDescription !== -1 ? "Zu Gewinnen gibt es: " + config.raffleWinDescription : ""
-  }
-      \nWeitere Infos: ${config.helpPrefix}raffle`);
+  return readJsonFile("./configs/config.json")
+    .then((content: config) => {
+      (client.channels.get(channelIds.kikaloungeText) as TextChannel)
+        .send(`**Rafflereminder**\nVergesst nicht, euch ins Raffle einzutragen, mit ${
+        content.prefix
+      }raffle \n(Vorausgesetzt ihr habt die Rolle - Blauer Name) \n${
+        content.raffleWinDescription !== -1
+          ? "Zu Gewinnen gibt es: " + content.raffleWinDescription
+          : ""
+      }
+      \nWeitere Infos: ${content.helpPrefix}raffle`);
+    })
+    .catch(error => console.error({ caller: "rafflerminder", error: error }));
 });
 fillStateProp("clock", clock);
 
