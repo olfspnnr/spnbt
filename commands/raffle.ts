@@ -172,9 +172,7 @@ const handleRaffleRequest = (message: Message, client: Client) => {
           message.deletable && message.delete();
           readJsonFile("./configs/config.json").then((content: config) => {
             messageChannel
-              .send(`# Neuer Rafflewin!\n\nFolgendes gibt es zu Gewinnen:\n`, {
-                code: "md"
-              } as MessageOptions)
+              .send(`**Neuer Rafflewin!**\n\n---\nFolgendes gibt es zu Gewinnen:\n\n`)
               .then(msg => messageChannel.send(`${content.raffleWinDescription}`));
           });
           return;
