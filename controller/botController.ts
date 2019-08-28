@@ -218,9 +218,15 @@ export const reactionDeletionHandler = (
   const collector = new MessageCollector(message.channel, m => m.author.id === message.author.id, {
     time: 60 * 1000
   });
-  collector.on("collect", (followUpMessage: Message) => {
-    if (followUpMessage.member.user.id === userIdOfMessage) reaction.remove();
-    else return;
+  collector.on("collect", async (followUpMessage: Message, currentCollector: MessageCollector) => {
+    if (followUpMessage.member.user.id === userIdOfMessage) {
+      try {
+        await reaction.remove();
+        return currentCollector.stop();
+      } catch (error) {
+        throw console.error({ caller: "reactionDeletionHandler", error: error });
+      }
+    } else return;
   });
 };
 
@@ -269,7 +275,7 @@ export const addReactionToMessage = (
   client: Client,
   userIds?: UserIds,
   rulesets?: reactionRuleSet[],
-  reaction?: string
+  reactionAdd?: string
 ) => {
   if (ruleSet && userIds) {
     rulesets.map(ruleset => {
@@ -282,10 +288,19 @@ export const addReactionToMessage = (
               emoji = reactionToAdd;
             }
             if (message.member.user.id === userIds[ruleset.user]) {
-              message
-                .react(emoji)
-                .then(reaction => reactionDeletionHandler(message, reaction, userIds[ruleset.user]))
-                .catch(error => console.log(error));
+              message.channel.fetchMessages({ limit: 10 }).then(messages => {
+                messages.map(fetchedMessage => {
+                  fetchedMessage.reactions.map(reaction => {
+                    if (reaction.me && fetchedMessage.author.id == message.member.user.id) {
+                      reaction.remove();
+                    }
+                  });
+                });
+                message
+                  .react(emoji)
+                  // .then(reaction => reactionDeletionHandler(message, reaction, userIds[ruleset.user]))
+                  .catch(error => console.log(error));
+              });
             }
           });
         }
@@ -293,14 +308,23 @@ export const addReactionToMessage = (
     });
   } else {
     let emoji: Emoji | string = undefined;
-    emoji = client.emojis.find(emoji => emoji.name === reaction);
+    emoji = client.emojis.find(emoji => emoji.name === reactionAdd);
     if (!emoji) {
-      emoji = reaction;
+      emoji = reactionAdd;
     }
-    message
-      .react(emoji)
-      .then(reaction => reactionDeletionHandler(message, reaction, message.client.user.id))
-      .catch(error => console.log(error));
+    message.channel.fetchMessages({ limit: 10 }).then(messages => {
+      messages.map(fetchedMessage => {
+        fetchedMessage.reactions.map(reaction => {
+          if (reaction.me && fetchedMessage.author.id == message.member.user.id) {
+            reaction.remove();
+          }
+        });
+        message
+          .react(emoji)
+          // .then(reaction => reactionDeletionHandler(message, reaction, userIds[ruleset.user]))
+          .catch(error => console.log(error));
+      });
+    });
   }
 };
 
@@ -629,6 +653,7 @@ export const sendInspiringMessage = (message: Message, client: Client) =>
 
 export const handleMessageCall = (message: Message, client: Client, twitterClient: any) => {
   if (message.guild === null && message.channel instanceof DMChannel) {
+    writeToLogChannel(`DM: ${message.content || "EMPTY"}`, client);
     return console.log(`directMessage => ${message.author.username}: ${message.content}`);
   }
   console.log(`${message.member.displayName}/${message.member.user.username}: ${message.content}
@@ -637,7 +662,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
   let functionCall = message.content.split(" ")[0].slice(1);
   let currentState = getState();
   if (currentState.commands === undefined) {
-    console.log({ caller: "handleMessageCall", error: "no commands were loaded" });
+    return console.log({ caller: "handleMessageCall", error: "no commands were loaded" });
   }
   if (message.content.startsWith(config.prefix) && !message.author.bot) {
     if (currentState.commands.has(functionCall)) {
@@ -653,7 +678,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
           } as commandProps);
         } else throw "Unzureichende Berechtigung";
       } catch (error) {
-        console.log(error);
+        return console.log({ caller: "handleMessageCall", error: error });
       }
     } else console.log(`${functionCall} nicht gefunden`);
   } else if (message.content.startsWith(config.helpPrefix) && !message.author.bot) {
@@ -671,15 +696,15 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
           message.deletable && message.delete(250);
         } else throw "Unzureichende Berechtigung";
       } catch (error) {
-        console.log(error);
+        return console.log({ caller: "handleMessageCall", error: error });
       }
     }
   } else if (!message.author.bot) {
     if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
       replyToMessageWithLenny(message);
-      addReactionToMessage(message, client, userIds, ruleSet);
+      return addReactionToMessage(message, client, userIds, ruleSet);
     }
-  } else console.log("Nachricht von Bot");
+  } else return console.log("Nachricht von Bot");
 };
 
 export const loadCommands = () =>
@@ -729,19 +754,50 @@ export const writeToLogChannel = (
     entry.name.toLowerCase().includes("bernd-log")
   );
   if (logChannel) {
-    (logChannel as TextChannel).send("---\n").then(() => {
-      if (original) {
-        (logChannel as TextChannel).send(message, {
-          attachment: original.attachments
-        } as MessageOptions);
-        (logChannel as TextChannel).send(original.attachments.map(entry => entry.proxyURL), {
-          split: true
-        });
-      } else {
-        (logChannel as TextChannel).send(message, {
-          split: true
-        });
-      }
-    });
-  }
+    (logChannel as TextChannel)
+      .send("---\n")
+      .then(() => {
+        try {
+          if (message === "" || message === undefined || message === null) {
+            throw "message is empty";
+          }
+          if (original) {
+            let { attachments } = original;
+            if (attachments.array.length === 0) {
+              (logChannel as TextChannel).send(message).catch(error => {
+                console.error({ caller: "writeToLogChannel", error: error });
+              });
+            } else {
+              (logChannel as TextChannel)
+                .send(message || "EMPTY", {
+                  attachment: attachments || null
+                } as MessageOptions)
+                .catch(error => {
+                  console.error({ caller: "writeToLogChannel", error: error });
+                });
+            }
+            if (attachments.map(entry => entry.proxyURL).length > 0) {
+              (logChannel as TextChannel)
+                .send(attachments.map(entry => entry.proxyURL) || ["EMPTY"], {
+                  split: true
+                })
+                .catch(error => {
+                  console.error({ caller: "writeToLogChannel", error: error });
+                });
+            }
+          } else {
+            (logChannel as TextChannel)
+              .send(message || "EMPTY", {
+                split: true
+              })
+              .catch(error => {
+                console.error({ caller: "writeToLogChannel", error: error });
+              });
+          }
+        } catch (error) {
+          console.error({ caller: "writeToLogChannel", error: error });
+        }
+      })
+      .catch(error => console.error({ caller: "writeToLogChannel", error: error }));
+  } else console.error({ caller: "writeToLogChannel", error: "LogChannel missing" });
 };

@@ -202,9 +202,7 @@ loadCommands().then(loadedCommands => {
         date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
       ];
       writeToLogChannel(
-        `[${hours}:${minutes}]\n**${oldMember.user.username}/${
-          oldMember.displayName
-        }** changed:\n${difference}`,
+        `[${hours}:${minutes}]\n**${oldMember.user.username}/${oldMember.displayName}** changed:\n${difference}`,
         client
       );
       return handleVoiceStateUpdate(oldMember, newMember, client);
@@ -218,9 +216,7 @@ loadCommands().then(loadedCommands => {
         date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
       ];
       writeToLogChannel(
-        `[${hours}:${minutes}]\n**${oldUser.user.username}/${
-          oldUser.displayName
-        }** changed:\n${difference}`,
+        `[${hours}:${minutes}]\n**${oldUser.user.username}/${oldUser.displayName}** changed:\n${difference}`,
         client
       );
       handleNameChange(newUser);
@@ -251,11 +247,14 @@ loadCommands().then(loadedCommands => {
         if (deletion.size === 1) {
           executor = deletion.first().executor.username;
         } else if (deletion.size > 1) {
-          executor = "Uncertain // " + deletion.map(entry => entry.executor.username).join(" - ");
+          executor =
+            "Uncertain // Part of the deletion object // " +
+            deletion.map(entry => entry.executor.username).join(" - ");
         } else {
-          executor = "Uncertain // " + auditLog.entries.first().executor.username;
+          executor =
+            "Uncertain // Last entry Auditlog // " + auditLog.entries.first().executor.username;
         }
-        writeToLogChannel(
+        return writeToLogChannel(
           [
             `[${hours}:${minutes}]`,
             `Executor: **${executor}**`,
@@ -277,10 +276,8 @@ loadCommands().then(loadedCommands => {
         writeToLogChannel(
           msgs.map(
             entry =>
-              `User of message: **${entry.member.user.username}/${
-                entry.member.displayName
-              }**\nDeleted: ${entry.content}`
-          ),
+              `User of message: **${entry.member.user.username}/${entry.member.displayName}**\nDeleted: ${entry.content}`
+          ) || "EMPTY",
           client
         );
       } catch (error) {
@@ -291,7 +288,18 @@ loadCommands().then(loadedCommands => {
     // Create an event listener for messages
     client.on("message", message => {
       try {
-        handleMessageCall(message, client, twitterClient);
+        try {
+          if (
+            message.channel instanceof TextChannel &&
+            message.channel.permissionsFor(client.user.id).has("READ_MESSAGES")
+          ) {
+            message.channel.fetchMessages({ limit: 10 });
+          }
+        } catch (error) {
+          throw "No read_messages permisson";
+        }
+
+        return handleMessageCall(message, client, twitterClient);
       } catch (error) {
         console.log(error);
         console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
