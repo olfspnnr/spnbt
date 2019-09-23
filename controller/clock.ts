@@ -18,7 +18,7 @@ export class Clock {
   public initialise() {
     setInterval(() => {
       this.checkForRaffleTime();
-    }, 50000);
+    }, 59500);
     return setInterval(() => {
       this.setTime();
       this.checkForLeet();
