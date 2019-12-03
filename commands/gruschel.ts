@@ -1,10 +1,8 @@
-import { commandProps, config, roleIds } from "../bot";
-import { getStreamFromYouTubeLink, addToQueue } from "../controller/botController";
+import { Client, Message } from "discord.js";
+import { config } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
-import { Message, Client } from "discord.js";
-import { audioQueueElement } from "../controller/audioQueue";
 
-export const Gruschel = {
+export const gruschel = {
   name: "gruschel",
   description: "Gruschelt einen anderen User",
   usage: `[${config.prefix}gruschel @member]`,
