@@ -19,10 +19,16 @@ const GruschelUser = async (message: Message, client: Client) => {
       const newMessage = `${
         message.author.username
       } gruschelte folgende Personen: ${messageArr.join(", ")}`;
+      if (message.deletable) {
+        message.delete();
+      }
       const gruscheltext = await message.channel.sendMessage(newMessage);
       return (gruscheltext as Message).delete(15000);
     }
   } catch (error) {
+    if (message.deletable) {
+      message.delete();
+    }
     throw error;
   }
 };
