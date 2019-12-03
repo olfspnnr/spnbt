@@ -5,7 +5,7 @@ import { Message, Client } from "discord.js";
 import { audioQueueElement } from "../controller/audioQueue";
 
 export const Gruschel = {
-  name: "Gruschel",
+  name: "gruschel",
   description: "Gruschelt einen anderen User",
   usage: `[${config.prefix}gruschel @member]`,
   roles: ["spinner", "trusted"],
