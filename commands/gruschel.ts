@@ -14,13 +14,13 @@ const GruschelUser = async (message: Message, client: Client) => {
   try {
     if (message.mentions && message.mentions.members) {
       const messageArr = message.mentions.members.map(member => {
-        return member.displayName;
+        return `**${member.displayName}**`;
       });
       const newMessage = `${
         message.author.username
-      } gruschelte folgende Personen: ${messageArr.join(" ,")}`;
-      await message.channel.sendMessage(newMessage);
-      return;
+      } gruschelte folgende Personen: ${messageArr.join(", ")}`;
+      const gruscheltext = await message.channel.sendMessage(newMessage);
+      return (gruscheltext as Message).delete(15000);
     }
   } catch (error) {
     throw error;
