@@ -8,7 +8,8 @@ import {
   loadCommands,
   handleMessageCall,
   getUserDifferences,
-  writeToLogChannel
+  writeToLogChannel,
+  lovooUserEntry
 } from "./controller/botController";
 import { websocketServer } from "./controller/server";
 import { Clock } from "./controller/clock";
@@ -148,6 +149,17 @@ clock.getEmitter().on("raffleReminder", () => {
 });
 fillStateProp("clock", clock);
 
+(async () => {
+  try {
+    const json = await readJsonFile("lovoouser.json");
+    console.log((json as any).length);
+    const state = await setState({ lovooArray: json as lovooUserEntry[] });
+    console.log(state);
+  } catch (error) {
+    console.error(error);
+  }
+})();
+
 let wsServer = undefined;
 const website = new Berndsite();
 
@@ -231,11 +243,11 @@ loadCommands().then(loadedCommands => {
             entry.actionType === "DELETE" &&
             entry.targetType === "MESSAGE" &&
             (entry.target as ClientUser).id === message.client.user.id &&
-            (entry.createdAt.getHours() === now.getHours() &&
-              (entry.createdAt.getMinutes() === now.getMinutes() ||
-                entry.createdAt.getMinutes() === now.getMinutes() + 1 ||
-                entry.createdAt.getMinutes() - 1 === now.getMinutes() ||
-                entry.createdAt.getMinutes() + 1 === now.getMinutes()))
+            entry.createdAt.getHours() === now.getHours() &&
+            (entry.createdAt.getMinutes() === now.getMinutes() ||
+              entry.createdAt.getMinutes() === now.getMinutes() + 1 ||
+              entry.createdAt.getMinutes() - 1 === now.getMinutes() ||
+              entry.createdAt.getMinutes() + 1 === now.getMinutes())
           );
         });
         console.log(deletion);

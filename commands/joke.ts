@@ -45,9 +45,7 @@ const handleJokeRequest = (
       }).then(newState => {
         message.channel
           .send(
-            `~~Klaue neue Witze~~ Denke mir neue Witze aus. ~~Bin bei Seite ${
-              newState.jokes.jokePosition
-            }~~`
+            `~~Klaue neue Witze~~ Denke mir neue Witze aus. ~~Bin bei Seite ${newState.jokes.jokePosition}~~`
           )
           .then((msg: Message) => msg.deletable && !msg.pinned && msg.delete(60000));
         sendJoke(message, nextJoke, newState.jokes.jokes.length + 1);
@@ -66,7 +64,7 @@ const sendJoke = (message: Message, joke: joke, jokeCount?: number) => {
         color: 0xff6633,
         author: { name: joke.authorName, url: joke.url },
         fields: [{ name: joke.title, value: `${joke.content}` }],
-        footer: { text: `👍${joke.likes} 👎${joke.dislikes} -- ${date}${" --  📁" + jokeCount}` }
+        footer: { text: `👍${joke.likes} 👎${joke.dislikes} 📅 ${date}${" 📁" + jokeCount}` }
       } as RichEmbed
     })
     .then((msg: Message) => msg.deletable && !msg.pinned && msg.delete(60000));

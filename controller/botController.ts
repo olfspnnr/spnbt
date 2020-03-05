@@ -481,7 +481,7 @@ export const playAudio = (
           dispatcher &&
             dispatcher.on("end", () => setState({ isPlayingAudio: false }).then(() => resolve()));
           youtubeStream.on("error", error =>
-            setState({ isPlayingAudio: false }).then(() => reject("test6"))
+            setState({ isPlayingAudio: false }).then(error => reject(error))
           );
         } else {
           try {
