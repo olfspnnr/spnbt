@@ -22,8 +22,8 @@ import { handleRaffleTime } from "./commands/getRaffleWinner";
 import { handleWebSocketMessage } from "./controller/webSocketController";
 import { Berndsite } from "./controller/websiteController";
 import { readJsonFile } from "./controller/JSONController";
+import Twitter = require("twitter");
 
-const Twitter = require("twitter");
 const auth: auth = require("../configs/auth.json");
 export const config: config = require("../configs/config.json");
 export const { roleIds, userIds, channelIds }: idObject = require("../configs/rolesanduser.json");
