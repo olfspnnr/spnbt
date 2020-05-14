@@ -640,6 +640,39 @@ const createDispatcher = (
   };
 };
 
+export const sendGeneratedPerson = async (message: Message, client: Client) => {
+  try {
+    const resp: Response = await fetch(
+      "https://thispersondoesnotexist.com/image?" + new Date().getTime()
+    );
+    if (resp.ok) {
+      const arrayBuffer = await (resp as any).buffer();
+      // const buffer = Buffer.from(arrayBuffer);
+      const attachment = new Attachment(arrayBuffer);
+      const channel = message.channel;
+      if (attachment) {
+        if (message.deletable) {
+          await message.delete(5);
+        }
+        const msg = await channel.send(attachment);
+        if ((msg as Message).deletable) {
+          (msg as Message).delete(120000);
+        }
+        return;
+      } else {
+        if (message.deletable) {
+          await message.delete(5);
+        }
+        throw new Error("Attachment seems broken");
+      }
+    } else {
+      throw new Error("Response did not indicate success");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const sendInspiringMessage = (message: Message, client: Client) =>
   new Promise((resolve, reject) => {
     fetch("http://inspirobot.me/api?generate=true")
