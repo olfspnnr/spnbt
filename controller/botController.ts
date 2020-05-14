@@ -11,7 +11,7 @@ import {
   MessageOptions,
   Attachment,
   Collection,
-  DMChannel
+  DMChannel,
 } from "discord.js";
 import {
   audioQueue,
@@ -21,7 +21,7 @@ import {
   config,
   userIds,
   commandProps,
-  RoleName
+  RoleName,
 } from "../bot";
 import * as ytdl from "ytdl-core";
 import { userToRename } from "../commands/renameUser";
@@ -111,7 +111,7 @@ export const ruleSet = [
   { user: "justus", reactionsToAdd: ["pille"] },
   { user: "marcel", reactionsToAdd: ["daddy"] },
   { user: "franny", reactionsToAdd: ["🔥"] },
-  { user: "adrian", reactionsToAdd: ["💩"] }
+  { user: "adrian", reactionsToAdd: ["💩"] },
 ] as reactionRuleSet[];
 
 export interface reactionRuleSet {
@@ -133,10 +133,7 @@ export const replyToMessageWithLenny = (message: Message) => {
       ) {
         message.channel.send("frech").then((msg: Message) => msg.deletable && msg.delete(150000));
       } else {
-        let messageWithLenny = message.content
-          .toLowerCase()
-          .split("lenny")
-          .join("(͡° ͜ʖ ͡°)");
+        let messageWithLenny = message.content.toLowerCase().split("lenny").join("(͡° ͜ʖ ͡°)");
         message.channel.send(messageWithLenny).then((msg: Message) => {
           msg.deletable && msg.delete(15000);
           message.deletable && message.delete(240);
@@ -155,11 +152,7 @@ export const repeatMessageWithLenny = (message: Message) => {
       message.channel.send("*hust*").then((msg: Message) => msg.deletable && msg.delete(15000));
     } else {
       message.channel.send(
-        message.content
-          .split("lenny")
-          .join("( ͡° ͜ʖ ͡°)")
-          .split("Lenny")
-          .join("(͡° ͜ʖ ͡°)")
+        message.content.split("lenny").join("( ͡° ͜ʖ ͡°)").split("Lenny").join("(͡° ͜ʖ ͡°)")
       );
     }
 
@@ -171,8 +164,8 @@ export const stripMemberOfAllRoles = (member: GuildMember) =>
   new Promise((resolve, reject) =>
     member
       .removeRoles(member.roles)
-      .then(member => resolve(member))
-      .catch(error => reject(error))
+      .then((member) => resolve(member))
+      .catch((error) => reject(error))
   );
 
 export const checkIfMemberHasntRolesAndAssignRoles = (
@@ -181,7 +174,7 @@ export const checkIfMemberHasntRolesAndAssignRoles = (
   rolesToCheck: string[],
   rolesToAdd: RoleName[]
 ) => {
-  let checkRoles = rolesToCheck.some(role => newMember.roles.has(role));
+  let checkRoles = rolesToCheck.some((role) => newMember.roles.has(role));
   console.log({ checkRole: checkRoles });
   if (!checkRoles) {
     assignRolesToMember(client, newMember, rolesToAdd);
@@ -193,7 +186,7 @@ export const assignRolesToMember = (
   newMember: GuildMember,
   rolesToAdd: RoleName[]
 ) => {
-  rolesToAdd.map(role => {
+  rolesToAdd.map((role) => {
     newMember
       .addRole(roleIds[role])
       .then(() =>
@@ -215,9 +208,13 @@ export const reactionDeletionHandler = (
   reaction: MessageReaction,
   userIdOfMessage: string
 ) => {
-  const collector = new MessageCollector(message.channel, m => m.author.id === message.author.id, {
-    time: 60 * 1000
-  });
+  const collector = new MessageCollector(
+    message.channel,
+    (m) => m.author.id === message.author.id,
+    {
+      time: 60 * 1000,
+    }
+  );
   collector.on("collect", async (followUpMessage: Message, currentCollector: MessageCollector) => {
     if (followUpMessage.member.user.id === userIdOfMessage) {
       try {
@@ -245,12 +242,12 @@ export const getStreamFromYouTubeLink = (message: Message) =>
       console.log(`getting stream for ${url}`);
       let audioElement: audioQueueElement = undefined;
       const youtubeStream = ytdl(url, {
-        filter: "audioonly"
-      }).on("info", info => {
+        filter: "audioonly",
+      }).on("info", (info) => {
         audioElement = {
           message: message,
           youtube: false,
-          audioObject: { length: info.length_seconds, stream: youtubeStream as any }
+          audioObject: { length: info.length_seconds, stream: youtubeStream as any },
         };
         return resolve(audioElement);
       });
@@ -262,7 +259,7 @@ export const getStreamFromYouTubeLink = (message: Message) =>
 export const handleNameChange = (userToChange: GuildMember) => {
   let renameUser = getStateProp("renameUser") as userToRename[];
   if (renameUser) {
-    renameUser.map(rename => {
+    renameUser.map((rename) => {
       if (rename.id === userToChange.id && rename.isBeingRenamed) {
         userToChange.setNickname(rename.renameTo || userToChange.user.username);
       }
@@ -278,19 +275,19 @@ export const addReactionToMessage = (
   reactionAdd?: string
 ) => {
   if (ruleSet && userIds) {
-    rulesets.map(ruleset => {
+    rulesets.map((ruleset) => {
       let emoji: Emoji | string = undefined;
       ruleSet.map(({ user, reactionsToAdd }) => {
         if (userIds[user] === message.member.id) {
           reactionsToAdd.map((reactionToAdd: string) => {
-            emoji = client.emojis.find(emoji => emoji.name === reactionToAdd);
+            emoji = client.emojis.find((emoji) => emoji.name === reactionToAdd);
             if (!emoji) {
               emoji = reactionToAdd;
             }
             if (message.member.user.id === userIds[ruleset.user]) {
-              message.channel.fetchMessages({ limit: 10 }).then(messages => {
-                messages.map(fetchedMessage => {
-                  fetchedMessage.reactions.map(reaction => {
+              message.channel.fetchMessages({ limit: 10 }).then((messages) => {
+                messages.map((fetchedMessage) => {
+                  fetchedMessage.reactions.map((reaction) => {
                     if (reaction.me && fetchedMessage.author.id == message.member.user.id) {
                       reaction.remove();
                     }
@@ -299,7 +296,7 @@ export const addReactionToMessage = (
                 message
                   .react(emoji)
                   // .then(reaction => reactionDeletionHandler(message, reaction, userIds[ruleset.user]))
-                  .catch(error => console.log(error));
+                  .catch((error) => console.log(error));
               });
             }
           });
@@ -308,13 +305,13 @@ export const addReactionToMessage = (
     });
   } else {
     let emoji: Emoji | string = undefined;
-    emoji = client.emojis.find(emoji => emoji.name === reactionAdd);
+    emoji = client.emojis.find((emoji) => emoji.name === reactionAdd);
     if (!emoji) {
       emoji = reactionAdd;
     }
-    message.channel.fetchMessages({ limit: 10 }).then(messages => {
-      messages.map(fetchedMessage => {
-        fetchedMessage.reactions.map(reaction => {
+    message.channel.fetchMessages({ limit: 10 }).then((messages) => {
+      messages.map((fetchedMessage) => {
+        fetchedMessage.reactions.map((reaction) => {
           if (reaction.me && fetchedMessage.author.id == message.member.user.id) {
             reaction.remove();
           }
@@ -322,7 +319,7 @@ export const addReactionToMessage = (
         message
           .react(emoji)
           // .then(reaction => reactionDeletionHandler(message, reaction, userIds[ruleset.user]))
-          .catch(error => console.log(error));
+          .catch((error) => console.log(error));
       });
     });
   }
@@ -331,8 +328,8 @@ export const addReactionToMessage = (
 export const getUserDifferences = (oldMember: GuildMember, newMember: GuildMember) => {
   console.log(`Something changed with [${oldMember.user.username}/${oldMember.displayName}]`);
   let differences = {};
-  Object.keys(oldMember).map(key => {
-    Object.keys(newMember).map(newKey => {
+  Object.keys(oldMember).map((key) => {
+    Object.keys(newMember).map((newKey) => {
       if ((oldMember as any)[newKey] !== (newMember as any)[newKey]) {
         (differences as any)[newKey] = `${(oldMember as any)[newKey]} => ${
           (newMember as any)[newKey]
@@ -341,7 +338,7 @@ export const getUserDifferences = (oldMember: GuildMember, newMember: GuildMembe
     });
   });
   let different = Object.keys(differences)
-    .map(key => `${key}: ${(differences as any)[key]}`)
+    .map((key) => `${key}: ${(differences as any)[key]}`)
     .join(";\n");
   console.log(different);
 
@@ -356,7 +353,7 @@ export const handleVoiceStateUpdate = (
   const date = new Date();
   const [hours, minutes] = [
     date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
-    date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
+    date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
   ];
   if (oldMember.voiceChannel === undefined && newMember.voiceChannel !== undefined) {
     (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
@@ -385,161 +382,206 @@ export const chunk = (arr: string[], len: number) => {
   return chunks;
 };
 
-export const playAudio = (
+const _handleGeneralCatch = async (message: Message) => {
+  try {
+    await setState({ isPlayingAudio: false });
+    const msg = await message.channel.send(
+      `Could not play link; Invalid Link? Not connected to Voice Channel?`
+    );
+    if (message.deletable) {
+      await message.delete();
+      if ((msg as Message).deletable) {
+        await (msg as Message).delete();
+      }
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+const _handleOtherStream = async (
+  dispatcher: StreamDispatcher,
   message: Message,
-  youtube: boolean,
+  audioObject: any,
+  volume: number
+) => {
+  try {
+    const voiceChannel = message.member.voiceChannel;
+    if (voiceChannel === undefined || voiceChannel === null) {
+      throw new Error("Not connected to voicechannel");
+    }
+    const connection = await voiceChannel.join();
+    await setState({ isPlayingAudio: true });
+    dispatcher = createDispatcher(
+      message,
+      voiceChannel,
+      audioObject.stream,
+      volume,
+      audioObject.length,
+      {
+        command: "!stop",
+        function: (dispatcher: StreamDispatcher, collector) => {
+          collector.stop();
+          dispatcher.end();
+          return async () => {
+            try {
+              await setState({ isPlayingAudio: false });
+
+              return;
+            } catch (error) {
+              throw error;
+            }
+          };
+        },
+      }
+    ).dispatcher.on("end", async () => {
+      try {
+        await setState({ isPlayingAudio: false });
+        return;
+      } catch (error) {
+        throw error;
+      }
+    });
+  } catch (error) {
+    await setState({ isPlayingAudio: false });
+    throw error;
+  }
+};
+
+const _handleYouTubeStream = async (
+  info: any,
+  message: Message,
+  dispatcher: StreamDispatcher,
+  youtubeStream: any,
+  volume: number
+) => {
+  try {
+    const voiceChannel = message.member.voiceChannel;
+    if (voiceChannel === undefined || voiceChannel === null) {
+      const dmChannel = await message.member.createDM();
+      await dmChannel.send(
+        "Du kannst keine Sounds abspielen, wenn du dich nicht in einem Voicechannel befindest."
+      );
+      await setState({ isPlayingAudio: false });
+      return;
+    } else {
+      await voiceChannel.join();
+      if (voiceChannel.connection) {
+        await setState({ isPlayingAudio: true });
+        dispatcher = createDispatcher(
+          message,
+          voiceChannel,
+          youtubeStream,
+          volume,
+          info.length_seconds,
+          {
+            command: "!stop",
+            function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
+              collector.stop();
+              youtubeStream.destroy();
+              dispatcher.end();
+              return async () => {
+                try {
+                  await setState({ isPlayingAudio: false });
+                } catch (error) {
+                  throw error;
+                }
+              };
+            },
+          }
+        ).dispatcher.on("end", async () => await setState({ isPlayingAudio: false }));
+      } else {
+        const connection = await voiceChannel.join();
+        await setState({ isPlayingAudio: true });
+        try {
+          dispatcher = createDispatcher(
+            message,
+            voiceChannel,
+            youtubeStream,
+            volume,
+            info.length_seconds,
+            {
+              command: "!stop",
+              function: (dispatcher, collector) => {
+                collector.stop();
+                youtubeStream.destroy();
+                return () => setState({ isPlayingAudio: false }).then(() => dispatcher.end());
+              },
+            }
+          ).dispatcher.on("end", () => {});
+        } catch (error) {
+          setState({ isPlayingAudio: false });
+        }
+      }
+    }
+  } catch (error) {
+    await setState({ isPlayingAudio: false });
+    throw error;
+  }
+};
+
+const _handleYouTubeLink = async (
+  url: string,
+  message: Message,
+  dispatcher: StreamDispatcher,
+  volume: number
+) => {
+  try {
+    const youtubeStream: any = ytdl(url, {
+      filter: "audioonly",
+    }).on(
+      "info",
+      async (info) => await _handleYouTubeStream(info, message, dispatcher, youtubeStream, volume)
+    );
+    if (youtubeStream === undefined) {
+      throw new Error("Stream is undefined");
+    }
+    if (dispatcher) {
+      dispatcher.on("end", async () => await setState({ isPlayingAudio: false }));
+    }
+    youtubeStream.on("error", async (error: any) => {
+      try {
+        await setState({ isPlayingAudio: false });
+        throw new Error(error);
+      } catch (error) {
+        throw error;
+      }
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const playAudio = async (
+  message: Message,
+  isYoutubeLink: boolean,
   url?: string,
   audioObject?: { stream: ReadableStream; length: number },
   volume?: number | undefined
-) =>
-  new Promise((resolve, reject) => {
-    if ((getStateProp("isPlayingAudio") as boolean) === false) {
-      try {
+) => {
+  try {
+    const isPlayingAudio: boolean = getStateProp("isPlayingAudio");
+    try {
+      if (isPlayingAudio) {
+        throw new Error("Is already playing Audio");
+      } else {
         let dispatcher: StreamDispatcher;
-        if (youtube) {
-          const youtubeStream = ytdl(url, {
-            filter: "audioonly"
-          }).on("info", info => {
-            const voiceChannel = message.member.voiceChannel;
-            if (voiceChannel === undefined || voiceChannel === null) {
-              message.member
-                .createDM()
-                .then(dmChannel =>
-                  dmChannel.send(
-                    "Du kannst keine Sounds abspielen, wenn du dich nicht in einem Voicechannel befindest."
-                  )
-                );
-              setState({ isPlayingAudio: false }).then(() => reject("voicechanel is undefined"));
-            }
 
-            if (voiceChannel.connection !== undefined && voiceChannel.connection !== null) {
-              setState({ isPlayingAudio: true })
-                .then(currentState => {
-                  try {
-                    dispatcher = createDispatcher(
-                      message,
-                      voiceChannel,
-                      youtubeStream,
-                      volume,
-                      info.length_seconds,
-                      {
-                        command: "!stop",
-                        function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
-                          collector.stop();
-                          youtubeStream.destroy();
-                          return () => {
-                            setState({ isPlayingAudio: false }).then(() => dispatcher.end());
-                          };
-                        }
-                      }
-                    ).dispatcher.on("end", () =>
-                      setState({ isPlayingAudio: false }).then(() => resolve())
-                    );
-                  } catch (error) {
-                    setState({ isPlayingAudio: false }).then(() => reject("test1"));
-                  }
-                })
-                .catch(error => setState({ isPlayingAudio: false }).then(() => reject("test2")));
-            } else {
-              voiceChannel
-                .join()
-                .then(connection => {
-                  setState({ isPlayingAudio: true })
-                    .then(() => {
-                      try {
-                        dispatcher = createDispatcher(
-                          message,
-                          voiceChannel,
-                          youtubeStream,
-                          volume,
-                          info.length_seconds,
-                          {
-                            command: "!stop",
-                            function: (dispatcher, collector) => {
-                              collector.stop();
-                              youtubeStream.destroy();
-                              return () =>
-                                setState({ isPlayingAudio: false }).then(() => dispatcher.end());
-                            }
-                          }
-                        ).dispatcher.on("end", () => resolve());
-                      } catch (error) {
-                        setState({ isPlayingAudio: false }).then(() => reject("test3"));
-                      }
-                    })
-                    .catch(error =>
-                      setState({ isPlayingAudio: false }).then(() => reject("test4"))
-                    );
-                })
-                .catch(error => setState({ isPlayingAudio: false }).then(() => reject("test5")));
-            }
-          });
-          if (youtubeStream === undefined) {
-            console.log("youtubeStream is undefined");
-            setState({ isPlayingAudio: false }).then(() => reject("youtubeStream is undefined"));
-          }
-          dispatcher &&
-            dispatcher.on("end", () => setState({ isPlayingAudio: false }).then(() => resolve()));
-          youtubeStream.on("error", error =>
-            setState({ isPlayingAudio: false }).then(error => reject(error))
-          );
+        if (isYoutubeLink) {
+          _handleYouTubeLink(url, message, dispatcher, volume);
         } else {
-          try {
-            setState({ isPlayingAudio: true })
-              .then(() => {
-                const voiceChannel = message.member.voiceChannel;
-                voiceChannel
-                  .join()
-                  .then(
-                    connection =>
-                      (dispatcher = createDispatcher(
-                        message,
-                        voiceChannel,
-                        audioObject.stream,
-                        volume,
-                        audioObject.length,
-                        {
-                          command: "!stop",
-                          function: (dispatcher: StreamDispatcher, collector) => {
-                            collector.stop();
-                            return () =>
-                              setState({ isPlayingAudio: false }).then(() => dispatcher.end());
-                          }
-                        }
-                      ).dispatcher.on("end", () => {
-                        setState({ isPlayingAudio: false }).then(() => resolve());
-                      }))
-                  )
-                  .catch(error => console.log(error));
-              })
-              .catch(error => console.log(error));
-          } catch (error) {
-            (error: any) => {
-              setState({ isPlayingAudio: false }).then(() => reject("test7"));
-            };
-          }
+          _handleOtherStream(dispatcher, message, audioObject, volume);
         }
-      } catch (error) {
-        console.log("test8");
-        setState({ isPlayingAudio: false })
-          .then(() => {
-            message.channel
-              .send(`Could not play link; Invalid Link? Not connected to Voice Channel?`)
-              .then(msg => {
-                message.delete();
-                return resolve((msg as Message).delete(8000));
-              })
-              .catch(error => {
-                console.error("test9");
-              });
-          })
-          .catch(error => console.log("test10"));
       }
-    } else {
-      console.log("Already playing Audio");
-      setState({ isPlayingAudio: false }).then(() => reject("Already playing Audio"));
+    } catch (error) {
+      _handleGeneralCatch(message);
+      throw error;
     }
-  });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 
 const createCollector = (
   message: Message,
@@ -550,23 +592,20 @@ const createCollector = (
   let triggerMessagesRef = [...triggerMessages];
   let collector = new MessageCollector(
     message.channel,
-    (m: Message) =>
-      m.author.id === message.author.id ||
-      m.member.roles.has(roleIds.spinner) ||
-      m.member.roles.has(roleIds.trusted),
+    (m: Message) => m.author.id === message.author.id || m.member.hasPermission("KICK_MEMBERS"),
     {
-      time: timeToDeletion
+      time: timeToDeletion,
     }
   );
   collector.on("collect", (followUpMessage: Message) => {
     try {
-      if (triggerMessagesRef.filter(msg => msg.command === followUpMessage.content)[0]) {
+      if (triggerMessagesRef.filter((msg) => msg.command === followUpMessage.content)[0]) {
         if (
           followUpMessage.content ===
-          triggerMessagesRef.filter(msg => msg.command === followUpMessage.content)[0].command
+          triggerMessagesRef.filter((msg) => msg.command === followUpMessage.content)[0].command
         ) {
           triggerMessagesRef
-            .filter(msg => msg.command === followUpMessage.content)[0]
+            .filter((msg) => msg.command === followUpMessage.content)[0]
             .function(externalProptertyForFunction, collector);
           followUpMessage.delete();
         }
@@ -588,29 +627,29 @@ const createDispatcher = (
 ) => {
   let dispatcher = voiceChannel.connection
     .playStream(stream, {
-      volume: volume || 0.2
+      volume: volume || 0.5,
     })
-    .on("end", end => {
+    .on("end", (end) => {
       message.delete();
       // voiceChannel.leave();
       setState({ isPlayingAudio: false });
     });
   return {
     collector: createCollector(message, length * 1000, dispatcher, ...blocks),
-    dispatcher: dispatcher
+    dispatcher: dispatcher,
   };
 };
 
 export const sendInspiringMessage = (message: Message, client: Client) =>
   new Promise((resolve, reject) => {
     fetch("http://inspirobot.me/api?generate=true")
-      .then(response => response.text())
-      .then(data => {
+      .then((response) => response.text())
+      .then((data) => {
         console.log(data);
         const attachment = new Attachment(data);
         message.channel
           .send(attachment as MessageOptions)
-          .then(msg => {
+          .then((msg) => {
             createCollector(
               message,
               120 * 1000,
@@ -628,18 +667,18 @@ export const sendInspiringMessage = (message: Message, client: Client) =>
                           saveMsg.delete(8000);
                         })
                     )
-                    .catch(error =>
+                    .catch((error) =>
                       message.channel
                         .send("Fehler beim Speichern des Bildes :(")
                         .then((errorMsg: Message) => errorMsg.delete(12000))
                     );
-                }
+                },
               },
               {
                 command: "!inspire",
                 function: (extProp: any, collector: MessageCollector) => {
                   collector.stop();
-                }
+                },
               }
             );
             if (message.delete) message.delete();
@@ -647,7 +686,7 @@ export const sendInspiringMessage = (message: Message, client: Client) =>
             (msg as Message).delete(120000);
             return resolve(attachment as MessageOptions);
           })
-          .catch(error => reject(error));
+          .catch((error) => reject(error));
       });
   });
 
@@ -673,8 +712,8 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
             discord: { message: message, client: client },
             custom: {
               twitterClient: twitterClient,
-              jokes: currentState.jokes
-            }
+              jokes: currentState.jokes,
+            },
           } as commandProps);
         } else throw "Unzureichende Berechtigung";
       } catch (error) {
@@ -688,7 +727,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
         if (command.roles.some((role: RoleName) => message.member.roles.has(roleIds[role]))) {
           message.author
             .createDM()
-            .then(channel =>
+            .then((channel) =>
               channel.send(
                 command.detailedInformation || "Keine detailierte Beschreibung vorhanden."
               )
@@ -708,7 +747,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
 };
 
 export const loadCommands = () =>
-  new Promise(resolve => {
+  new Promise((resolve) => {
     let commandCollection = new Collection<string, messageHandleFunction>();
     try {
       fs.readdir("./dist/commands", (err: NodeJS.ErrnoException, files: string[]) => {
@@ -731,8 +770,8 @@ export const loadCommands = () =>
               .catch((error: any) => console.log({ file: commandFiles[file], error: error }))
           );
         }
-        Promise.all(PromiseArr).then(arr => {
-          if (arr.some(entry => !(entry as any))) {
+        Promise.all(PromiseArr).then((arr) => {
+          if (arr.some((entry) => !(entry as any))) {
             console.log("Module mit Fehler geladen");
           } else console.log("Alle Module erfolgreich geladen");
 
@@ -764,33 +803,33 @@ export const writeToLogChannel = (
           if (original) {
             let { attachments } = original;
             if (attachments.array.length === 0) {
-              (logChannel as TextChannel).send(message).catch(error => {
+              (logChannel as TextChannel).send(message).catch((error) => {
                 console.error({ caller: "writeToLogChannel", error: error });
               });
             } else {
               (logChannel as TextChannel)
                 .send(message || "EMPTY", {
-                  attachment: attachments || null
+                  attachment: attachments || null,
                 } as MessageOptions)
-                .catch(error => {
+                .catch((error) => {
                   console.error({ caller: "writeToLogChannel", error: error });
                 });
             }
-            if (attachments.map(entry => entry.proxyURL).length > 0) {
+            if (attachments.map((entry) => entry.proxyURL).length > 0) {
               (logChannel as TextChannel)
-                .send(attachments.map(entry => entry.proxyURL) || ["EMPTY"], {
-                  split: true
+                .send(attachments.map((entry) => entry.proxyURL) || ["EMPTY"], {
+                  split: true,
                 })
-                .catch(error => {
+                .catch((error) => {
                   console.error({ caller: "writeToLogChannel", error: error });
                 });
             }
           } else {
             (logChannel as TextChannel)
               .send(message || "EMPTY", {
-                split: true
+                split: true,
               })
-              .catch(error => {
+              .catch((error) => {
                 console.error({ caller: "writeToLogChannel", error: error });
               });
           }
@@ -798,6 +837,6 @@ export const writeToLogChannel = (
           console.error({ caller: "writeToLogChannel", error: error });
         }
       })
-      .catch(error => console.error({ caller: "writeToLogChannel", error: error }));
+      .catch((error) => console.error({ caller: "writeToLogChannel", error: error }));
   } else console.error({ caller: "writeToLogChannel", error: "LogChannel missing" });
 };

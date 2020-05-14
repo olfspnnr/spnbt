@@ -4,14 +4,16 @@ import { playAudio } from "../controller/botController";
 
 export const playLoud = {
   name: "playLoud",
-  description: "Spielt ein binaurales Klopfgeräusch ab",
-  usage: `[${config.prefix}playLoud url]`,
+  description:
+    "Spielt ein Youtube Video in der definierten Lautstärke ab. (Volume ist Optional, default 5)",
+  usage: `[${config.prefix}playLoud url volume]`,
   roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) => {
-    let url = message.content.slice("!playLoud ".length);
-    if (!!~url.indexOf('"')) {
-      url = url.replace('"', "");
+    let [url, volume] = message.content.slice("!playLoud ".length).split(" ");
+    if (volume && !isNaN(+volume)) {
+      playAudio(message, true, url, undefined, +volume);
+    } else {
+      playAudio(message, true, url, undefined, 5);
     }
-    playAudio(message, true, url, undefined, 1);
-  }
+  },
 } as messageHandleFunction;
