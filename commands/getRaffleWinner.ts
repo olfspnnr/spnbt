@@ -6,7 +6,7 @@ import {
   GuildMember,
   Client,
   Message,
-  MessageCollector
+  MessageCollector,
 } from "discord.js";
 import * as fs from "fs";
 import { readJsonFile, writeJsonFile } from "../controller/JSONController";
@@ -19,22 +19,19 @@ export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupD
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
-  console.log("test");
   return new Promise((resolve, reject) => {
     if (fs.existsSync(config.raffleFileName)) {
-      console.log("test");
-
-      readJsonFile(config.raffleFileName).then(data => {
+      readJsonFile(config.raffleFileName).then((data) => {
         if (
           (data as any).empty === undefined &&
-          (data as raffleItem[]).some(usr => usr.hasEnteredRaffle)
+          (data as raffleItem[]).some((usr) => usr.hasEnteredRaffle)
         ) {
           let userList: raffleItem[] = data as any;
-          const finalList = userList.filter(usr => usr.hasEnteredRaffle);
+          const finalList = userList.filter((usr) => usr.hasEnteredRaffle);
           const winningNumber = getRandomInt(0, finalList.length - 1);
           const winningId = finalList[winningNumber].id;
           const winnerArray = (messageChannel as TextChannel).guild.members
-            .filter(usr => usr.id === winningId)
+            .filter((usr) => usr.id === winningId)
             .array();
           if (winnerArray.length > 1) {
             return reject("Es scheint, als gäbe es mehr als einen User mit der GewinnerID?");
@@ -46,8 +43,10 @@ export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupD
             return resolve({
               name: `${winner.nickname !== null ? winner.nickname + " /" : ""} ${
                 winner.displayName
-              } / ${winner.user.username}`,
-              winner: winner
+              } / ${winner.user.username} || Nr. ${winningNumber} aus ${
+                finalList.length
+              } Teilnehmern`,
+              winner: winner,
             });
           }
         } else reject("Es scheint, als hätte keiner hat am Raffle teilgenommen 😭😭😭😭😭");
@@ -60,9 +59,7 @@ export const askIfWinnerWantsHisPrize = (channel: DMChannel) =>
   new Promise((resolve, reject) => {
     channel
       .send(
-        `Möchtest du deinen Preis entgegen nehmen?\n(${
-          config.raffleWinDescription
-        })\nDu hast 5 Minuten Zeit\nJ/N?`
+        `Möchtest du deinen Preis entgegen nehmen?\n(${config.raffleWinDescription})\nDu hast 5 Minuten Zeit\nJ/N?`
       )
       .then((msg: Message) => {
         let messageCollector = new MessageCollector(
@@ -98,20 +95,20 @@ const cleanUpJsonFiles = () => {
       .then(() => {
         console.log("Cleaned auth");
       })
-      .catch(error => console.log({ caller: "raffleWin", error: error }));
+      .catch((error) => console.log({ caller: "raffleWin", error: error }));
   });
   readJsonFile("./configs/config.json").then((configJson: config) => {
     let configJsonTemp: config = {
       ...configJson,
-      raffleWinDescription: -1
+      raffleWinDescription: -1,
     };
     writeJsonFile("./configs/config.json", JSON.stringify(configJsonTemp))
       .then(() => {
         console.log("Cleaned config");
       })
-      .catch(error => console.log({ caller: "raffleWin", error: error }));
+      .catch((error) => console.log({ caller: "raffleWin", error: error }));
   });
-  writeJsonFile(config.raffleFileName, JSON.stringify({ empty: true })).catch(err =>
+  writeJsonFile(config.raffleFileName, JSON.stringify({ empty: true })).catch((err) =>
     console.log({ caller: "getRandomWinner => writeJsonFile", error: err })
   );
 };
@@ -141,13 +138,13 @@ const winnerAcceptsPrize = (client: Client, channel: DMChannel, winner: GuildMem
                   } 🎈\n🎁 nahm soeben sein Gewinn entgegen! 🍀\n🔥 😎 🔥`
                 )
                 .then(() => cleanUpJsonFiles())
-                .catch(error => console.log({ caller: "raffleWin", error: error }))
+                .catch((error) => console.log({ caller: "raffleWin", error: error }))
             )
-            .catch(error => console.log({ caller: "raffleWin", error: error }))
+            .catch((error) => console.log({ caller: "raffleWin", error: error }))
         )
-        .catch(error => console.log({ caller: "raffleWin", error: error }));
+        .catch((error) => console.log({ caller: "raffleWin", error: error }));
     })
-    .catch(error => console.log({ caller: "raffleWin", error: error }));
+    .catch((error) => console.log({ caller: "raffleWin", error: error }));
 };
 
 export const winnerRejectsPrize = (client: Client, channel: DMChannel, winner: GuildMember) => {
@@ -166,28 +163,30 @@ export const winnerRejectsPrize = (client: Client, channel: DMChannel, winner: G
               } ❓\n🎁 hat seinen Gewinn nicht entgegen genommen!\n\nDas bedeutet ihr habt wieder eine Chance auf diesen Gewinn!`
             )
             .then((msg: Message) => msg.react("❓"))
-            .catch(error => console.log({ caller: "raffleWin", error: error }))
+            .catch((error) => console.log({ caller: "raffleWin", error: error }))
         )
-        .catch(error => console.log({ caller: "raffleWin", error: error }))
+        .catch((error) => console.log({ caller: "raffleWin", error: error }))
     )
-    .catch(error => console.log({ caller: "raffleWin", error: error }));
+    .catch((error) => console.log({ caller: "raffleWin", error: error }));
 };
 
 export const handleRaffleTime = (client: Client) => {
   getRandomWinner(client.channels.get(channelIds.kikaloungeText) as TextChannel)
-    .then(pckg => {
-      (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(
+    .then((pckg) => {
+      (client.channels.get(
+        channelIds.kikaloungeText
+      ) as TextChannel).send(
         " du wurdest im Raffle gezogen und hast damit gewonnen! Glückwunsch!",
         { reply: pckg.winner }
       );
       pckg.winner
         .createDM()
-        .then(dmchannel =>
+        .then((dmchannel) =>
           askIfWinnerWantsHisPrize(dmchannel)
             .then(() => winnerAcceptsPrize(client, dmchannel, pckg.winner))
             .catch(() => winnerRejectsPrize(client, dmchannel, pckg.winner))
         )
-        .catch(error => console.log({ caller: "raffleWin", error: error }));
+        .catch((error) => console.log({ caller: "raffleWin", error: error }));
     })
-    .catch(error => (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(error));
+    .catch((error) => (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(error));
 };
