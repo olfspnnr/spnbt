@@ -9,7 +9,7 @@ import {
   handleMessageCall,
   getUserDifferences,
   writeToLogChannel,
-  lovooUserEntry
+  lovooUserEntry,
 } from "./controller/botController";
 import { websocketServer } from "./controller/server";
 import { Clock } from "./controller/clock";
@@ -64,7 +64,7 @@ export const mappedRoles = {
   poop: "poop",
   raffleTeilnehmer: "raffleTeilnehmer",
   trusted: "trusted",
-  uninitiert: "uninitiert"
+  uninitiert: "uninitiert",
 } as Readonly<{ [key in RoleName]: RoleName }>;
 
 export interface UserIds {
@@ -100,22 +100,23 @@ export const twitterClient = new Twitter({
   consumer_key: auth.consumer_key,
   consumer_secret: auth.consumer_secret,
   access_token_key: auth.access_token_key,
-  access_token_secret: auth.access_token_secret
+  access_token_secret: auth.access_token_secret,
 });
 
 export const audioQueue = new AudioQueue();
-audioQueue.on("add", queue => {
+audioQueue.on("add", (queue) => {
   console.log("added something to the audioQueue");
   console.log("current queuelength: " + queue.length);
   audioQueue.play(audioQueue.shift());
 });
-audioQueue.on("play", song => console.log("now playing: " + song.message));
-audioQueue.on("error", error => console.log(error));
-audioQueue.on("finish", queue => console.log("current queuelength: " + queue.length));
+audioQueue.on("play", (song) => console.log("now playing: " + song.message));
+audioQueue.on("error", (error) => console.log(error));
+audioQueue.on("finish", (queue) => console.log("current queuelength: " + queue.length));
 
 export const clock = new Clock();
 clock.initialise();
-clock.getEmitter().on("lenny", () => {
+const clockEmitter = clock.getEmitter();
+clockEmitter.on("lenny", () => {
   if (
     (client.channels.get(channelIds.kikaloungeText) as TextChannel).lastMessage.author.id ===
     userIds.justus
@@ -123,16 +124,16 @@ clock.getEmitter().on("lenny", () => {
     (client.channels.get(channelIds.kikaloungeText) as TextChannel).send("Hallo Justus ( ͡° ͜ʖ ͡°)");
   } else (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(`( ͡° ͜ʖ ͡°)`);
 });
-clock.getEmitter().on("raffleTime", () => {
+clockEmitter.on("raffleTime", () => {
   return handleRaffleTime(client);
 });
-clock.getEmitter().on("raffleReminder", () => {
+clockEmitter.on("raffleReminder", () => {
   (client.channels.get(channelIds.kikaloungeText) as TextChannel).messages
     .filter(
       (message: Message) =>
         message.content.toLowerCase().includes("rafflereminder") && message.author.bot
     )
-    .map(entry => entry.deletable && entry.delete());
+    .map((entry) => entry.deletable && entry.delete());
   return readJsonFile("./configs/config.json")
     .then((content: config) => {
       (client.channels.get(channelIds.kikaloungeText) as TextChannel)
@@ -145,7 +146,7 @@ clock.getEmitter().on("raffleReminder", () => {
       }
       \nWeitere Infos: ${content.helpPrefix}raffle`);
     })
-    .catch(error => console.error({ caller: "rafflerminder", error: error }));
+    .catch((error) => console.error({ caller: "rafflerminder", error: error }));
 });
 fillStateProp("clock", clock);
 
@@ -166,24 +167,24 @@ const website = new Berndsite();
 // Create an instance of a Discord client
 const client = new Client();
 fillStateProp("reloadCommands", () => {
-  loadCommands().then(commands => setState({ commands: commands }));
+  loadCommands().then((commands) => setState({ commands: commands }));
 });
-loadCommands().then(loadedCommands => {
-  setState({ commands: loadedCommands }).then(state => {
+loadCommands().then((loadedCommands) => {
+  setState({ commands: loadedCommands }).then((state) => {
     client.once("ready", () => {
       console.log("I am ready!");
       client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
-      client.channels.map(chan => {
+      client.channels.map((chan) => {
         if (chan instanceof TextChannel) {
           if (chan.permissionsFor(client.user.id).has("READ_MESSAGES")) {
-            chan.fetchMessages({ limit: 100 }).catch(error => console.error(error));
+            chan.fetchMessages({ limit: 100 }).catch((error) => console.error(error));
           }
         }
       });
       try {
         wsServer = new websocketServer({
           port: 8080,
-          onMessage: (message: any) => handleWebSocketMessage(message)
+          onMessage: (message: any) => handleWebSocketMessage(message),
         });
         website.start();
       } catch (error) {
@@ -191,7 +192,7 @@ loadCommands().then(loadedCommands => {
       }
     });
 
-    client.on("guildMemberAdd", member => {
+    client.on("guildMemberAdd", (member) => {
       try {
         checkIfMemberHasntRolesAndAssignRoles(
           client,
@@ -204,14 +205,14 @@ loadCommands().then(loadedCommands => {
       }
     });
 
-    client.on("error", error => console.error(error));
+    client.on("error", (error) => console.error(error));
 
     client.on("voiceStateUpdate", (oldMember, newMember) => {
       const difference = getUserDifferences(oldMember, newMember);
       const date = new Date();
       const [hours, minutes] = [
         date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
-        date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
+        date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
       ];
       writeToLogChannel(
         `[${hours}:${minutes}]\n**${oldMember.user.username}/${oldMember.displayName}** changed:\n${difference}`,
@@ -225,7 +226,7 @@ loadCommands().then(loadedCommands => {
       const date = new Date();
       const [hours, minutes] = [
         date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
-        date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
+        date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
       ];
       writeToLogChannel(
         `[${hours}:${minutes}]\n**${oldUser.user.username}/${oldUser.displayName}** changed:\n${difference}`,
@@ -234,44 +235,55 @@ loadCommands().then(loadedCommands => {
       handleNameChange(newUser);
     });
 
-    client.on("messageDelete", async message => {
+    client.on("messageDelete", async (message) => {
       try {
         const now = new Date();
         const auditLog = await message.guild.fetchAuditLogs();
-        const deletion = auditLog.entries.filter(entry => {
+        const nowHour = now.getHours();
+        const nowMinute = now.getMinutes();
+        const deletion = auditLog.entries.filter((entry) => {
+          const createdHour = entry.createdAt.getHours();
+          const createdMinute = entry.createdAt.getMinutes();
+
           return (
             entry.actionType === "DELETE" &&
             entry.targetType === "MESSAGE" &&
             (entry.target as ClientUser).id === message.client.user.id &&
-            entry.createdAt.getHours() === now.getHours() &&
-            (entry.createdAt.getMinutes() === now.getMinutes() ||
-              entry.createdAt.getMinutes() === now.getMinutes() + 1 ||
-              entry.createdAt.getMinutes() - 1 === now.getMinutes() ||
-              entry.createdAt.getMinutes() + 1 === now.getMinutes())
+            createdHour === nowHour &&
+            (createdMinute === nowMinute ||
+              createdMinute === nowMinute + 1 ||
+              createdMinute - 1 === nowMinute ||
+              createdMinute + 1 === nowMinute)
           );
         });
-        console.log(deletion);
         const [hours, minutes] = [
-          now.getHours() > 9 ? now.getHours() : "0" + now.getHours(),
-          now.getMinutes() > 9 ? now.getMinutes() : "0" + now.getMinutes()
+          nowHour > 9 ? nowHour : "0" + nowHour,
+          nowMinute > 9 ? nowMinute : "0" + nowMinute,
         ];
         let executor = "Uncertain";
         if (deletion.size === 1) {
-          executor = deletion.first().executor.username;
+          const first = deletion.first();
+          if (first) {
+            executor = first.executor.username;
+          }
         } else if (deletion.size > 1) {
           executor =
             "Uncertain // Part of the deletion object // " +
-            deletion.map(entry => entry.executor.username).join(" - ");
+            deletion
+              .map((entry) => (entry && entry.executor ? entry.executor.username : ""))
+              .join(" - ");
         } else {
-          executor =
-            "Uncertain // Last entry Auditlog // " + auditLog.entries.first().executor.username;
+          if (auditLog.entries.size > 0) {
+            executor =
+              "Uncertain // Last entry Auditlog // " + auditLog.entries.first().executor.username;
+          }
         }
         return writeToLogChannel(
           [
             `[${hours}:${minutes}]`,
             `Executor: **${executor}**`,
             `User of message: **${message.member.user.username}/${message.member.displayName}**`,
-            `_Deleted:_ \n${message.content}`
+            `_Deleted:_ \n${message.content}`,
           ],
           client,
           message
@@ -281,13 +293,13 @@ loadCommands().then(loadedCommands => {
       }
     });
 
-    client.on("messageDeleteBulk", messages => {
+    client.on("messageDeleteBulk", (messages) => {
       try {
         console.log(messages);
-        const msgs = messages.map(msg => msg);
+        const msgs = messages.map((msg) => msg);
         writeToLogChannel(
           msgs.map(
-            entry =>
+            (entry) =>
               `User of message: **${entry.member.user.username}/${entry.member.displayName}**\nDeleted: ${entry.content}`
           ) || "EMPTY",
           client
@@ -298,7 +310,7 @@ loadCommands().then(loadedCommands => {
     });
 
     // Create an event listener for messages
-    client.on("message", message => {
+    client.on("message", (message) => {
       try {
         try {
           if (

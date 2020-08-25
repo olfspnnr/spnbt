@@ -817,59 +817,43 @@ export const loadCommands = () =>
     }
   }) as Promise<Collection<string, messageHandleFunction>>;
 
-export const writeToLogChannel = (
+export const writeToLogChannel = async (
   message: string | string[],
   client: Client,
   original?: Message
 ) => {
-  const logChannel = client.channels.find((entry: TextChannel) =>
-    entry.name.toLowerCase().includes("bernd-log")
-  );
-  if (logChannel) {
-    (logChannel as TextChannel)
-      .send("---\n")
-      .then(() => {
-        try {
-          if (message === "" || message === undefined || message === null) {
-            throw "message is empty";
-          }
-          if (original) {
-            let { attachments } = original;
-            if (attachments.array.length === 0) {
-              (logChannel as TextChannel).send(message).catch((error) => {
-                console.error({ caller: "writeToLogChannel", error: error });
-              });
-            } else {
-              (logChannel as TextChannel)
-                .send(message || "EMPTY", {
-                  attachment: attachments || null,
-                } as MessageOptions)
-                .catch((error) => {
-                  console.error({ caller: "writeToLogChannel", error: error });
-                });
-            }
-            if (attachments.map((entry) => entry.proxyURL).length > 0) {
-              (logChannel as TextChannel)
-                .send(attachments.map((entry) => entry.proxyURL) || ["EMPTY"], {
-                  split: true,
-                })
-                .catch((error) => {
-                  console.error({ caller: "writeToLogChannel", error: error });
-                });
-            }
-          } else {
-            (logChannel as TextChannel)
-              .send(message || "EMPTY", {
-                split: true,
-              })
-              .catch((error) => {
-                console.error({ caller: "writeToLogChannel", error: error });
-              });
-          }
-        } catch (error) {
-          console.error({ caller: "writeToLogChannel", error: error });
+  try {
+    const logChannel = client.channels.find((entry: TextChannel) =>
+      entry.name.toLowerCase().includes("bernd-log")
+    );
+    if (logChannel) {
+      const channel = logChannel as TextChannel;
+      const sendMessage = await channel.send("---\n");
+      if (message === "" || message === undefined || message === null) {
+        throw "message is empty";
+      }
+      if (original) {
+        let { attachments } = original;
+        if (attachments.array.length === 0) {
+          const deletedMessage = await channel.send(message);
+        } else {
+          const deletedMessage = await channel.send(message || "EMPTY", {
+            attachment: attachments || null,
+          } as MessageOptions);
         }
-      })
-      .catch((error) => console.error({ caller: "writeToLogChannel", error: error }));
-  } else console.error({ caller: "writeToLogChannel", error: "LogChannel missing" });
+        const attachmentsMap = attachments.map((entry) => entry.proxyURL);
+        if (attachmentsMap.length > 0) {
+          const sentAttachments = await channel.send(attachmentsMap || ["EMPTY"], {
+            split: true,
+          });
+        }
+      } else {
+        const sentMessage = await channel.send(message || "EMPTY", {
+          split: true,
+        });
+      }
+    } else throw { caller: "writeToLogChannel", error: "LogChannel missing" };
+  } catch (error) {
+    throw error;
+  }
 };
