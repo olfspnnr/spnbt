@@ -7,14 +7,14 @@ export const hallo = {
   description: "lass dich von Bernd begrüßen",
   usage: `[${config.prefix}hallo]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted, mappedRoles.uninitiert],
-  execute: ({ discord: { message, client }, custom }: commandProps) => sayHallo(message)
+  execute: ({ discord: { message, client }, custom }: commandProps) => sayHallo(message),
 } as messageHandleFunction;
 
 const sayHallo = async (message: Message) => {
   try {
     const msg = await message.reply(`du auch da? Mist.`);
     message.delete();
-    (msg as Message).delete(8000);
+    (msg as Message).delete({ timeout: 8000 });
   } catch (error) {
     return console.log(error);
   }

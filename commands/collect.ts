@@ -8,12 +8,16 @@ export const collect = {
   usage: `[${config.prefix}collect]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    collectUserData(message, client)
+    collectUserData(message, client),
 } as messageHandleFunction;
 
 const collectUserData = (message: Message, client: Client) => {
-  message.deletable && message.delete(250);
+  message.deletable && message.delete({ timeout: 250 });
 };
 
-const getAllUserData = (guild: Guild) =>
-  guild.fetchMembers().then(guild => [...guild.members].map(member => ({})));
+const getAllUserData = async (guild: Guild) => {
+  try {
+  } catch (error) {
+    throw error;
+  }
+};

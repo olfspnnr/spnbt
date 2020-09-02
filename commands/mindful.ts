@@ -9,7 +9,7 @@ export const mindful = {
   description: "Zufällige KI generierte Mindful Session",
   usage: `[${config.prefix}mindful]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
-  execute: ({ discord: { message, client }, custom }: commandProps) => playMindfulAudio(message)
+  execute: ({ discord: { message, client }, custom }: commandProps) => playMindfulAudio(message),
 } as messageHandleFunction;
 
 const playMindfulAudio = (message: Message) => {
@@ -17,20 +17,20 @@ const playMindfulAudio = (message: Message) => {
   if (!currentState.isPlayingAudio) {
     message.delete();
     fetch("http://inspirobot.me/api?generateFlow=1&sessionID=a473f800-395a-4e38-9766-1227cf8b2299")
-      .then(response => response.json())
-      .then(data => {
-        const voiceChannel = message.member.voiceChannel;
+      .then((response) => response.json())
+      .then((data) => {
+        const voiceChannel = message.member.voice.channel;
         let textAndImages = data.data;
         voiceChannel
           .join()
-          .then(connection => {
+          .then((connection) => {
             fetch(data.mp3 as any)
-              .then(response => response.body)
-              .then(stream => {
+              .then((response) => response.body)
+              .then((stream) => {
                 playAudio(message, false, "", {
                   stream: stream,
                   length:
-                    textAndImages.filter((element: any) => element.type === "stop")[0].time * 1000
+                    textAndImages.filter((element: any) => element.type === "stop")[0].time * 1000,
                 });
                 let qoutes = textAndImages.filter((element: any) => element.type === "quote");
                 qoutes.forEach((quote: any) => {
@@ -38,18 +38,18 @@ const playMindfulAudio = (message: Message) => {
                     () =>
                       message.channel
                         .send(quote.text)
-                        .then(msg => {
-                          (msg as Message).delete(45000);
+                        .then((msg) => {
+                          (msg as Message).delete({ timeout: 45000 });
                         })
-                        .catch(error => console.log(error)),
+                        .catch((error) => console.log(error)),
                     quote.time * 1000 - 250
                   );
                 });
               })
-              .catch(error3 => console.log(error3));
+              .catch((error3) => console.log(error3));
           })
-          .catch(error2 => console.log(error2));
+          .catch((error2) => console.log(error2));
       })
-      .catch(error1 => console.log(error1));
+      .catch((error1) => console.log(error1));
   }
 };

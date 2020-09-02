@@ -8,10 +8,10 @@ export const play = {
   usage: `[${config.prefix}play url]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }) => {
-    let url = message.content.slice("!play ".length);
+    let [url, start] = message.content.slice("!play ".length).split(" ");
     if (!!~url.indexOf('"')) {
       url = url.replace('"', "");
     }
-    playAudio(message, true, url);
-  }
+    playAudio(message, true, url, undefined, undefined, start ? start : undefined);
+  },
 } as messageHandleFunction;

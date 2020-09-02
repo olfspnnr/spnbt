@@ -8,7 +8,7 @@ export const natalieneu = {
   usage: `[${config.prefix}natalieneu]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    getNatalieRosenke(message, custom.twitterClient)
+    getNatalieRosenke(message, custom.twitterClient),
 } as messageHandleFunction;
 
 const getNatalieRosenke = (message: Message, twitterClient: any) =>
@@ -20,7 +20,7 @@ const getNatalieRosenke = (message: Message, twitterClient: any) =>
         try {
           const msg = await message.channel.send(element.text);
           message.delete();
-          (msg as Message).delete(120000);
+          (msg as Message).delete({ timeout: 120000 });
         } catch (error) {
           return console.log(error);
         }

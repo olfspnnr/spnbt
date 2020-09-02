@@ -6,7 +6,7 @@ import {
   MessageReaction,
   User,
   AwaitReactionsOptions,
-  Collection
+  Collection,
 } from "discord.js";
 
 export const poll = {
@@ -14,7 +14,7 @@ export const poll = {
   description: "Erstellt eine Umfrage",
   usage: `[${config.prefix}poll "Titel der Umfrage:Beschreibungstext" Zeit`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
-  execute: ({ discord: { message, client }, custom }) => handlePollRequest(message)
+  execute: ({ discord: { message, client }, custom }) => handlePollRequest(message),
 } as messageHandleFunction;
 
 // TODO --  Menge an Emoji:Beschreibung getrennt durch Semikolon. Beispiel: !poll "Testumfrage:Umfrage zum Testen" ✅:"Ja, wäre nice";❌:"Nein, will ich net"
@@ -46,16 +46,16 @@ export const sendPoll = (
       .send([
         `${message.member.displayName || message.author.username} hat eine Umfrage erstellt:`,
         `**${title}**`,
-        description
+        description,
       ])
       .then((msg: Message) => {
         const filter = (reaction: MessageReaction, user: User) => {
-          return emojisToFilterBy.some(emoji => emoji === reaction.emoji.name);
+          return emojisToFilterBy.some((emoji) => emoji === reaction.emoji.name);
         };
-        emojisToFilterBy.map(emoji => msg.react(emoji));
+        emojisToFilterBy.map((emoji) => msg.react(emoji));
         msg
           .awaitReactions(filter, { time: time, errors: ["time"] } as AwaitReactionsOptions)
-          .catch(collected => {
+          .catch((collected) => {
             let sortedCollected = collected.sort(
               (emojiA: MessageReaction, emojiB: MessageReaction) => emojiB.count - emojiA.count
             ) as Collection<string, MessageReaction>;
@@ -63,15 +63,15 @@ export const sendPoll = (
             if (winner.count === second.count) {
               winner = undefined;
             }
-            msg.reactions.clear();
+            msg.reactions.cache.clear();
             msg
               .edit(
                 `${
                   winner
                     ? winnigMessage ||
-                      `${message.member.displayName ||
-                        message.author
-                          .username}s Umfrage ist geendet.\n**${title}**\n${description}\nGewonnen hat Option: ${
+                      `${
+                        message.member.displayName || message.author.username
+                      }s Umfrage ist geendet.\n**${title}**\n${description}\nGewonnen hat Option: ${
                         winner.emoji.name
                       } mit ${winner.count} Stimmen`
                     : losingMessage || "Es gab keinen Gewinner"
@@ -82,11 +82,11 @@ export const sendPoll = (
               });
           });
       })
-      .catch(error => {
+      .catch((error) => {
         console.log({ caller: "standardPoll send", error: error });
         return reject({ caller: "standardPoll send", error: error });
       });
-    message.deletable && message.delete(250);
+    message.deletable && message.delete({ timeout: 250 });
   }) as Promise<boolean>;
 };
 

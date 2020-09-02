@@ -1,13 +1,13 @@
 import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
-import { Message, Client, MessageCollector } from "discord.js";
+import { Message, Client, MessageCollector, TextChannel, DMChannel } from "discord.js";
 
 export const wiki = {
   name: "wiki",
   description: "Durchsucht Wikipedia nach dem Suchbegriff",
   usage: `[${config.prefix}wiki suchbegriff => Zahl aus der Auswahl => !link]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
-  execute: ({ discord: { message, client }, custom }) => searchInWiki(message)
+  execute: ({ discord: { message, client }, custom }) => searchInWiki(message),
 } as messageHandleFunction;
 
 const searchInWiki = (message: Message) => {
@@ -19,8 +19,8 @@ const searchInWiki = (message: Message) => {
     fetch(
       `https://de.wikipedia.org/w/api.php?&origin=*&action=opensearch&search=${stringToSearch}&limit=12`
     )
-      .then(resp => resp.json())
-      .then(data => {
+      .then((resp) => resp.json())
+      .then((data) => {
         const [searchTerm, headLines, descriptions, links] = data;
         message
           .reply(
@@ -30,13 +30,13 @@ const searchInWiki = (message: Message) => {
               )
               .join("")}`
           )
-          .then(msg => {
+          .then((msg) => {
             message.delete();
             let timeToDeletion = 20000;
             let lastItem: number = undefined;
             const collector = new MessageCollector(
-              message.channel,
-              m => m.author.id === message.author.id,
+              message.channel as TextChannel | DMChannel,
+              (m) => m.author.id === message.author.id,
               { time: timeToDeletion }
             );
             collector.on("collect", (followUpMessage: Message) => {
@@ -44,7 +44,7 @@ const searchInWiki = (message: Message) => {
                 followUpMessage.delete();
                 followUpMessage
                   .reply(links[lastItem])
-                  .then(fmsg => (fmsg as Message).delete(120000));
+                  .then((fmsg) => (fmsg as Message).delete({ timeout: 120000 }));
               }
               let messageNumber = parseInt(followUpMessage.content);
               if (messageNumber <= headLines.length) {
@@ -52,12 +52,12 @@ const searchInWiki = (message: Message) => {
                 followUpMessage.delete();
                 followUpMessage
                   .reply(descriptions[messageNumber])
-                  .then(fmsg => (fmsg as Message).delete(120000));
+                  .then((fmsg) => (fmsg as Message).delete({ timeout: 120000 }));
               }
             });
-            (msg as Message).delete(timeToDeletion);
+            (msg as Message).delete({ timeout: timeToDeletion });
           })
-          .catch(error => console.log(error));
+          .catch((error) => console.log(error));
       });
   }
 };

@@ -10,7 +10,7 @@ export const inspireMode = {
   usage: `[${config.prefix}inspireMode]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    inspireModeFunc(message, client)
+    inspireModeFunc(message, client),
 } as messageHandleFunction;
 
 const repeatInspire: (message: Message, client: Client) => void = (
@@ -34,14 +34,14 @@ const inspireModeFunc = (message: Message, client: Client) => {
         currentState.isInspiring = true;
         return repeatInspire(messageCopy, client);
       })
-      .catch(error => console.error(error));
+      .catch((error) => console.error(error));
   } else {
     message.channel
       .send(`Is already Inspiring~`)
-      .then(msg => {
+      .then((msg) => {
         message.delete();
-        (msg as Message).delete(8000);
+        (msg as Message).delete({ timeout: 8000 });
       })
-      .catch(error => console.log(error));
+      .catch((error) => console.log(error));
   }
 };

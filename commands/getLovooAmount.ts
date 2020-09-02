@@ -9,7 +9,7 @@ export const getLovooAmount = {
   usage: `[${config.prefix}getLovooAmount]`,
   roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    getLovooAmountFunc(message, client)
+    getLovooAmountFunc(message, client),
 } as messageHandleFunction;
 
 const getLovooAmountFunc = (message: Message, client: Client) => {
@@ -17,8 +17,8 @@ const getLovooAmountFunc = (message: Message, client: Client) => {
   if (currentState.lovooArray) {
     message.channel
       .send(`Derzeit vorhandene User: ${currentState.lovooArray.length}`)
-      .then((msg: Message) => msg.deletable && msg.delete(60000))
-      .catch(error => console.log({ caller: "getLovooAmount", error: error }));
+      .then((msg: Message) => msg.deletable && msg.delete({ timeout: 60000 }))
+      .catch((error) => console.log({ caller: "getLovooAmount", error: error }));
   }
-  message.deletable && message.delete(250);
+  message.deletable && message.delete({ timeout: 250 });
 };

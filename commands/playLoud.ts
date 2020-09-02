@@ -9,11 +9,11 @@ export const playLoud = {
   usage: `[${config.prefix}playLoud url volume]`,
   roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) => {
-    let [url, volume] = message.content.slice("!playLoud ".length).split(" ");
+    let [url, volume, start] = message.content.slice("!playLoud ".length).split(" ");
     if (volume && !isNaN(+volume)) {
-      playAudio(message, true, url, undefined, +volume);
+      playAudio(message, true, url, undefined, +volume, start ? start : undefined);
     } else {
-      playAudio(message, true, url, undefined, 5);
+      playAudio(message, true, url, undefined, 5, start ? start : undefined);
     }
   },
 } as messageHandleFunction;

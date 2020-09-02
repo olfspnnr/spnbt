@@ -1,13 +1,13 @@
 import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction, messageHandleProps } from "../legacy/messageHandler";
 import { getStateProp } from "../controller/stateController";
-import { Message, Collection, RichEmbed } from "discord.js";
+import { Message, Collection, MessageEmbed } from "discord.js";
 
 let props = {
   usage: `[${config.prefix}help]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted, mappedRoles.uninitiert, mappedRoles.poop],
   description: "Übersicht über die Befehle",
-  name: "help"
+  name: "help",
 } as messageHandleProps;
 
 export const help = {
@@ -21,15 +21,15 @@ export const help = {
         { name: "Nutzung", value: props.usage },
         {
           name: "Kurzbeschreibung",
-          value: props.description
+          value: props.description,
         },
         {
           name: "Beschreibung",
-          value: `Liefert eine Übersicht über die Befehle, die für den User freigeschaltet sind, als Direktnachricht an den User`
-        }
-      ]
-    } as RichEmbed
-  }
+          value: `Liefert eine Übersicht über die Befehle, die für den User freigeschaltet sind, als Direktnachricht an den User`,
+        },
+      ],
+    } as MessageEmbed,
+  },
 } as messageHandleFunction;
 
 const handleHelpRequest = (message: Message) => {
@@ -45,8 +45,8 @@ const handleHelpRequest = (message: Message) => {
 const rejectRequest = (message: Message, reason: string) => {
   message.channel
     .send(`Sorry, das habe ich nicht verstanden${reason ? " - " + reason : ""}`)
-    .then((msg: Message) => msg.deletable && msg.delete(6000));
-  message.deletable && message.delete(600);
+    .then((msg: Message) => msg.deletable && msg.delete({ timeout: 6000 }));
+  message.deletable && message.delete({ timeout: 600 });
 };
 
 const spliceCommandArray = (
@@ -60,11 +60,11 @@ const spliceCommandArray = (
 const writeHelpList = async (message: Message) => {
   let commands = getStateProp("commands") as Collection<string, messageHandleFunction>;
   let helpMessages = commands.map((command: messageHandleFunction) => {
-    if (command.roles.some(role => message.member.roles.has(roleIds[role])))
+    if (command.roles.some((role) => message.member.roles.cache.has(roleIds[role])))
       return `**${command.usage}** ${command.description}`;
     else return undefined;
   });
-  if (helpMessages) helpMessages = helpMessages.filter(entry => entry);
+  if (helpMessages) helpMessages = helpMessages.filter((entry) => entry);
   try {
     let perChunk = 25;
     let splicedCommands = commands.array().reduce((all, one, i) => {
@@ -77,33 +77,31 @@ const writeHelpList = async (message: Message) => {
       embed: {
         color: 0x3abeff,
         author: {
-          name: "Übersicht"
+          name: "Übersicht",
         },
         description:
           "Mit ?[Befehlname] kannst du dir genauere Informationen(falls vorhanden) zu einem Befehl holen",
         fields: [
           ...arr.map(
-            command =>
+            (command) =>
               ({
                 name: command.name,
-                value: `${command.usage}\n${command.description}`
+                value: `${command.usage}\n${command.description}`,
               } as {
                 name: string;
                 value: string;
                 inline?: boolean;
               })
-          )
+          ),
         ],
         footer: {
-          text: `Geladene Befehle: ${commands.size} ✔ - Einen schönen Tag ${
-            message.author.username
-          }!`
-        }
-      } as RichEmbed
+          text: `Geladene Befehle: ${commands.size} ✔ - Einen schönen Tag ${message.author.username}!`,
+        },
+      },
     }));
 
-    message.author.createDM().then(channel => {
-      splicedCommandsMessage.map(embed => channel.send(embed));
+    message.author.createDM().then((channel) => {
+      splicedCommandsMessage.map((embed) => channel.send(embed));
     });
     message.delete();
   } catch (error) {

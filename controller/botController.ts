@@ -9,9 +9,10 @@ import {
   StreamDispatcher,
   VoiceChannel,
   MessageOptions,
-  Attachment,
   Collection,
   DMChannel,
+  EmojiResolvable,
+  MessageAttachment,
 } from "discord.js";
 import {
   audioQueue,
@@ -126,17 +127,21 @@ export const replyToMessageWithLenny = (message: Message) => {
         message.content.toLowerCase().includes("ich ") ||
         message.content.toLowerCase().includes(" ich")
       ) {
-        message.channel.send("*hust*").then((msg: Message) => msg.deletable && msg.delete(150000));
+        message.channel
+          .send("*hust*")
+          .then((msg: Message) => msg.deletable && msg.delete({ timeout: 150000 }));
       } else if (
         message.content.toLowerCase().includes("bernd ") ||
         message.content.toLowerCase().includes(" bernd")
       ) {
-        message.channel.send("frech").then((msg: Message) => msg.deletable && msg.delete(150000));
+        message.channel
+          .send("frech")
+          .then((msg: Message) => msg.deletable && msg.delete({ timeout: 150000 }));
       } else {
         let messageWithLenny = message.content.toLowerCase().split("lenny").join("(͡° ͜ʖ ͡°)");
         message.channel.send(messageWithLenny).then((msg: Message) => {
-          msg.deletable && msg.delete(15000);
-          message.deletable && message.delete(240);
+          msg.deletable && msg.delete({ timeout: 15000 });
+          message.deletable && message.delete({ timeout: 240 });
         });
       }
     }
@@ -149,24 +154,29 @@ export const repeatMessageWithLenny = (message: Message) => {
       message.content.toLowerCase().includes("ich ") ||
       message.content.toLowerCase().includes(" ich")
     ) {
-      message.channel.send("*hust*").then((msg: Message) => msg.deletable && msg.delete(15000));
+      message.channel
+        .send("*hust*")
+        .then((msg: Message) => msg.deletable && msg.delete({ timeout: 15000 }));
     } else {
       message.channel.send(
         message.content.split("lenny").join("( ͡° ͜ʖ ͡°)").split("Lenny").join("(͡° ͜ʖ ͡°)")
       );
     }
 
-    message.deletable && message.delete(250);
+    message.deletable && message.delete({ timeout: 250 });
   }
 };
 
 export const stripMemberOfAllRoles = (member: GuildMember) =>
-  new Promise((resolve, reject) =>
-    member
-      .removeRoles(member.roles)
-      .then((member) => resolve(member))
-      .catch((error) => reject(error))
-  );
+  new Promise((resolve, reject) => {
+    try {
+      member.roles.cache.clear();
+      return resolve(member);
+    } catch (error) {
+      reject(error);
+      throw error;
+    }
+  });
 
 export const checkIfMemberHasntRolesAndAssignRoles = (
   client: Client,
@@ -174,7 +184,7 @@ export const checkIfMemberHasntRolesAndAssignRoles = (
   rolesToCheck: string[],
   rolesToAdd: RoleName[]
 ) => {
-  let checkRoles = rolesToCheck.some((role) => newMember.roles.has(role));
+  let checkRoles = rolesToCheck.some((role) => newMember.roles.cache.has(role));
   console.log({ checkRole: checkRoles });
   if (!checkRoles) {
     assignRolesToMember(client, newMember, rolesToAdd);
@@ -187,12 +197,12 @@ export const assignRolesToMember = (
   rolesToAdd: RoleName[]
 ) => {
   rolesToAdd.map((role) => {
-    newMember
-      .addRole(roleIds[role])
+    newMember.roles
+      .add(roleIds[role])
       .then(() =>
-        (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
+        (client.channels.cache.get(channelIds.halloweltkanalText) as TextChannel).send(
           `<@${newMember.user.id}> dir wurde folgende Rolle zugewiesen: "${
-            newMember.guild.roles.get(roleIds[role]).name
+            newMember.guild.roles.cache.get(roleIds[role]).name
           }". ${
             roleIds[role] === roleIds.uninitiert
               ? "Willkommen! Schnapp dir einen Medizinball und gesell dich dazu\nSolltest du nicht in der Lage sein zu Sprechen, musst du einmal reconnecten\n(unten links den Hörer auflegen)"
@@ -209,7 +219,7 @@ export const reactionDeletionHandler = (
   userIdOfMessage: string
 ) => {
   const collector = new MessageCollector(
-    message.channel,
+    message.channel as TextChannel,
     (m) => m.author.id === message.author.id,
     {
       time: 60 * 1000,
@@ -280,21 +290,21 @@ export const addReactionToMessage = (
       ruleSet.map(({ user, reactionsToAdd }) => {
         if (userIds[user] === message.member.id) {
           reactionsToAdd.map((reactionToAdd: string) => {
-            emoji = client.emojis.find((emoji) => emoji.name === reactionToAdd);
+            emoji = client.emojis.cache.find((emoji) => emoji.name === reactionToAdd);
             if (!emoji) {
               emoji = reactionToAdd;
             }
             if (message.member.user.id === userIds[ruleset.user]) {
-              message.channel.fetchMessages({ limit: 10 }).then((messages) => {
+              message.channel.messages.fetch({ limit: 10 }).then((messages) => {
                 messages.map((fetchedMessage) => {
-                  fetchedMessage.reactions.map((reaction) => {
+                  fetchedMessage.reactions.cache.map((reaction) => {
                     if (reaction.me && fetchedMessage.author.id == message.member.user.id) {
                       reaction.remove();
                     }
                   });
                 });
                 message
-                  .react(emoji)
+                  .react(emoji as EmojiResolvable)
                   // .then(reaction => reactionDeletionHandler(message, reaction, userIds[ruleset.user]))
                   .catch((error) => console.log(error));
               });
@@ -305,19 +315,19 @@ export const addReactionToMessage = (
     });
   } else {
     let emoji: Emoji | string = undefined;
-    emoji = client.emojis.find((emoji) => emoji.name === reactionAdd);
+    emoji = client.emojis.cache.find((emoji) => emoji.name === reactionAdd);
     if (!emoji) {
       emoji = reactionAdd;
     }
-    message.channel.fetchMessages({ limit: 10 }).then((messages) => {
+    message.channel.messages.fetch({ limit: 10 }).then((messages) => {
       messages.map((fetchedMessage) => {
-        fetchedMessage.reactions.map((reaction) => {
+        fetchedMessage.reactions.cache.map((reaction) => {
           if (reaction.me && fetchedMessage.author.id == message.member.user.id) {
             reaction.remove();
           }
         });
         message
-          .react(emoji)
+          .react(emoji as EmojiResolvable)
           // .then(reaction => reactionDeletionHandler(message, reaction, userIds[ruleset.user]))
           .catch((error) => console.log(error));
       });
@@ -355,15 +365,15 @@ export const handleVoiceStateUpdate = (
     date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
     date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
   ];
-  if (oldMember.voiceChannel === undefined && newMember.voiceChannel !== undefined) {
-    (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
+  if (oldMember.voice.channel === undefined && newMember.voice.channel !== undefined) {
+    (client.channels.cache.get(channelIds.halloweltkanalText) as TextChannel).send(
       `[${hours}:${minutes}] ${newMember.user.username}/${newMember.displayName} joined.`
     );
-  } else if (newMember.voiceChannel === undefined) {
-    (client.channels.get(channelIds.halloweltkanalText) as TextChannel).send(
+  } else if (newMember.voice.channel === undefined) {
+    (client.channels.cache.get(channelIds.halloweltkanalText) as TextChannel).send(
       `[${hours}:${minutes}] ${oldMember.user.username}/${oldMember.displayName} left.`
     );
-  } else if (newMember.voiceChannel !== undefined && oldMember.voiceChannel !== undefined) {
+  } else if (newMember.voice.channel !== undefined && oldMember.voice.channel !== undefined) {
     return getUserDifferences(oldMember, newMember);
   } else {
     return console.log("Konnte nicht entscheiden was passiert ist");
@@ -406,13 +416,13 @@ const _handleOtherStream = async (
   volume: number
 ) => {
   try {
-    const voiceChannel = message.member.voiceChannel;
+    const voiceChannel = message.member.voice.channel;
     if (voiceChannel === undefined || voiceChannel === null) {
       throw new Error("Not connected to voicechannel");
     }
     const connection = await voiceChannel.join();
     await setState({ isPlayingAudio: true });
-    dispatcher = createDispatcher(
+    const dispatcher = createDispatcher(
       message,
       voiceChannel,
       audioObject.stream,
@@ -434,14 +444,16 @@ const _handleOtherStream = async (
           };
         },
       }
-    ).dispatcher.on("end", async () => {
-      try {
-        await setState({ isPlayingAudio: false });
-        return;
-      } catch (error) {
-        throw error;
-      }
-    });
+    ).dispatcher.each((voice) =>
+      voice.on("end", async () => {
+        try {
+          await setState({ isPlayingAudio: false });
+          return;
+        } catch (error) {
+          throw error;
+        }
+      })
+    );
   } catch (error) {
     await setState({ isPlayingAudio: false });
     throw error;
@@ -456,7 +468,8 @@ const _handleYouTubeStream = async (
   volume: number
 ) => {
   try {
-    const voiceChannel = message.member.voiceChannel;
+    const voiceChannel = message.member.voice.channel;
+
     if (voiceChannel === undefined || voiceChannel === null) {
       const dmChannel = await message.member.createDM();
       await dmChannel.send(
@@ -465,54 +478,113 @@ const _handleYouTubeStream = async (
       await setState({ isPlayingAudio: false });
       return;
     } else {
-      await voiceChannel.join();
-      if (voiceChannel.connection) {
-        await setState({ isPlayingAudio: true });
-        dispatcher = createDispatcher(
-          message,
-          voiceChannel,
-          youtubeStream,
-          volume,
-          info.length_seconds,
-          {
-            command: "!stop",
-            function: (dispatcher: StreamDispatcher, collector: MessageCollector) => {
-              collector.stop();
-              youtubeStream.destroy();
-              dispatcher.end();
-              return async () => {
-                try {
-                  await setState({ isPlayingAudio: false });
-                } catch (error) {
-                  throw error;
-                }
-              };
-            },
-          }
-        ).dispatcher.on("end", async () => await setState({ isPlayingAudio: false }));
-      } else {
-        const connection = await voiceChannel.join();
-        await setState({ isPlayingAudio: true });
-        try {
-          dispatcher = createDispatcher(
-            message,
-            voiceChannel,
-            youtubeStream,
-            volume,
-            info.length_seconds,
-            {
-              command: "!stop",
-              function: (dispatcher, collector) => {
-                collector.stop();
-                youtubeStream.destroy();
-                return () => setState({ isPlayingAudio: false }).then(() => dispatcher.end());
-              },
-            }
-          ).dispatcher.on("end", () => {});
-        } catch (error) {
-          setState({ isPlayingAudio: false });
-        }
+      await setState({ isPlayingAudio: true });
+      const connection = await message.member.voice.channel.join();
+      const stream = connection.play(youtubeStream, { volume });
+      let options = [
+        `Optionen: `,
+        "!stop      \t-\tStoppt die Wiedergabe",
+        "!pause     \t-\tPausiert die Wiedergabe",
+        "!resume    \t-\tFührt die Wiedergabe fort",
+      ];
+      if (
+        message.member.roles.highest.id === roleIds.trusted ||
+        message.member.roles.highest.id === roleIds.spinner
+      ) {
+        options = [
+          ...options,
+          ...[
+            "!louder    \t-\tErhöht die Lautstärke",
+            "!quieter   \t-\tverringert die Lautstärke",
+            "!zerficken \t-\tLautstärke",
+          ],
+        ];
       }
+      const optionmessage = await message.channel.send(options, {
+        split: true,
+        reply: message.author,
+        code: true,
+      });
+      stream.once("finish", async () => {
+        try {
+          if (optionmessage.deletable) await optionmessage.delete();
+          if (message.deletable) await message.delete();
+          return await setState({ isPlayingAudio: false });
+        } catch (error) {
+          throw error;
+        }
+      });
+      stream.once("close", async () => {
+        try {
+          if (optionmessage.deletable) await optionmessage.delete();
+          if (message.deletable) await message.delete();
+          return await setState({ isPlayingAudio: false });
+        } catch (error) {
+          throw error;
+        }
+      });
+      const collector = new MessageCollector(
+        message.channel as TextChannel,
+        (msg: Message) =>
+          msg.content.includes("!stop") ||
+          msg.content.includes("!pause") ||
+          msg.content.includes("!resume") ||
+          msg.content.includes("!louder") ||
+          msg.content.includes("!quieter") ||
+          msg.content.includes("!zerficken")
+      );
+
+      let zerfickt = false;
+
+      collector.on("collect", async (msg: Message) => {
+        try {
+          const hasHighRoles =
+            (msg.member.roles.highest.id === roleIds.trusted &&
+              msg.member.user.id === message.author.id) ||
+            msg.member.roles.highest.id === roleIds.spinner;
+          if (!zerfickt) {
+            if (msg.content.includes("!stop")) {
+              if (msg.deletable) await msg.delete();
+              if (optionmessage.deletable) {
+                await optionmessage.delete();
+              }
+              if (message.deletable) await message.delete();
+              if (stream.destroy) await stream.destroy();
+              if (youtubeStream.destroy) await youtubeStream.destroy();
+              if (collector.stop) await collector.stop();
+            } else if (msg.content.includes("!pause")) {
+              if (!stream.paused) stream.pause();
+            } else if (msg.content.includes("!resume")) {
+              if (stream.paused) stream.resume();
+            } else if (msg.content.includes("!louder") && hasHighRoles) {
+              if (stream.volume + 0.1 < 10) stream.setVolume(stream.volume + 0.1);
+            } else if (msg.content.includes("!quieter") && hasHighRoles) {
+              if (stream.volume - 0.1 > 0) stream.setVolume(stream.volume - 0.1);
+            } else if (msg.content.includes("!zerficken") && hasHighRoles) {
+              zerfickt = true;
+              msg.channel.send(`Gnade dir Gott, ${message.member}`).then((msg) => {
+                msg.deletable && msg.delete({ timeout: 5000 });
+              });
+              stream.setVolumeDecibels(100);
+            }
+          } else if (zerfickt && hasHighRoles) {
+            if (msg.content.includes("!stop")) {
+              if (msg.deletable) await msg.delete();
+              if (optionmessage.deletable) {
+                await optionmessage.delete();
+              }
+              if (message.deletable) await message.delete();
+              if (stream.destroy) await stream.destroy();
+              if (youtubeStream.destroy) await youtubeStream.destroy();
+              if (collector.stop) await collector.stop();
+            }
+          }
+
+          if (msg.deletable) msg.delete({ timeout: 100 });
+        } catch (error) {
+          throw error;
+        }
+      });
     }
   } catch (error) {
     await setState({ isPlayingAudio: false });
@@ -524,11 +596,13 @@ const _handleYouTubeLink = async (
   url: string,
   message: Message,
   dispatcher: StreamDispatcher,
-  volume: number
+  volume: number,
+  start?: number | string
 ) => {
   try {
     const youtubeStream: any = ytdl(url, {
-      filter: "audioonly",
+      quality: "highest",
+      begin: start ? start + "" : undefined,
     }).on(
       "info",
       async (info) => await _handleYouTubeStream(info, message, dispatcher, youtubeStream, volume)
@@ -557,7 +631,8 @@ export const playAudio = async (
   isYoutubeLink: boolean,
   url?: string,
   audioObject?: { stream: ReadableStream; length: number },
-  volume?: number | undefined
+  volume?: number | undefined,
+  start?: number | string
 ) => {
   try {
     const isPlayingAudio: boolean = getStateProp("isPlayingAudio");
@@ -568,7 +643,7 @@ export const playAudio = async (
         let dispatcher: StreamDispatcher;
 
         if (isYoutubeLink) {
-          _handleYouTubeLink(url, message, dispatcher, volume);
+          _handleYouTubeLink(url, message, dispatcher, volume, start);
         } else {
           _handleOtherStream(dispatcher, message, audioObject, volume);
         }
@@ -591,7 +666,7 @@ const createCollector = (
 ) => {
   let triggerMessagesRef = [...triggerMessages];
   let collector = new MessageCollector(
-    message.channel,
+    message.channel as TextChannel,
     (m: Message) => m.author.id === message.author.id || m.member.hasPermission("KICK_MEMBERS"),
     {
       time: timeToDeletion,
@@ -625,15 +700,17 @@ const createDispatcher = (
   length: number,
   ...blocks: commandBlock[]
 ) => {
-  let dispatcher = voiceChannel.connection
-    .playStream(stream, {
-      volume: volume || 0.5,
-    })
-    .on("end", (end) => {
-      message.delete();
-      // voiceChannel.leave();
-      setState({ isPlayingAudio: false });
-    });
+  let dispatcher = voiceChannel.client.voice.connections.each((connection) =>
+    connection
+      .play(stream, {
+        volume: volume || 0.5,
+      })
+      .on("end", (end) => {
+        message.delete();
+        // voiceChannel.leave();
+        setState({ isPlayingAudio: false });
+      })
+  );
   return {
     collector: createCollector(message, length * 1000, dispatcher, ...blocks),
     dispatcher: dispatcher,
@@ -648,20 +725,20 @@ export const sendGeneratedPerson = async (message: Message, client: Client) => {
     if (resp.ok) {
       const arrayBuffer = await (resp as any).buffer();
       // const buffer = Buffer.from(arrayBuffer);
-      const attachment = new Attachment(arrayBuffer);
+      const attachment = new MessageAttachment(arrayBuffer);
       const channel = message.channel;
       if (attachment) {
         if (message.deletable) {
-          await message.delete(5);
+          await message.delete({ timeout: 5 });
         }
         const msg = await channel.send(attachment);
         if ((msg as Message).deletable) {
-          (msg as Message).delete(120000);
+          (msg as Message).delete({ timeout: 120000 });
         }
         return;
       } else {
         if (message.deletable) {
-          await message.delete(5);
+          await message.delete({ timeout: 5 });
         }
         throw new Error("Attachment seems broken");
       }
@@ -679,7 +756,7 @@ export const sendInspiringMessage = (message: Message, client: Client) =>
       .then((response) => response.text())
       .then((data) => {
         console.log(data);
-        const attachment = new Attachment(data);
+        const attachment = new MessageAttachment(data);
         message.channel
           .send(attachment as MessageOptions)
           .then((msg) => {
@@ -690,20 +767,20 @@ export const sendInspiringMessage = (message: Message, client: Client) =>
               {
                 command: "!save",
                 function: (extProp: any, collector: MessageCollector) => {
-                  (client.channels.get(channelIds.inspirationText) as TextChannel)
+                  (client.channels.cache.get(channelIds.inspirationText) as TextChannel)
                     .send(attachment)
                     .then(() =>
                       message.channel
                         .send(`Bild gespeichert im dedizierten Inspirationskanal`)
                         .then((saveMsg: Message) => {
                           collector.stop();
-                          saveMsg.delete(8000);
+                          saveMsg.delete({ timeout: 8000 });
                         })
                     )
                     .catch((error) =>
                       message.channel
                         .send("Fehler beim Speichern des Bildes :(")
-                        .then((errorMsg: Message) => errorMsg.delete(12000))
+                        .then((errorMsg: Message) => errorMsg.delete({ timeout: 12000 }))
                     );
                 },
               },
@@ -716,7 +793,7 @@ export const sendInspiringMessage = (message: Message, client: Client) =>
             );
             if (message.delete) message.delete();
             console.log(data);
-            (msg as Message).delete(120000);
+            (msg as Message).delete({ timeout: 120000 });
             return resolve(attachment as MessageOptions);
           })
           .catch((error) => reject(error));
@@ -740,7 +817,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
     if (currentState.commands.has(functionCall)) {
       let command = currentState.commands.get(functionCall) as messageHandleFunction;
       try {
-        if (command.roles.some((role: RoleName) => message.member.roles.has(roleIds[role]))) {
+        if (command.roles.some((role: RoleName) => message.member.roles.cache.has(roleIds[role]))) {
           command.execute({
             discord: { message: message, client: client },
             custom: {
@@ -757,7 +834,7 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
     if (currentState.commands.has(functionCall)) {
       let command = currentState.commands.get(functionCall) as messageHandleFunction;
       try {
-        if (command.roles.some((role: RoleName) => message.member.roles.has(roleIds[role]))) {
+        if (command.roles.some((role: RoleName) => message.member.roles.cache.has(roleIds[role]))) {
           message.author
             .createDM()
             .then((channel) =>
@@ -765,14 +842,17 @@ export const handleMessageCall = (message: Message, client: Client, twitterClien
                 command.detailedInformation || "Keine detailierte Beschreibung vorhanden."
               )
             );
-          message.deletable && message.delete(250);
+          message.deletable && message.delete({ timeout: 250 });
         } else throw "Unzureichende Berechtigung";
       } catch (error) {
         return console.log({ caller: "handleMessageCall", error: error });
       }
     }
   } else if (!message.author.bot) {
-    if (message.member.roles.has(roleIds.spinner) || message.member.roles.has(roleIds.trusted)) {
+    if (
+      message.member.roles.cache.has(roleIds.spinner) ||
+      message.member.roles.cache.has(roleIds.trusted)
+    ) {
       replyToMessageWithLenny(message);
       return addReactionToMessage(message, client, userIds, ruleSet);
     }
@@ -823,7 +903,7 @@ export const writeToLogChannel = async (
   original?: Message
 ) => {
   try {
-    const logChannel = client.channels.find((entry: TextChannel) =>
+    const logChannel = client.channels.cache.find((entry: TextChannel) =>
       entry.name.toLowerCase().includes("bernd-log")
     );
     if (logChannel) {

@@ -1,5 +1,5 @@
 // Import the discord.js module
-import { Client, TextChannel, Message, ClientUser } from "discord.js";
+import { Client, TextChannel, Message, ClientUser, GuildMember, Guild } from "discord.js";
 import "isomorphic-fetch";
 import {
   handleNameChange,
@@ -116,37 +116,43 @@ audioQueue.on("finish", (queue) => console.log("current queuelength: " + queue.l
 export const clock = new Clock();
 clock.initialise();
 const clockEmitter = clock.getEmitter();
-clockEmitter.on("lenny", () => {
-  if (
-    (client.channels.get(channelIds.kikaloungeText) as TextChannel).lastMessage.author.id ===
-    userIds.justus
-  ) {
-    (client.channels.get(channelIds.kikaloungeText) as TextChannel).send("Hallo Justus ( ͡° ͜ʖ ͡°)");
-  } else (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(`( ͡° ͜ʖ ͡°)`);
+clockEmitter.on("lenny", async () => {
+  try {
+    const kikalounge = (await client.channels.fetch(channelIds.kikaloungeText)) as TextChannel;
+    if (kikalounge.lastMessage.author.id === userIds.justus) {
+      kikalounge.send("Hallo Justus ( ͡° ͜ʖ ͡°)");
+    } else kikalounge.send(`( ͡° ͜ʖ ͡°)`);
+  } catch (error) {
+    throw error;
+  }
 });
 clockEmitter.on("raffleTime", () => {
   return handleRaffleTime(client);
 });
-clockEmitter.on("raffleReminder", () => {
-  (client.channels.get(channelIds.kikaloungeText) as TextChannel).messages
-    .filter(
-      (message: Message) =>
-        message.content.toLowerCase().includes("rafflereminder") && message.author.bot
-    )
-    .map((entry) => entry.deletable && entry.delete());
-  return readJsonFile("./configs/config.json")
-    .then((content: config) => {
-      (client.channels.get(channelIds.kikaloungeText) as TextChannel)
-        .send(`**Rafflereminder**\nVergesst nicht, euch ins Raffle einzutragen, mit ${
-        content.prefix
-      }raffle \n(Vorausgesetzt ihr habt die Rolle - Blauer Name) \n${
-        content.raffleWinDescription !== -1
-          ? "Zu Gewinnen gibt es: " + content.raffleWinDescription
-          : ""
-      }
+clockEmitter.on("raffleReminder", async () => {
+  try {
+    const kikalounge = (await client.channels.fetch(channelIds.kikaloungeText)) as TextChannel;
+    const messages = await kikalounge.messages.fetch();
+    messages
+      .filter(
+        (message: Message) =>
+          message.content.toLowerCase().includes("rafflereminder") && message.author.bot
+      )
+      .map((entry) => entry.deletable && entry.delete());
+    const content: any = await readJsonFile("./configs/config.json");
+    kikalounge.send(`**Rafflereminder**\nVergesst nicht, euch ins Raffle einzutragen, mit ${
+      content.prefix
+    }raffle \n(Vorausgesetzt ihr habt die Rolle - Blauer Name) \n${
+      content.raffleWinDescription !== -1
+        ? "Zu Gewinnen gibt es: " + content.raffleWinDescription
+        : ""
+    }
       \nWeitere Infos: ${content.helpPrefix}raffle`);
-    })
-    .catch((error) => console.error({ caller: "rafflerminder", error: error }));
+    return;
+  } catch (error) {
+    console.error({ caller: "rafflerminder", error: error });
+    throw error;
+  }
 });
 fillStateProp("clock", clock);
 
@@ -170,169 +176,166 @@ fillStateProp("reloadCommands", () => {
   loadCommands().then((commands) => setState({ commands: commands }));
 });
 loadCommands().then((loadedCommands) => {
-  setState({ commands: loadedCommands }).then((state) => {
-    client.once("ready", () => {
-      console.log("I am ready!");
-      client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
-      client.channels.map((chan) => {
-        if (chan instanceof TextChannel) {
-          if (chan.permissionsFor(client.user.id).has("READ_MESSAGES")) {
-            chan.fetchMessages({ limit: 100 }).catch((error) => console.error(error));
-          }
+  setState({ commands: loadedCommands }).then(async (state) => {
+    try {
+      client.once("ready", () => {
+        console.log("I am ready!");
+        client.user.setActivity("mit deinen Gefühlen", { type: "PLAYING" });
+        try {
+          wsServer = new websocketServer({
+            port: 8080,
+            onMessage: (message: any) => handleWebSocketMessage(message, client),
+          });
+          website.start();
+        } catch (error) {
+          console.log(error);
         }
       });
-      try {
-        wsServer = new websocketServer({
-          port: 8080,
-          onMessage: (message: any) => handleWebSocketMessage(message),
-        });
-        website.start();
-      } catch (error) {
-        console.log(error);
-      }
-    });
 
-    client.on("guildMemberAdd", (member) => {
-      try {
-        checkIfMemberHasntRolesAndAssignRoles(
-          client,
-          member,
-          [roleIds.uninitiert, roleIds.poop],
-          ["uninitiert"]
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    });
-
-    client.on("error", (error) => console.error(error));
-
-    client.on("voiceStateUpdate", (oldMember, newMember) => {
-      const difference = getUserDifferences(oldMember, newMember);
-      const date = new Date();
-      const [hours, minutes] = [
-        date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
-        date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
-      ];
-      writeToLogChannel(
-        `[${hours}:${minutes}]\n**${oldMember.user.username}/${oldMember.displayName}** changed:\n${difference}`,
-        client
-      );
-      return handleVoiceStateUpdate(oldMember, newMember, client);
-    });
-
-    client.on("guildMemberUpdate", (oldUser, newUser) => {
-      const difference = getUserDifferences(oldUser, newUser);
-      const date = new Date();
-      const [hours, minutes] = [
-        date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
-        date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
-      ];
-      writeToLogChannel(
-        `[${hours}:${minutes}]\n**${oldUser.user.username}/${oldUser.displayName}** changed:\n${difference}`,
-        client
-      );
-      handleNameChange(newUser);
-    });
-
-    client.on("messageDelete", async (message) => {
-      try {
-        const now = new Date();
-        const auditLog = await message.guild.fetchAuditLogs();
-        const nowHour = now.getHours();
-        const nowMinute = now.getMinutes();
-        const deletion = auditLog.entries.filter((entry) => {
-          const createdHour = entry.createdAt.getHours();
-          const createdMinute = entry.createdAt.getMinutes();
-
-          return (
-            entry.actionType === "DELETE" &&
-            entry.targetType === "MESSAGE" &&
-            (entry.target as ClientUser).id === message.client.user.id &&
-            createdHour === nowHour &&
-            (createdMinute === nowMinute ||
-              createdMinute === nowMinute + 1 ||
-              createdMinute - 1 === nowMinute ||
-              createdMinute + 1 === nowMinute)
+      client.on("guildMemberAdd", (member) => {
+        try {
+          checkIfMemberHasntRolesAndAssignRoles(
+            client,
+            member as GuildMember,
+            [roleIds.uninitiert, roleIds.poop],
+            ["uninitiert"]
           );
-        });
-        const [hours, minutes] = [
-          nowHour > 9 ? nowHour : "0" + nowHour,
-          nowMinute > 9 ? nowMinute : "0" + nowMinute,
-        ];
-        let executor = "Uncertain";
-        if (deletion.size === 1) {
-          const first = deletion.first();
-          if (first) {
-            executor = first.executor.username;
-          }
-        } else if (deletion.size > 1) {
-          executor =
-            "Uncertain // Part of the deletion object // " +
-            deletion
-              .map((entry) => (entry && entry.executor ? entry.executor.username : ""))
-              .join(" - ");
-        } else {
-          if (auditLog.entries.size > 0) {
-            executor =
-              "Uncertain // Last entry Auditlog // " + auditLog.entries.first().executor.username;
-          }
+        } catch (error) {
+          console.log(error);
         }
-        return writeToLogChannel(
-          [
-            `[${hours}:${minutes}]`,
-            `Executor: **${executor}**`,
-            `User of message: **${message.member.user.username}/${message.member.displayName}**`,
-            `_Deleted:_ \n${message.content}`,
-          ],
-          client,
-          message
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    });
+      });
 
-    client.on("messageDeleteBulk", (messages) => {
-      try {
-        console.log(messages);
-        const msgs = messages.map((msg) => msg);
+      client.on("error", (error) => console.error(error));
+
+      client.on("voiceStateUpdate", (oldState, newState) => {
+        const difference = getUserDifferences(oldState.member, newState.member);
+        const date = new Date();
+        const [hours, minutes] = [
+          date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
+          date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
+        ];
         writeToLogChannel(
-          msgs.map(
-            (entry) =>
-              `User of message: **${entry.member.user.username}/${entry.member.displayName}**\nDeleted: ${entry.content}`
-          ) || "EMPTY",
+          `[${hours}:${minutes}]\n**${oldState.member.user.username}/${oldState.member.displayName}** changed:\n${difference}`,
           client
         );
-      } catch (error) {
-        console.log(error);
-      }
-    });
+        return handleVoiceStateUpdate(oldState.member, newState.member, client);
+      });
 
-    // Create an event listener for messages
-    client.on("message", (message) => {
-      try {
+      client.on("guildMemberUpdate", (oldUser: GuildMember, newUser: GuildMember) => {
+        const difference = getUserDifferences(oldUser, newUser);
+        const date = new Date();
+        const [hours, minutes] = [
+          date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
+          date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
+        ];
+        writeToLogChannel(
+          `[${hours}:${minutes}]\n**${oldUser.user.username}/${oldUser.displayName}** changed:\n${difference}`,
+          client
+        );
+        handleNameChange(newUser);
+      });
+
+      client.on("messageDelete", async (message) => {
         try {
-          if (
-            message.channel instanceof TextChannel &&
-            message.channel.permissionsFor(client.user.id).has("READ_MESSAGES")
-          ) {
-            message.channel.fetchMessages({ limit: 10 });
+          const now = new Date();
+          const auditLog = await message.guild.fetchAuditLogs();
+          const nowHour = now.getHours();
+          const nowMinute = now.getMinutes();
+          const deletion = auditLog.entries.filter((entry) => {
+            const createdHour = entry.createdAt.getHours();
+            const createdMinute = entry.createdAt.getMinutes();
+
+            return (
+              entry.actionType === "DELETE" &&
+              entry.targetType === "MESSAGE" &&
+              (entry.target as ClientUser).id === message.client.user.id &&
+              createdHour === nowHour &&
+              (createdMinute === nowMinute ||
+                createdMinute === nowMinute + 1 ||
+                createdMinute - 1 === nowMinute ||
+                createdMinute + 1 === nowMinute)
+            );
+          });
+          const [hours, minutes] = [
+            nowHour > 9 ? nowHour : "0" + nowHour,
+            nowMinute > 9 ? nowMinute : "0" + nowMinute,
+          ];
+          let executor = "Uncertain";
+          if (deletion.size === 1) {
+            const first = deletion.first();
+            if (first) {
+              executor = first.executor.username;
+            }
+          } else if (deletion.size > 1) {
+            executor =
+              "Uncertain // Part of the deletion object // " +
+              deletion
+                .map((entry) => (entry && entry.executor ? entry.executor.username : ""))
+                .join(" - ");
+          } else {
+            if (auditLog.entries.size > 0) {
+              executor =
+                "Uncertain // Last entry Auditlog // " + auditLog.entries.first().executor.username;
+            }
           }
+          return writeToLogChannel(
+            [
+              `[${hours}:${minutes}]`,
+              `Executor: **${executor}**`,
+              `User of message: **${message.member.user.username}/${message.member.displayName}**`,
+              `_Deleted:_ \n${message.content}`,
+            ],
+            client,
+            message as Message
+          );
         } catch (error) {
-          throw "No read_messages permisson";
+          console.log(error);
         }
+      });
 
-        return handleMessageCall(message, client, twitterClient);
-      } catch (error) {
-        console.log(error);
-        console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
-      }
-    });
+      client.on("messageDeleteBulk", (messages) => {
+        try {
+          console.log(messages);
+          const msgs = messages.map((msg) => msg);
+          writeToLogChannel(
+            msgs.map(
+              (entry) =>
+                `User of message: **${entry.member.user.username}/${entry.member.displayName}**\nDeleted: ${entry.content}`
+            ) || "EMPTY",
+            client
+          );
+        } catch (error) {
+          console.log(error);
+        }
+      });
 
-    client.on("disconnect", () => {
-      console.log("Disconnect");
-    });
+      // Create an event listener for messages
+      client.on("message", (message) => {
+        try {
+          try {
+            if (
+              message.channel instanceof TextChannel &&
+              message.channel.permissionsFor(client.user.id).has("READ_MESSAGE_HISTORY")
+            ) {
+              message.channel.messages;
+            }
+          } catch (error) {
+            throw "No read_messages permisson";
+          }
+
+          return handleMessageCall(message, client, twitterClient);
+        } catch (error) {
+          console.log(error);
+          console.log(`Konnte nicht verarbeiten: ${message.content.split(" ")[0]}`);
+        }
+      });
+
+      client.on("disconnect", () => {
+        console.log("Disconnect");
+      });
+    } catch (error) {
+      throw error;
+    }
   });
 });
 

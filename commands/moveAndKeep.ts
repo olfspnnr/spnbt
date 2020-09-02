@@ -8,25 +8,21 @@ export const moveAndKeep = {
   usage: `[${config.prefix}moveAndKeep userId]`,
   roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    moveAndKeepUserInChannel(message, client)
+    moveAndKeepUserInChannel(message, client),
 } as messageHandleFunction;
 
 const moveAndKeepUserInChannel = (message: Message, client: Client) => {
-  message.delete(250);
+  message.delete({ timeout: 250 });
   let userToMoveId = message.content.slice("!moveAndKeep ".length);
   userToMoveId = message.mentions.users.first().id;
   console.log(userToMoveId);
-  message.guild.fetchMember(userToMoveId).then(member => {
-    member.setVoiceChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
-      message.guild.fetchMember(userToMoveId).then(member => member.setDeaf(true));
-      client.on("voiceStateUpdate", (oldMember, newMember) => {
-        if (member.id === oldMember.id && member.id === newMember.id) {
-          if (
-            oldMember.voiceChannel &&
-            newMember.voiceChannel &&
-            oldMember.voiceChannel.id !== newMember.voiceChannel.id
-          ) {
-            message.member.setVoiceChannel(channelIds.stilletreppeVoice);
+  message.guild.members.fetch(userToMoveId).then((member) => {
+    member.voice.setChannel(channelIds.stilletreppeVoice).then((member: GuildMember) => {
+      message.guild.members.fetch(userToMoveId).then((member) => member.voice.setDeaf(true));
+      client.on("voiceStateUpdate", (oldState, newState) => {
+        if (member.id === oldState.id && member.id === newState.id) {
+          if (oldState.channel && newState.channel && oldState.channel.id !== newState.channelID) {
+            message.member.voice.setChannel(channelIds.stilletreppeVoice);
           } else {
             return console.log("User nicht verschoben ");
           }

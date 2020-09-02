@@ -8,7 +8,7 @@ export const pinnwand = {
   description: "Holt den letzten Eintrag von der Steam Pinnwand",
   usage: `[${config.prefix}pinnwand profile/id(/profiles/ oder /id/) steamid]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
-  execute: ({ discord: { message, client }, custom }: commandProps) => getPinnwandEintrag(message)
+  execute: ({ discord: { message, client }, custom }: commandProps) => getPinnwandEintrag(message),
 } as messageHandleFunction;
 
 const getPinnwandEintrag = (message: Message) => {
@@ -17,8 +17,8 @@ const getPinnwandEintrag = (message: Message) => {
   let steamId = message.content.split(" ")[2];
   let domAsText: string = undefined;
   fetch(`https://steamcommunity.com/${steamProfileOrId}/${steamId}`)
-    .then(response => response.text())
-    .then(text => {
+    .then((response) => response.text())
+    .then((text) => {
       domAsText = text;
       let dom = domParser.parse(domAsText);
       let foundDomElements: DomElement[] = [] as DomElement[];
@@ -85,11 +85,11 @@ const getPinnwandEintrag = (message: Message) => {
                 value:
                   pinnwandText !== undefined && pinnwandText !== null && pinnwandText !== ""
                     ? pinnwandText + "\u200b"
-                    : "Smiley?"
-              }
+                    : "Smiley?",
+              },
             ],
-            color: color
-          } as MessageEmbed
+            color: color,
+          } as MessageEmbed,
         });
       } catch (error) {
         console.log(error);
@@ -101,13 +101,13 @@ const getPinnwandEintrag = (message: Message) => {
             }`
           )
           .then((msge: Message) => {
-            msge.deletable && msge.delete(10000);
+            msge.deletable && msge.delete({ timeout: 10000 });
           })
-          .catch(error => console.log(error));
+          .catch((error) => console.log(error));
       }
     });
 
-  message.deletable && message.delete(240);
+  message.deletable && message.delete({ timeout: 240 });
 };
 
 const getComments = (commentContainerChildren: DomElement[], domParser: Parser) => {

@@ -1,19 +1,11 @@
 import { config, roleIds, channelIds, auth } from "../bot";
-import {
-  TextChannel,
-  DMChannel,
-  GroupDMChannel,
-  GuildMember,
-  Client,
-  Message,
-  MessageCollector,
-} from "discord.js";
+import { TextChannel, DMChannel, GuildMember, Client, Message, MessageCollector } from "discord.js";
 import * as fs from "fs";
 import { readJsonFile, writeJsonFile } from "../controller/JSONController";
 import { raffleItem } from "./raffle";
 const auth: auth = require("../../configs/auth.json");
 
-export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupDMChannel) => {
+export const getRandomWinner = (messageChannel: DMChannel | TextChannel) => {
   function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -30,7 +22,7 @@ export const getRandomWinner = (messageChannel: DMChannel | TextChannel | GroupD
           const finalList = userList.filter((usr) => usr.hasEnteredRaffle);
           const winningNumber = getRandomInt(0, finalList.length - 1);
           const winningId = finalList[winningNumber].id;
-          const winnerArray = (messageChannel as TextChannel).guild.members
+          const winnerArray = (messageChannel as TextChannel).guild.members.cache
             .filter((usr) => usr.id === winningId)
             .array();
           if (winnerArray.length > 1) {
@@ -127,7 +119,7 @@ const winnerAcceptsPrize = (client: Client, channel: DMChannel, winner: GuildMem
               { code: true }
             )
             .then(() =>
-              (client.channels.get(channelIds.kikaloungeText) as TextChannel)
+              (client.channels.cache.get(channelIds.kikaloungeText) as TextChannel)
                 .send(
                   `🎉 <@&${roleIds.raffleTeilnehmer}> höret und frohlocket! ✨\n🎊 ${
                     winner.displayName
@@ -154,7 +146,7 @@ export const winnerRejectsPrize = (client: Client, channel: DMChannel, winner: G
       msg.channel
         .send("Hier würde ein Gewinn stehen 🎁💀", { code: true })
         .then(() =>
-          (client.channels.get(channelIds.kikaloungeText) as TextChannel)
+          (client.channels.cache.get(channelIds.kikaloungeText) as TextChannel)
             .send(
               `🎉 <@&${roleIds.raffleTeilnehmer}> höret und staunet! ✨\n⁉ ${winner.displayName}${
                 winner.nickname !== winner.displayName && winner.nickname !== null
@@ -171,9 +163,9 @@ export const winnerRejectsPrize = (client: Client, channel: DMChannel, winner: G
 };
 
 export const handleRaffleTime = (client: Client) => {
-  getRandomWinner(client.channels.get(channelIds.kikaloungeText) as TextChannel)
+  getRandomWinner(client.channels.cache.get(channelIds.kikaloungeText) as TextChannel)
     .then((pckg) => {
-      (client.channels.get(
+      (client.channels.cache.get(
         channelIds.kikaloungeText
       ) as TextChannel).send(
         " du wurdest im Raffle gezogen und hast damit gewonnen! Glückwunsch!",
@@ -188,5 +180,7 @@ export const handleRaffleTime = (client: Client) => {
         )
         .catch((error) => console.log({ caller: "raffleWin", error: error }));
     })
-    .catch((error) => (client.channels.get(channelIds.kikaloungeText) as TextChannel).send(error));
+    .catch((error) =>
+      (client.channels.cache.get(channelIds.kikaloungeText) as TextChannel).send(error)
+    );
 };

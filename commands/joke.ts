@@ -1,6 +1,6 @@
 import { commandProps, mappedRoles, config, roleIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
-import { Message, Client, RichEmbed } from "discord.js";
+import { Message, Client } from "discord.js";
 import { Parser, DomElement, DomAttributeNames } from "../controller/parser";
 import { getState, setState } from "../controller/stateController";
 
@@ -21,7 +21,7 @@ export const joke = {
   usage: `[${config.prefix}joke]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    handleJokeRequest(message, custom.jokes)
+    handleJokeRequest(message, custom.jokes),
 } as messageHandleFunction;
 
 const handleJokeRequest = (
@@ -33,27 +33,27 @@ const handleJokeRequest = (
     let nextJoke = jokesToshift.shift();
     sendJoke(message, nextJoke, jokesToshift.length + 1);
     setState({
-      jokes: { ...jokeState, jokes: jokesToshift }
+      jokes: { ...jokeState, jokes: jokesToshift },
     });
   } else {
-    getJokes(jokeState.jokePosition * 20).then(jokes => {
+    getJokes(jokeState.jokePosition * 20).then((jokes) => {
       let shiftJokes = jokes;
       let nextJoke = jokes.shift();
 
       setState({
-        jokes: { jokePosition: jokeState.jokePosition += 1, jokes: shiftJokes }
-      }).then(newState => {
+        jokes: { jokePosition: jokeState.jokePosition += 1, jokes: shiftJokes },
+      }).then((newState) => {
         message.channel
           .send(
             `~~Klaue neue Witze~~ Denke mir neue Witze aus. ~~Bin bei Seite ${newState.jokes.jokePosition}~~`
           )
-          .then((msg: Message) => msg.deletable && !msg.pinned && msg.delete(60000));
+          .then((msg: Message) => msg.deletable && !msg.pinned && msg.delete({ timeout: 60000 }));
         sendJoke(message, nextJoke, newState.jokes.jokes.length + 1);
       });
     });
   }
 
-  message.deletable && message.delete(250);
+  message.deletable && message.delete({ timeout: 250 });
 };
 
 const sendJoke = (message: Message, joke: joke, jokeCount?: number) => {
@@ -64,17 +64,17 @@ const sendJoke = (message: Message, joke: joke, jokeCount?: number) => {
         color: 0xff6633,
         author: { name: joke.authorName, url: joke.url },
         fields: [{ name: joke.title, value: `${joke.content}` }],
-        footer: { text: `👍${joke.likes} 👎${joke.dislikes} 📅 ${date}${" 📁" + jokeCount}` }
-      } as RichEmbed
+        footer: { text: `👍${joke.likes} 👎${joke.dislikes} 📅 ${date}${" 📁" + jokeCount}` },
+      },
     })
-    .then((msg: Message) => msg.deletable && !msg.pinned && msg.delete(60000));
+    .then((msg: Message) => msg.deletable && !msg.pinned && msg.delete({ timeout: 60000 }));
 };
 
 const getJokes = (skip?: number) =>
   new Promise((resolve, reject) => {
     fetch(`https://schlechtewitze.com/kurze-witze${skip > 0 ? "/?skip=" + skip : ""}`)
-      .then(response => response.text())
-      .then(response => {
+      .then((response) => response.text())
+      .then((response) => {
         try {
           let domParser = new Parser();
           let dom = domParser.parse(response);
@@ -82,7 +82,7 @@ const getJokes = (skip?: number) =>
 
           let articleMain: DomElement[] = [];
           domParser.findInDomElements(body, DomAttributeNames.class, "Article__main", articleMain);
-          let jokes = articleMain.map(artElement => {
+          let jokes = articleMain.map((artElement) => {
             let domElementByClass = domParser.getElementAsObject(
               artElement,
               DomAttributeNames.class
@@ -94,9 +94,9 @@ const getJokes = (skip?: number) =>
               dislikes: undefined,
               authorName: undefined,
               date: undefined,
-              url: undefined
+              url: undefined,
             } as joke;
-            Object.keys(domElementByClass).map(propName => {
+            Object.keys(domElementByClass).map((propName) => {
               const checkAgainst = (searchString: string) =>
                 ~propName.toLocaleLowerCase().indexOf(searchString);
               let element = domElementByClass[propName] as DomElement;
@@ -110,12 +110,12 @@ const getJokes = (skip?: number) =>
                 );
               } else if (checkAgainst("content")) {
                 let data: string[] = [];
-                let multipleData = element.children.map(parent => {
+                let multipleData = element.children.map((parent) => {
                   data = [
                     ...data,
                     ...(parent.children
-                      ? parent.children.map(child => (child.data ? child.data : ""))
-                      : [])
+                      ? parent.children.map((child) => (child.data ? child.data : ""))
+                      : []),
                   ];
                   return parent;
                 });
@@ -154,5 +154,5 @@ const getJokes = (skip?: number) =>
           return reject({ caller: "getJoke", error: error });
         }
       })
-      .catch(error => console.log({ caller: "getJoke", error: error }));
+      .catch((error) => console.log({ caller: "getJoke", error: error }));
   }) as Promise<joke[]>;

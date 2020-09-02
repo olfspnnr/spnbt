@@ -7,11 +7,11 @@ export const joinvoice = {
   description: "Lässt Bernd den Voicechannel betreten",
   usage: `[${config.prefix}joinvoice]`,
   roles: [mappedRoles.spinner],
-  execute: ({ discord: { message, client }, custom }: commandProps) => enterVoiceChannel(message)
+  execute: ({ discord: { message, client }, custom }: commandProps) => enterVoiceChannel(message),
 } as messageHandleFunction;
 
 const enterVoiceChannel = (message: Message) => {
-  const voiceChannel = message.member.voiceChannel;
+  const voiceChannel = message.member.voice.channel;
   message.delete();
-  return voiceChannel.joinable ? voiceChannel.join().then(connection => connection) : false;
+  return voiceChannel.joinable ? voiceChannel.join().then((connection) => connection) : false;
 };

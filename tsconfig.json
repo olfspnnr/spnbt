@@ -4,8 +4,8 @@
     "removeComments": true,
     "noImplicitAny": true,
     "module": "commonjs",
-    "target": "es6",
-    "lib": ["es5", "es6", "dom"],
+    "target": "ES6",
+    "lib": ["ES5", "ES6", "DOM"],
     "outDir": "./dist"
   },
   "include": ["./"],

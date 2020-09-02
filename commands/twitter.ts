@@ -1,6 +1,6 @@
 import { commandProps, mappedRoles, config, roleIds, channelIds } from "../bot";
 import { messageHandleFunction } from "../legacy/messageHandler";
-import { Message, Client, TextChannel, RichEmbed } from "discord.js";
+import { Message, Client, TextChannel } from "discord.js";
 import { ReadStream } from "tty";
 import Twitter = require("twitter");
 import { EventEmitter } from "events";
@@ -12,7 +12,7 @@ export const twitter = {
   usage: `[${config.prefix}twitter "hashtag"]`,
   roles: [mappedRoles.spinner, mappedRoles.trusted],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    listenToHashtag(message, client, custom.twitterClient)
+    listenToHashtag(message, client, custom.twitterClient),
 } as messageHandleFunction;
 
 const listenToHashtag = async (message: Message, client: Client, twitterClient: Twitter) => {
@@ -23,7 +23,7 @@ const listenToHashtag = async (message: Message, client: Client, twitterClient: 
       message.delete();
     }
 
-    twitterClient.stream("statuses/filter", { track: hashtag }, stream =>
+    twitterClient.stream("statuses/filter", { track: hashtag }, (stream) =>
       handleStream(stream, client, hashtag, +amount, message)
     );
   } catch (error) {
@@ -44,7 +44,7 @@ const handleStream = async (
     }
     const listeningMsg = await message.channel.send(`Hört auf: ${hashtag}`);
     if (listeningMsg && (listeningMsg as Message).deletable) {
-      (listeningMsg as Message).delete(10000);
+      (listeningMsg as Message).delete({ timeout: 10000 });
     }
     const destroyStream = () => stream.removeAllListeners();
     let currentCount = 0;
@@ -54,7 +54,7 @@ const handleStream = async (
         currentCount++;
       }
     });
-    stream.on("error", function(error: any) {
+    stream.on("error", function (error: any) {
       throw error;
     });
   } catch (error) {
@@ -76,7 +76,7 @@ const handleStreamData = async (
       destroyStream();
       const stopListeningMessage = await channel.send(`Hört nichtmehr zu`);
       if ((stopListeningMessage as Message) && (stopListeningMessage as Message).deletable) {
-        (stopListeningMessage as Message).delete(10000);
+        (stopListeningMessage as Message).delete({ timeout: 10000 });
       }
     } else {
       const message = {
@@ -85,51 +85,51 @@ const handleStreamData = async (
         author: {
           name: `${data.user.name}${data.user.verified ? " - ✔" : ""}`,
           url: data.user.url ? data.user.url + "" : undefined,
-          icon_url: data.user.profile_image_url_https
+          icon_url: data.user.profile_image_url_https,
         },
         image: {
-          url: data.user.profile_banner_url
+          url: data.user.profile_banner_url,
         },
         thumbnail: {
-          url: data.user.profile_image_url_https
+          url: data.user.profile_image_url_https,
         },
         description: data.text,
         fields: [
           {
             name: "Retweets:",
             value: `${data.retweet_count || "--"}`,
-            inline: true
+            inline: true,
           },
           {
             name: "Likes:",
             value: `${data.favorite_count || "--"}`,
-            inline: true
+            inline: true,
           },
           {
             name: "Replies:",
             value: `${data.reply_count || "--"}`,
-            inline: true
+            inline: true,
           },
           {
             name: "Follower:",
             value: `${data.user.followers_count || "--"}`,
-            inline: true
+            inline: true,
           },
           {
             name: "Nationality:",
             value: `${data.lang === "en" ? `\:flag_us: || \:flag_gb:` : `\:flag_${data.lang}:`}`,
-            inline: true
-          }
+            inline: true,
+          },
         ],
         timestamp: new Date(+data.timestamp_ms),
         footer: {
-          text: `📍${data.user.location || "--"}`
-        }
-      } as RichEmbed;
+          text: `📍${data.user.location || "--"}`,
+        },
+      };
 
       const sentMessage = await channel.send({ embed: message });
       if (sentMessage && (sentMessage as Message).deletable) {
-        (sentMessage as Message).delete(250000);
+        (sentMessage as Message).delete({ timeout: 250000 });
       }
     }
   } catch (error) {
@@ -140,4 +140,4 @@ const handleStreamData = async (
 const toFlag = (countryCode: string) =>
   countryCode
     .toUpperCase()
-    .replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397));
+    .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));

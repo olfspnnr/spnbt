@@ -7,13 +7,13 @@ export const gruschel = {
   description: "Gruschelt einen anderen User",
   usage: `[${config.prefix}gruschel @member]`,
   roles: ["spinner", "trusted"],
-  execute: ({ discord: { message, client }, custom }) => GruschelUser(message, client)
+  execute: ({ discord: { message, client }, custom }) => GruschelUser(message, client),
 } as messageHandleFunction;
 
 const GruschelUser = async (message: Message, client: Client) => {
   try {
     if (message.mentions && message.mentions.members) {
-      const messageArr = message.mentions.members.map(member => {
+      const messageArr = message.mentions.members.map((member) => {
         return `**${member.displayName}**`;
       });
       const newMessage = `${
@@ -22,8 +22,8 @@ const GruschelUser = async (message: Message, client: Client) => {
       if (message.deletable) {
         message.delete();
       }
-      const gruscheltext = await message.channel.sendMessage(newMessage);
-      return (gruscheltext as Message).delete(15000);
+      const gruscheltext = await message.channel.send(newMessage);
+      return (gruscheltext as Message).delete({ timeout: 15000 });
     }
   } catch (error) {
     if (message.deletable) {

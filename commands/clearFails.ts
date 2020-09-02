@@ -8,14 +8,19 @@ export const clearFails = {
   usage: `[${config.prefix}clearFails]`,
   roles: [mappedRoles.spinner],
   execute: ({ discord: { message, client }, custom }: commandProps) =>
-    clearFailedCommands(message, client)
+    clearFailedCommands(message, client),
 } as messageHandleFunction;
 
-const clearFailedCommands = (message: Message, client: Client) => {
-  message.channel.fetchMessages({ limit: 25 } as ChannelLogsQueryOptions).then(messages => {
-    let messagesWithExclamation = messages.filter(msg => msg.content.slice(0, 1) === config.prefix);
-    messagesWithExclamation.forEach(element => {
+const clearFailedCommands = async (message: Message, client: Client) => {
+  try {
+    const messages = await message.channel.messages.fetch({ limit: 25 });
+    let messagesWithExclamation = messages.filter(
+      (msg) => msg.content.slice(0, 1) === config.prefix
+    );
+    messagesWithExclamation.forEach((element) => {
       if (element.deletable) element.delete();
     });
-  });
+  } catch (error) {
+    throw error;
+  }
 };
