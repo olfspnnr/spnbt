@@ -1,6 +1,6 @@
 {
   "name": "berndbot",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Bottet herum.",
   "main": "bot.js",
   "author": "Olaf",
@@ -16,7 +16,7 @@
     "@types/twitter": "^1.7.0",
     "@types/websocket": "0.0.40",
     "@types/ws": "^6.0.4",
-    "discord.js": "^11.6.4",
+    "discord.js": "^12.3.1",
     "es6-promise": "^4.2.5",
     "express": "^4.17.1",
     "html-dom-parser": "^0.1.3",
