@@ -523,9 +523,15 @@ const _handleYouTubeStream = async (
           throw error;
         }
       });
-      const collector = new MessageCollector(
-        message.channel as TextChannel,
-        (msg: Message) =>
+
+      const collector = new MessageCollector(message.channel as TextChannel, (msg: Message) => {
+        const canInteract =
+          msg.member.id === message.author.id ||
+          (msg.member.roles.highest.id === roleIds.trusted &&
+            message.member.roles.highest.id !== roleIds.spinner) ||
+          msg.member.roles.highest.id === roleIds.spinner;
+        return (
+          canInteract &&
           (msg.content.includes("!stop") ||
             msg.content.includes("!pause") ||
             msg.content.includes("!resume") ||
@@ -533,7 +539,8 @@ const _handleYouTubeStream = async (
             msg.content.includes("!quieter") ||
             msg.content.includes("!zerficken")) &&
           !msg.content.includes("Optionen")
-      );
+        );
+      });
 
       let zerfickt = false;
 
