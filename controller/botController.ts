@@ -639,7 +639,7 @@ const _handleYouTubeStream = async (
               msg.member.user.id === message.author.id) ||
             msg.member.roles.highest.id === roleIds.spinner;
           if (!zerfickt) {
-            if (reaction.emoji.identifier === "⏹") {
+            if (reaction.emoji.name === "⏹") {
               if (msg.deletable) await msg.delete();
               if ((Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).deletable) {
                 await (Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).delete();
@@ -648,15 +648,15 @@ const _handleYouTubeStream = async (
               if (stream.destroy) await stream.destroy();
               if (youtubeStream.destroy) await youtubeStream.destroy();
               if (messagecollector.stop) await messagecollector.stop();
-            } else if (reaction.emoji.identifier === "⏸") {
+            } else if (reaction.emoji.name === "⏸") {
               if (!stream.paused) stream.pause();
-            } else if (reaction.emoji.identifier === "▶") {
+            } else if (reaction.emoji.name === "▶") {
               if (stream.paused) stream.resume();
-            } else if (reaction.emoji.identifier === "🔊" && hasHighRoles) {
+            } else if (reaction.emoji.name === "🔊" && hasHighRoles) {
               if (stream.volume + 0.1 < 10) stream.setVolume(stream.volume + 0.1);
-            } else if (reaction.emoji.identifier === "🔉" && hasHighRoles) {
+            } else if (reaction.emoji.name === "🔉" && hasHighRoles) {
               if (stream.volume - 0.1 > 0) stream.setVolume(stream.volume - 0.1);
-            } else if (reaction.emoji.identifier === "☠" && hasHighRoles) {
+            } else if (reaction.emoji.name === "☠" && hasHighRoles) {
               zerfickt = true;
               const gnade = await msg.channel.send(`Gnade dir Gott, ${message.member}`);
               gnade.deletable && gnade.delete({ timeout: 5000 });
