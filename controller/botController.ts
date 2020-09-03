@@ -506,8 +506,14 @@ const _handleYouTubeStream = async (
         code: true,
       });
 
-      for (let emoji in ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
-        await optionmessage.react(emoji);
+      if (Array.isArray(optionmessage)) {
+        for (let emoji in ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
+          await optionmessage[0].react(emoji);
+        }
+      } else {
+        for (let emoji in ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
+          await optionmessage.react(emoji);
+        }
       }
 
       stream.once("finish", async () => {
