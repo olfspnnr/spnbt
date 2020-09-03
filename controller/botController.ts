@@ -526,12 +526,13 @@ const _handleYouTubeStream = async (
       const collector = new MessageCollector(
         message.channel as TextChannel,
         (msg: Message) =>
-          msg.content.includes("!stop") ||
-          msg.content.includes("!pause") ||
-          msg.content.includes("!resume") ||
-          msg.content.includes("!louder") ||
-          msg.content.includes("!quieter") ||
-          msg.content.includes("!zerficken")
+          (msg.content.includes("!stop") ||
+            msg.content.includes("!pause") ||
+            msg.content.includes("!resume") ||
+            msg.content.includes("!louder") ||
+            msg.content.includes("!quieter") ||
+            msg.content.includes("!zerficken")) &&
+          !msg.content.includes("Optionen")
       );
 
       let zerfickt = false;
