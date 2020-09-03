@@ -632,7 +632,7 @@ const _handleYouTubeStream = async (
               ? member.roles.highest.id === roleIds.spinner
               : false;
 
-          return canInteract && optionEmojis.some((e) => e === reaction.name);
+          return canInteract;
         }
       );
 
