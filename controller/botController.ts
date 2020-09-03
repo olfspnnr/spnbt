@@ -507,11 +507,11 @@ const _handleYouTubeStream = async (
       });
 
       if (Array.isArray(optionmessage)) {
-        for (let emoji in ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
+        for (let emoji of ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
           await optionmessage[0].react(emoji);
         }
       } else {
-        for (let emoji in ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
+        for (let emoji of ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
           await optionmessage.react(emoji);
         }
       }
