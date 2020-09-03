@@ -24,8 +24,8 @@ export class Portal extends React.Component<PortalProps, PortalState> {
         tertiary: "teal",
         textOnColor: "white",
         textDefault: "black",
-        textHighlight: "purple"
-      }
+        textHighlight: "purple",
+      },
     };
   }
 
@@ -53,16 +53,8 @@ export class Portal extends React.Component<PortalProps, PortalState> {
             // style={{ maxWidth: this.state.maxWidth }}
           >
             <Switch location={this.props.RouteProps.location}>
-              <Route exact path="/" render={props => <Home {...this.state} />} />
-              <Route path="/Chat/" render={props => <Chat {...this.state} />} />
-              <Route
-                path="/Table/"
-                render={props => (
-                  <div className="flex flex-1 justify-center items-center w-full h-full">
-                    <Table {...this.state} />
-                  </div>
-                )}
-              />
+              <Route exact path="/" render={(props) => <Home {...this.state} />} />
+              <Route path="/Chat/" render={(props) => <Chat {...this.state} />} />
             </Switch>
           </div>
         </div>

@@ -20,8 +20,9 @@ export class Chat extends React.Component<ChatProps, ChatState> {
   }
 
   componentDidMount() {
-    const ws = new WebSocket("ws://127.0.0.1:8080");
+    const ws = new WebSocket("ws://localhost:8080");
     ws.addEventListener("open", (ev) => {
+      console.log("test");
       this.setState((cs) => ({ ...cs, websocket: ws }));
     });
     ws.addEventListener("message", (ev) => {
@@ -42,7 +43,9 @@ export class Chat extends React.Component<ChatProps, ChatState> {
     if (this.state.websocket)
       this.setState((cs) => {
         if (cs.websocket) {
-          cs.websocket.send(JSON.stringify({ type: "sendMessage", payLoad: cs.message + "" }));
+          const message = JSON.stringify({ type: "sendMessage", payLoad: cs.message + "" });
+          console.log(message);
+          cs.websocket.send(message);
         }
         return { ...cs, message: null };
       });
