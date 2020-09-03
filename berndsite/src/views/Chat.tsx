@@ -1,36 +1,58 @@
 import * as React from "react";
+import { fchmod } from "fs";
 
 export interface ChatProps {}
 
 export interface ChatState {
   clicks: number;
+  message: string | null;
+  websocket: WebSocket | null;
 }
 
 export class Chat extends React.Component<ChatProps, ChatState> {
   constructor(props: ChatProps) {
     super(props);
     this.state = {
-      clicks: 660
+      clicks: 660,
+      message: null,
+      websocket: null,
     };
   }
 
   componentDidMount() {
-    // const ws = new WebSocket("ws://127.0.0.1:8080");
-    // ws.addEventListener("open", ev => {
-    //   ws.send("Test");
-    // });
-    // ws.addEventListener("message", ev => {
-    //   console.log(ev.data);
-    // });
+    const ws = new WebSocket("ws://127.0.0.1:8080");
+    ws.addEventListener("open", (ev) => {
+      this.setState((cs) => ({ ...cs, websocket: ws }));
+    });
+    ws.addEventListener("message", (ev) => {
+      console.log(ev.data);
+    });
   }
 
   handleOnClick = () => {
-    this.setState(cs => {
+    this.setState((cs) => {
       const newValue = cs.clicks + 1;
       return {
-        clicks: newValue === 666 ? 667 : newValue
+        clicks: newValue === 666 ? 667 : newValue,
       };
     });
+  };
+
+  handleMessageSend = () => {
+    if (this.state.websocket)
+      this.setState((cs) => {
+        if (cs.websocket) {
+          cs.websocket.send(JSON.stringify({ type: "sendMessage", payLoad: cs.message + "" }));
+        }
+        return { ...cs, message: null };
+      });
+  };
+
+  handleMessage = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    if (ev && ev.target) {
+      const val = ev.target.value;
+      this.setState({ message: val });
+    }
   };
 
   render() {
@@ -43,6 +65,8 @@ export class Chat extends React.Component<ChatProps, ChatState> {
         >
           {this.state.clicks}
         </span>
+        <input type="text" value={this.state.message || ""} onChange={this.handleMessage} />
+        <button onClick={this.handleMessageSend}>send</button>
       </div>
     );
   }

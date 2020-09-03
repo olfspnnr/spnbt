@@ -6,12 +6,13 @@ import { channelIds } from "../bot";
 
 export const handleWebSocketMessage = (wsMessage: any, client: Client) => {
   try {
+    const { type, payload } = JSON.parse(wsMessage);
     if (
-      (handlePayloadType as any)[wsMessage.type] !== undefined &&
-      typeof (handlePayloadType as any)[wsMessage.type] === "function"
+      (handlePayloadType as any)[type] !== undefined &&
+      typeof (handlePayloadType as any)[type] === "function"
     ) {
-      (handlePayloadType as any)[wsMessage.type](wsMessage.payload, client);
-    } else throw `could not find function for ${wsMessage.type}`;
+      (handlePayloadType as any)[type](payload, client);
+    } else throw `could not find function for ${type}`;
   } catch (error) {
     console.log(error);
   }
@@ -25,7 +26,7 @@ const handlePayloadType = {
 const sendToKika = async (payload: string, client: Client) => {
   try {
     const kikaLounge = (await client.channels.fetch(channelIds.kikaloungeText)) as TextChannel;
-    const message = await kikaLounge.send(payload);
+    const message = await kikaLounge.send(payload, { tts: true });
     message.deletable && message.delete({ timeout: 5000 });
   } catch (error) {
     throw error;
