@@ -13,6 +13,7 @@ import {
   DMChannel,
   EmojiResolvable,
   MessageAttachment,
+  ReactionCollector,
 } from "discord.js";
 import {
   audioQueue,
@@ -505,6 +506,7 @@ const _handleYouTubeStream = async (
         reply: message.author,
         code: true,
       });
+      optionmessage.reactions.add(["⏹", "⏸", "▶", "🔊", "🔉", "☠"]);
       stream.once("finish", async () => {
         try {
           if (optionmessage.deletable) await optionmessage.delete();
@@ -524,27 +526,30 @@ const _handleYouTubeStream = async (
         }
       });
 
-      const collector = new MessageCollector(message.channel as TextChannel, (msg: Message) => {
-        const canInteract =
-          msg.member.id === message.author.id ||
-          (msg.member.roles.highest.id === roleIds.trusted &&
-            message.member.roles.highest.id !== roleIds.spinner) ||
-          msg.member.roles.highest.id === roleIds.spinner;
-        return (
-          canInteract &&
-          (msg.content.includes("!stop") ||
-            msg.content.includes("!pause") ||
-            msg.content.includes("!resume") ||
-            msg.content.includes("!louder") ||
-            msg.content.includes("!quieter") ||
-            msg.content.includes("!zerficken")) &&
-          !msg.content.includes("Optionen")
-        );
-      });
+      const messagecollector = new MessageCollector(
+        message.channel as TextChannel,
+        (msg: Message) => {
+          const canInteract =
+            msg.member.id === message.author.id ||
+            (msg.member.roles.highest.id === roleIds.trusted &&
+              message.member.roles.highest.id !== roleIds.spinner) ||
+            msg.member.roles.highest.id === roleIds.spinner;
+          return (
+            canInteract &&
+            (msg.content.includes("!stop") ||
+              msg.content.includes("!pause") ||
+              msg.content.includes("!resume") ||
+              msg.content.includes("!louder") ||
+              msg.content.includes("!quieter") ||
+              msg.content.includes("!zerficken")) &&
+            !msg.content.includes("Optionen")
+          );
+        }
+      );
 
       let zerfickt = false;
 
-      collector.on("collect", async (msg: Message) => {
+      messagecollector.on("collect", async (msg: Message) => {
         try {
           const hasHighRoles =
             (msg.member.roles.highest.id === roleIds.trusted &&
@@ -559,7 +564,7 @@ const _handleYouTubeStream = async (
               if (message.deletable) await message.delete();
               if (stream.destroy) await stream.destroy();
               if (youtubeStream.destroy) await youtubeStream.destroy();
-              if (collector.stop) await collector.stop();
+              if (messagecollector.stop) await messagecollector.stop();
             } else if (msg.content.includes("!pause")) {
               if (!stream.paused) stream.pause();
             } else if (msg.content.includes("!resume")) {
@@ -584,11 +589,68 @@ const _handleYouTubeStream = async (
               if (message.deletable) await message.delete();
               if (stream.destroy) await stream.destroy();
               if (youtubeStream.destroy) await youtubeStream.destroy();
-              if (collector.stop) await collector.stop();
+              if (messagecollector.stop) await messagecollector.stop();
             }
           }
 
           if (msg.deletable) msg.delete({ timeout: 100 });
+        } catch (error) {
+          throw error;
+        }
+      });
+
+      const emojicollector = new ReactionCollector(optionmessage, (msg) => {
+        const canInteract =
+          msg.member.id === message.author.id ||
+          (msg.member.roles.highest.id === roleIds.trusted &&
+            message.member.roles.highest.id !== roleIds.spinner) ||
+          msg.member.roles.highest.id === roleIds.spinner;
+        return (
+          canInteract &&
+          (msg.content.includes("!stop") ||
+            msg.content.includes("!pause") ||
+            msg.content.includes("!resume") ||
+            msg.content.includes("!louder") ||
+            msg.content.includes("!quieter") ||
+            msg.content.includes("!zerficken")) &&
+          !msg.content.includes("Optionen")
+        );
+      });
+
+      emojicollector.on("collect", async (reaction, user) => {
+        try {
+          const msg = optionmessage;
+          const hasHighRoles =
+            (msg.member.roles.highest.id === roleIds.trusted &&
+              msg.member.user.id === message.author.id) ||
+            msg.member.roles.highest.id === roleIds.spinner;
+          if (!zerfickt) {
+            if (reaction.emoji.identifier === "⏹") {
+              if (msg.deletable) await msg.delete();
+              if (optionmessage.deletable) {
+                await optionmessage.delete();
+              }
+              if (message.deletable) await message.delete();
+              if (stream.destroy) await stream.destroy();
+              if (youtubeStream.destroy) await youtubeStream.destroy();
+              if (messagecollector.stop) await messagecollector.stop();
+            } else if (reaction.emoji.identifier === "⏸") {
+              if (!stream.paused) stream.pause();
+            } else if (reaction.emoji.identifier === "▶") {
+              if (stream.paused) stream.resume();
+            } else if (reaction.emoji.identifier === "🔊" && hasHighRoles) {
+              if (stream.volume + 0.1 < 10) stream.setVolume(stream.volume + 0.1);
+            } else if (reaction.emoji.identifier === "🔉" && hasHighRoles) {
+              if (stream.volume - 0.1 > 0) stream.setVolume(stream.volume - 0.1);
+            } else if (reaction.emoji.identifier === "☠" && hasHighRoles) {
+              zerfickt = true;
+              msg.channel.send(`Gnade dir Gott, ${message.member}`).then((msg) => {
+                msg.deletable && msg.delete({ timeout: 5000 });
+              });
+              stream.setVolumeDecibels(100);
+            }
+            await reaction.remove();
+          }
         } catch (error) {
           throw error;
         }
