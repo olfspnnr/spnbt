@@ -518,7 +518,8 @@ const _handleYouTubeStream = async (
 
       stream.once("finish", async () => {
         try {
-          if (optionmessage.deletable) await optionmessage.delete();
+          if ((Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).deletable)
+            await (Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).delete();
           if (message.deletable) await message.delete();
           return await setState({ isPlayingAudio: false });
         } catch (error) {
@@ -527,7 +528,8 @@ const _handleYouTubeStream = async (
       });
       stream.once("close", async () => {
         try {
-          if (optionmessage.deletable) await optionmessage.delete();
+          if ((Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).deletable)
+            await (Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).delete();
           if (message.deletable) await message.delete();
           return await setState({ isPlayingAudio: false });
         } catch (error) {
@@ -567,8 +569,8 @@ const _handleYouTubeStream = async (
           if (!zerfickt) {
             if (msg.content.includes("!stop")) {
               if (msg.deletable) await msg.delete();
-              if (optionmessage.deletable) {
-                await optionmessage.delete();
+              if ((Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).deletable) {
+                await (Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).delete();
               }
               if (message.deletable) await message.delete();
               if (stream.destroy) await stream.destroy();
@@ -592,8 +594,8 @@ const _handleYouTubeStream = async (
           } else if (zerfickt && hasHighRoles) {
             if (msg.content.includes("!stop")) {
               if (msg.deletable) await msg.delete();
-              if (optionmessage.deletable) {
-                await optionmessage.delete();
+              if ((Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).deletable) {
+                await (Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).delete();
               }
               if (message.deletable) await message.delete();
               if (stream.destroy) await stream.destroy();
@@ -608,27 +610,30 @@ const _handleYouTubeStream = async (
         }
       });
 
-      const reactionCollector = new ReactionCollector(optionmessage, (msg) => {
-        const canInteract =
-          msg.member.id === message.author.id ||
-          (msg.member.roles.highest.id === roleIds.trusted &&
-            message.member.roles.highest.id !== roleIds.spinner) ||
-          msg.member.roles.highest.id === roleIds.spinner;
-        return (
-          canInteract &&
-          (msg.content.includes("!stop") ||
-            msg.content.includes("!pause") ||
-            msg.content.includes("!resume") ||
-            msg.content.includes("!louder") ||
-            msg.content.includes("!quieter") ||
-            msg.content.includes("!zerficken")) &&
-          !msg.content.includes("Optionen")
-        );
-      });
+      const reactionCollector = new ReactionCollector(
+        Array.isArray(optionmessage) ? optionmessage[0] : optionmessage,
+        (msg) => {
+          const canInteract =
+            msg.member.id === message.author.id ||
+            (msg.member.roles.highest.id === roleIds.trusted &&
+              message.member.roles.highest.id !== roleIds.spinner) ||
+            msg.member.roles.highest.id === roleIds.spinner;
+          return (
+            canInteract &&
+            (msg.content.includes("!stop") ||
+              msg.content.includes("!pause") ||
+              msg.content.includes("!resume") ||
+              msg.content.includes("!louder") ||
+              msg.content.includes("!quieter") ||
+              msg.content.includes("!zerficken")) &&
+            !msg.content.includes("Optionen")
+          );
+        }
+      );
 
       reactionCollector.on("collect", async (reaction, user) => {
         try {
-          const msg = optionmessage;
+          const msg = Array.isArray(optionmessage) ? optionmessage[0] : optionmessage;
           const hasHighRoles =
             (msg.member.roles.highest.id === roleIds.trusted &&
               msg.member.user.id === message.author.id) ||
@@ -636,8 +641,8 @@ const _handleYouTubeStream = async (
           if (!zerfickt) {
             if (reaction.emoji.identifier === "⏹") {
               if (msg.deletable) await msg.delete();
-              if (optionmessage.deletable) {
-                await optionmessage.delete();
+              if ((Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).deletable) {
+                await (Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).delete();
               }
               if (message.deletable) await message.delete();
               if (stream.destroy) await stream.destroy();
@@ -653,9 +658,8 @@ const _handleYouTubeStream = async (
               if (stream.volume - 0.1 > 0) stream.setVolume(stream.volume - 0.1);
             } else if (reaction.emoji.identifier === "☠" && hasHighRoles) {
               zerfickt = true;
-              msg.channel.send(`Gnade dir Gott, ${message.member}`).then((msg) => {
-                msg.deletable && msg.delete({ timeout: 5000 });
-              });
+              const gnade = await msg.channel.send(`Gnade dir Gott, ${message.member}`);
+              gnade.deletable && gnade.delete({ timeout: 5000 });
               stream.setVolumeDecibels(100);
             }
             await reaction.remove();
