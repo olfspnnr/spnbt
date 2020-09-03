@@ -459,7 +459,7 @@ const _handleOtherStream = async (
     throw error;
   }
 };
-
+let optionmessage: Message = undefined;
 const _handleYouTubeStream = async (
   info: any,
   message: Message,
@@ -500,7 +500,7 @@ const _handleYouTubeStream = async (
           ],
         ];
       }
-      const optionmessage = await message.channel.send(options, {
+      optionmessage = await message.channel.send(options, {
         split: true,
         reply: message.author,
         code: true,
@@ -601,13 +601,11 @@ const _handleYouTubeLink = async (
   start?: number | string
 ) => {
   try {
-    const youtubeStream: any = ytdl(url, {
-      quality: "highest",
+    const info = await ytdl.getInfo(url);
+    const youtubeStream = ytdl.downloadFromInfo(info, {
       begin: start ? start + "" : undefined,
-    }).on(
-      "info",
-      async (info) => await _handleYouTubeStream(info, message, dispatcher, youtubeStream, volume)
-    );
+    });
+    await _handleYouTubeStream(info, message, dispatcher, youtubeStream, volume);
     if (youtubeStream === undefined) {
       throw new Error("Stream is undefined");
     }
@@ -619,10 +617,18 @@ const _handleYouTubeLink = async (
         await setState({ isPlayingAudio: false });
         throw new Error(error);
       } catch (error) {
+        console.error(error);
         throw error;
       }
     });
   } catch (error) {
+    message.deletable && message.delete({ timeout: 1000 });
+    const errormessage = await message.channel.send(
+      `Also da kann ich jetzt nichts für: ${error + ""}${
+        error + "".includes("429") ? " Too many requests" : ""
+      }`
+    );
+    errormessage.deletable && errormessage.delete({ timeout: 15000 });
     throw error;
   }
 };
