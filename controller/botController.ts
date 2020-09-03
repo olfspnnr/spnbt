@@ -460,7 +460,6 @@ const _handleOtherStream = async (
     throw error;
   }
 };
-let optionmessage: Message = undefined;
 const _handleYouTubeStream = async (
   info: any,
   message: Message,
@@ -501,7 +500,7 @@ const _handleYouTubeStream = async (
           ],
         ];
       }
-      optionmessage = await message.channel.send(options, {
+      const optionmessage = await message.channel.send(options, {
         split: true,
         reply: message.author,
         code: true,
@@ -698,7 +697,7 @@ const _handleYouTubeLink = async (
     message.deletable && message.delete({ timeout: 1000 });
     const errormessage = await message.channel.send(
       `Also da kann ich jetzt nichts für: ${error + ""}${
-        error + "".includes("429") ? " Too many requests" : ""
+        (error + "").includes("429") ? " Too many requests" : ""
       }`
     );
     errormessage.deletable && errormessage.delete({ timeout: 15000 });
