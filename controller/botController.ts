@@ -640,8 +640,8 @@ const _handleYouTubeStream = async (
         try {
           const msg = Array.isArray(optionmessage) ? optionmessage[0] : optionmessage;
           const member =
-            message.guild.members.cache.has(user.id) &&
-            message.guild.members.cache.find((m) => m.id === user.id);
+            reaction.message.guild.members.cache.has(user.id) &&
+            reaction.message.guild.members.cache.find((m) => m.id === user.id);
           const hasHighRoles =
             (member.roles.highest.id === roleIds.trusted && member.user.id === message.author.id) ||
             member.roles.highest.id === roleIds.spinner;
