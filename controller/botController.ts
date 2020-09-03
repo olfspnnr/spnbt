@@ -14,6 +14,8 @@ import {
   EmojiResolvable,
   MessageAttachment,
   ReactionCollector,
+  ReactionEmoji,
+  User,
 } from "discord.js";
 import {
   audioQueue,
@@ -500,6 +502,14 @@ const _handleYouTubeStream = async (
           ],
         ];
       }
+
+      let optionEmojis = ["⏹", "⏸", "▶"];
+      if (
+        message.member.roles.highest.id === roleIds.trusted ||
+        message.member.roles.highest.id === roleIds.spinner
+      ) {
+        optionEmojis = [...optionEmojis, ...["🔊", "🔉", "☠"]];
+      }
       const optionmessage = await message.channel.send(options, {
         split: true,
         reply: message.author,
@@ -507,11 +517,11 @@ const _handleYouTubeStream = async (
       });
 
       if (Array.isArray(optionmessage)) {
-        for (let emoji of ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
+        for (let emoji of optionEmojis) {
           await optionmessage[0].react(emoji);
         }
       } else {
-        for (let emoji of ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
+        for (let emoji of optionEmojis) {
           await optionmessage.react(emoji);
         }
       }
@@ -610,34 +620,31 @@ const _handleYouTubeStream = async (
         }
       });
 
-      const reactionCollector = new ReactionCollector(
-        Array.isArray(optionmessage) ? optionmessage[0] : optionmessage,
-        (msg) => {
+      const reactionCollector = ((Array.isArray(optionmessage)
+        ? optionmessage[0]
+        : optionmessage) as Message).createReactionCollector(
+        (reaction: ReactionEmoji, user: User) => {
+          const member =
+            message.guild.members.cache.has(user.id) &&
+            message.guild.members.cache.find((m) => m.id === user.id);
           const canInteract =
-            msg.member.id === message.author.id ||
-            (msg.member.roles.highest.id === roleIds.trusted &&
-              message.member.roles.highest.id !== roleIds.spinner) ||
-            msg.member.roles.highest.id === roleIds.spinner;
-          return (
-            canInteract &&
-            (msg.content.includes("!stop") ||
-              msg.content.includes("!pause") ||
-              msg.content.includes("!resume") ||
-              msg.content.includes("!louder") ||
-              msg.content.includes("!quieter") ||
-              msg.content.includes("!zerficken")) &&
-            !msg.content.includes("Optionen")
-          );
+            user.id === message.author.id || member
+              ? member.roles.highest.id === roleIds.spinner
+              : false;
+
+          return canInteract && optionEmojis.some((e) => e === reaction.name);
         }
       );
 
       reactionCollector.on("collect", async (reaction, user) => {
         try {
           const msg = Array.isArray(optionmessage) ? optionmessage[0] : optionmessage;
+          const member =
+            message.guild.members.cache.has(user.id) &&
+            message.guild.members.cache.find((m) => m.id === user.id);
           const hasHighRoles =
-            (msg.member.roles.highest.id === roleIds.trusted &&
-              msg.member.user.id === message.author.id) ||
-            msg.member.roles.highest.id === roleIds.spinner;
+            (member.roles.highest.id === roleIds.trusted && member.user.id === message.author.id) ||
+            member.roles.highest.id === roleIds.spinner;
           if (!zerfickt) {
             if (reaction.emoji.name === "⏹") {
               if (msg.deletable) await msg.delete();
