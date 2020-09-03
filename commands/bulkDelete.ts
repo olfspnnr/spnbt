@@ -25,7 +25,7 @@ const bulkDeleteFunc = async (message: Message, client: Client) => {
       const msgs = await message.channel.messages.fetch({ limit: parsedAnzahl || 25 });
       writeToLogChannel(`${message.author.username} called bulkDelete`, client);
       let messagesToBeDeleted = msgs.filter(
-        (message) => message.mentions.has(message.author) && !message.pinned
+        (messageToBeDeleted) => message.mentions.has(messageToBeDeleted.author) && !message.pinned
       );
       messagesToBeDeleted.each(async (msg) => msg.deletable && (await msg.delete()));
       message.deletable && message.delete({ timeout: 500 });
