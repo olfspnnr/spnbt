@@ -12,6 +12,6 @@ export const play = {
     if (!!~url.indexOf('"')) {
       url = url.replace('"', "");
     }
-    playAudio(message, true, url, undefined, undefined, start ? start : undefined);
+    playAudio(message, true, url, undefined, 0.25, start ? start : undefined);
   },
 } as messageHandleFunction;
