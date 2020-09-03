@@ -20,7 +20,7 @@ export class Chat extends React.Component<ChatProps, ChatState> {
   }
 
   componentDidMount() {
-    const ws = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket(`ws://${window.location.host}:8080`);
     ws.addEventListener("open", (ev) => {
       console.log("test");
       this.setState((cs) => ({ ...cs, websocket: ws }));
