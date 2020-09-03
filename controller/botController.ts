@@ -506,7 +506,11 @@ const _handleYouTubeStream = async (
         reply: message.author,
         code: true,
       });
-      optionmessage.reactions.add(["⏹", "⏸", "▶", "🔊", "🔉", "☠"]);
+
+      for (let emoji in ["⏹", "⏸", "▶", "🔊", "🔉", "☠"]) {
+        await optionmessage.react(emoji);
+      }
+
       stream.once("finish", async () => {
         try {
           if (optionmessage.deletable) await optionmessage.delete();
@@ -599,7 +603,7 @@ const _handleYouTubeStream = async (
         }
       });
 
-      const emojicollector = new ReactionCollector(optionmessage, (msg) => {
+      const reactionCollector = new ReactionCollector(optionmessage, (msg) => {
         const canInteract =
           msg.member.id === message.author.id ||
           (msg.member.roles.highest.id === roleIds.trusted &&
@@ -617,7 +621,7 @@ const _handleYouTubeStream = async (
         );
       });
 
-      emojicollector.on("collect", async (reaction, user) => {
+      reactionCollector.on("collect", async (reaction, user) => {
         try {
           const msg = optionmessage;
           const hasHighRoles =
