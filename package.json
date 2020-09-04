@@ -18,6 +18,7 @@
     "@types/react-router-dom": "^5.1.5",
     "@types/twitter": "^1.7.0",
     "@types/websocket": "0.0.40",
+    "@types/ws": "^7.2.6",
     "discord.js": "^12.3.1",
     "es6-promise": "^4.2.5",
     "express": "^4.17.1",

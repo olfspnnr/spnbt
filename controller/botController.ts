@@ -669,7 +669,9 @@ const _handleYouTubeStream = async (
               gnade.deletable && gnade.delete({ timeout: 5000 });
               stream.setVolumeDecibels(100);
             }
+            const temp = reaction.emoji.name;
             await reaction.remove();
+            await optionmessage.react(temp);
           }
         } catch (error) {
           throw error;
