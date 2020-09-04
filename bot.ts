@@ -13,7 +13,6 @@ import {
 } from "./controller/botController";
 import { websocketServer } from "./controller/server";
 import { Clock } from "./controller/clock";
-import "node-opus";
 import { messageHandleFunction } from "./legacy/messageHandler";
 import { fillStateProp, setState } from "./controller/stateController";
 import { AudioQueue } from "./controller/audioQueue";
@@ -22,6 +21,7 @@ import { handleRaffleTime } from "./commands/getRaffleWinner";
 import { handleWebSocketMessage } from "./controller/webSocketController";
 import { Berndsite } from "./controller/websiteController";
 import { readJsonFile } from "./controller/JSONController";
+import "@discordjs/opus";
 import Twitter = require("twitter");
 
 const auth: auth = require("../configs/auth.json");
