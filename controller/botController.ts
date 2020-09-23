@@ -586,6 +586,7 @@ const _handleYouTubeStream = async (
               if (stream.destroy) await stream.destroy();
               if (youtubeStream.destroy) await youtubeStream.destroy();
               if (messagecollector.stop) await messagecollector.stop();
+              await setState({ isPlayingAudio: false });
             } else if (msg.content.includes("!pause")) {
               if (!stream.paused) stream.pause();
             } else if (msg.content.includes("!resume")) {
@@ -652,6 +653,7 @@ const _handleYouTubeStream = async (
               if (stream.destroy) await stream.destroy();
               if (youtubeStream.destroy) await youtubeStream.destroy();
               if (messagecollector.stop) await messagecollector.stop();
+              await setState({ isPlayingAudio: false });
             } else if (reaction.emoji.name === optionEmojis[1]) {
               if (!stream.paused) stream.pause();
             } else if (reaction.emoji.name === optionEmojis[2]) {
