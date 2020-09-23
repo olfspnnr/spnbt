@@ -105,13 +105,11 @@ export const twitterClient = new Twitter({
 
 export const audioQueue = new AudioQueue();
 audioQueue.on("add", (queue) => {
-  console.log("added something to the audioQueue");
-  console.log("current queuelength: " + queue.length);
   audioQueue.play(audioQueue.shift());
 });
-audioQueue.on("play", (song) => console.log("now playing: " + song.message));
-audioQueue.on("error", (error) => console.log(error));
-audioQueue.on("finish", (queue) => console.log("current queuelength: " + queue.length));
+// audioQueue.on("play", (song) => console.log("now playing: " + song.message));
+// audioQueue.on("error", (error) => console.log(error));
+// audioQueue.on("finish", (queue) => console.log("current queuelength: " + queue.length));
 
 export const clock = new Clock();
 clock.initialise();
@@ -159,9 +157,9 @@ fillStateProp("clock", clock);
 (async () => {
   try {
     const json = await readJsonFile("lovoouser.json");
-    console.log((json as any).length);
+    // console.log((json as any).length);
     const state = await setState({ lovooArray: json as lovooUserEntry[] });
-    console.log(state);
+    // console.log(state);
   } catch (error) {
     console.error(error);
   }
@@ -295,7 +293,6 @@ loadCommands().then((loadedCommands) => {
 
       client.on("messageDeleteBulk", (messages) => {
         try {
-          console.log(messages);
           const msgs = messages.map((msg) => msg);
           writeToLogChannel(
             msgs.map(

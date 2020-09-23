@@ -648,9 +648,6 @@ const _handleYouTubeStream = async (
           if (!zerfickt) {
             if (reaction.emoji.name === optionEmojis[0]) {
               if (msg.deletable) await msg.delete();
-              if ((Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).deletable) {
-                await (Array.isArray(optionmessage) ? optionmessage[0] : optionmessage).delete();
-              }
               if (message.deletable) await message.delete();
               if (stream.destroy) await stream.destroy();
               if (youtubeStream.destroy) await youtubeStream.destroy();
